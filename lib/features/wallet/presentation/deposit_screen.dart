@@ -1,0 +1,241 @@
+import 'package:decimal/decimal.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/money/money.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/loading_overlay.dart';
+import '../../../shared/widgets/money_field.dart';
+import '../../../shared/widgets/primary_button.dart';
+import '../domain/balance_provider.dart';
+import '../domain/deposit_notifier.dart';
+
+class DepositScreen extends ConsumerStatefulWidget {
+  const DepositScreen({super.key});
+
+  @override
+  ConsumerState<DepositScreen> createState() => _DepositScreenState();
+}
+
+class _DepositScreenState extends ConsumerState<DepositScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _onDepositSubmit(Decimal balance, String currency) {
+    if (_formKey.currentState?.validate() ?? false) {
+      ref.read(depositNotifierProvider.notifier).submitDeposit(
+            _amountController.text.trim(),
+          );
+    }
+  }
+
+  void _showSuccessDialog(BuildContext context, String journalId, String amount, String currency) {
+    final money = Money.parse(amount, currency);
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.l),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.check_circle_outline, color: Colors.green, size: 28),
+              const SizedBox(width: AppSpacing.s),
+              Text(
+                'Nạp tiền thành công',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Số tiền đã được cộng vào tài khoản ví của bạn.',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: AppSpacing.m),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Số tiền nạp:', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                  Text(money.formatDisplay(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Mã giao dịch:', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                  Text(
+                    journalId.length > 15 ? '${journalId.substring(0, 15)}...' : journalId,
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                ref.read(depositNotifierProvider.notifier).reset();
+                Navigator.of(ctx).pop();
+                context.go('/home');
+              },
+              child: const Text('Quay lại Trang Chủ'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final balanceState = ref.watch(balanceProvider);
+    final depositState = ref.watch(depositNotifierProvider);
+    final theme = Theme.of(context);
+
+    // Get current balance details
+    Decimal currentBalance = Decimal.zero;
+    String currency = 'VND';
+    balanceState.whenData((data) {
+      currentBalance = data.balance;
+      currency = data.currency;
+    });
+
+    // Listen for success state to show dialog
+    ref.listen<DepositState>(depositNotifierProvider, (previous, next) {
+      if (next.status == DepositStatus.success && next.response != null) {
+        _showSuccessDialog(
+          context,
+          next.response!.journalId,
+          _amountController.text.trim(),
+          currency,
+        );
+      } else if (next.status == DepositStatus.error && next.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: theme.colorScheme.error,
+          ),
+        );
+      }
+    });
+
+    final displayMoney = Money(amount: currentBalance, currency: currency);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Nạp tiền'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            ref.read(depositNotifierProvider.notifier).reset();
+            context.pop();
+          },
+        ),
+      ),
+      body: LoadingOverlay(
+        isLoading: depositState.status == DepositStatus.submitting,
+        message: 'Đang thực hiện nạp tiền...',
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(AppSpacing.l),
+            children: [
+              Text(
+                'Nạp tiền vào ví E-Wallet',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s),
+              Text(
+                'Giao dịch nạp tiền được mô phỏng từ tài khoản nguồn CASH_CLEARING.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onBackground.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Current Balance Info Card
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.m),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Số dư ví hiện tại',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            displayMoney.formatDisplay(),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      CircleAvatar(
+                        backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
+                        child: Icon(Icons.account_balance_wallet, color: theme.colorScheme.primary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.l),
+
+              // Money Field input
+              MoneyField(
+                controller: _amountController,
+                currency: currency,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Vui lòng nhập số tiền.';
+                  }
+                  final amount = Decimal.tryParse(value.trim());
+                  if (amount == null || amount <= Decimal.zero) {
+                    return 'Số tiền nạp phải lớn hơn 0.';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              PrimaryButton(
+                text: 'Xác nhận nạp tiền',
+                onPressed: () => _onDepositSubmit(currentBalance, currency),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -30,10 +30,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      ref.read(authNotifierProvider.notifier).login(
-            _identifierController.text.trim(),
-            _passwordController.text,
-          );
+      ref
+          .read(authNotifierProvider.notifier)
+          .login(_identifierController.text.trim(), _passwordController.text);
     }
   }
 
@@ -43,7 +42,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final theme = Theme.of(context);
 
     final isLoading = authState is AuthStateAuthenticating;
-    final errorMessage = authState is AuthStateUnauthenticated ? authState.errorMessage : null;
+    final errorMessage = authState is AuthStateUnauthenticated
+        ? authState.errorMessage
+        : null;
 
     return Scaffold(
       body: LoadingOverlay(
@@ -95,7 +96,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline, color: theme.colorScheme.error),
+                            Icon(
+                              Icons.error_outline,
+                              color: theme.colorScheme.error,
+                            ),
                             const SizedBox(width: AppSpacing.s),
                             Expanded(
                               child: Text(
@@ -134,7 +138,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
                           ),
                           onPressed: () {
                             setState(() {

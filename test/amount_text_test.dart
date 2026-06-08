@@ -5,7 +5,9 @@ import 'package:banking_platform_user/shared/widgets/amount_text.dart';
 
 void main() {
   group('AmountText Widget Tests', () {
-    testWidgets('Debit displays negative prefix and red color', (WidgetTester tester) async {
+    testWidgets('Debit displays negative prefix and red color', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(
@@ -26,7 +28,9 @@ void main() {
       expect(textWidget.style?.color, Colors.red);
     });
 
-    testWidgets('Credit displays positive prefix and green color', (WidgetTester tester) async {
+    testWidgets('Credit displays positive prefix and green color', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

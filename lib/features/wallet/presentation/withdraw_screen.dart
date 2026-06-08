@@ -29,13 +29,94 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
 
   void _onWithdrawSubmit(Decimal balance, String currency) {
     if (_formKey.currentState?.validate() ?? false) {
-      ref.read(withdrawNotifierProvider.notifier).submitWithdraw(
-            _amountController.text.trim(),
-          );
+      _showPinDialog(balance, currency);
     }
   }
 
-  void _showSuccessDialog(BuildContext context, String journalId, String amount, String currency) {
+  void _showPinDialog(Decimal balance, String currency) {
+    final pinController = TextEditingController();
+    final pinFormKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.l),
+          ),
+          title: const Text(
+            'Nhập mã PIN giao dịch',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Form(
+            key: pinFormKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Vui lòng nhập mã PIN 6 chữ số để xác nhận giao dịch rút tiền.',
+                ),
+                const SizedBox(height: AppSpacing.m),
+                TextFormField(
+                  controller: pinController,
+                  obscureText: true,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    letterSpacing: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Mã PIN',
+                    counterText: '',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().length != 6) {
+                      return 'Mã PIN phải gồm đúng 6 chữ số.';
+                    }
+                    if (int.tryParse(value) == null) {
+                      return 'Mã PIN chỉ chứa chữ số.';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (pinFormKey.currentState?.validate() ?? false) {
+                  Navigator.of(ctx).pop();
+                  ref
+                      .read(withdrawNotifierProvider.notifier)
+                      .submitWithdraw(
+                        _amountController.text.trim(),
+                        pinController.text,
+                      );
+                }
+              },
+              child: const Text('Xác nhận'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSuccessDialog(
+    BuildContext context,
+    String journalId,
+    String amount,
+    String currency,
+  ) {
     final money = Money.parse(amount, currency);
     final theme = Theme.of(context);
 
@@ -50,7 +131,11 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           ),
           title: Row(
             children: [
-              const Icon(Icons.check_circle_outline, color: Colors.green, size: 28),
+              const Icon(
+                Icons.check_circle_outline,
+                color: Colors.green,
+                size: 28,
+              ),
               const SizedBox(width: AppSpacing.s),
               Text(
                 'Rút tiền thành công',
@@ -73,18 +158,36 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Số tiền rút:', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6))),
-                  Text(money.formatDisplay(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Số tiền rút:',
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                  Text(
+                    money.formatDisplay(),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Mã giao dịch:', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6))),
                   Text(
-                    journalId.length > 15 ? '${journalId.substring(0, 15)}...' : journalId,
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                    'Mã giao dịch:',
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                  Text(
+                    journalId.length > 15
+                        ? '${journalId.substring(0, 15)}...'
+                        : journalId,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -128,11 +231,19 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           _amountController.text.trim(),
           currency,
         );
-      } else if (next.status == WithdrawStatus.error && next.errorMessage != null) {
+      } else if (next.status == WithdrawStatus.error &&
+          next.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
             backgroundColor: theme.colorScheme.error,
+            action: SnackBarAction(
+              label: 'Thử lại',
+              textColor: Colors.white,
+              onPressed: () {
+                ref.read(withdrawNotifierProvider.notifier).retryWithdraw();
+              },
+            ),
           ),
         );
       }
@@ -188,9 +299,11 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                           Text(
                             'Số dư khả dụng',
                             style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.6,
+                              ),
                               fontSize: 14,
-                        ),
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
@@ -202,8 +315,13 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         ],
                       ),
                       CircleAvatar(
-                        backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
-                        child: Icon(Icons.account_balance_wallet, color: theme.colorScheme.primary),
+                        backgroundColor: theme.colorScheme.primary.withOpacity(
+                          0.08,
+                        ),
+                        child: Icon(
+                          Icons.account_balance_wallet,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                     ],
                   ),

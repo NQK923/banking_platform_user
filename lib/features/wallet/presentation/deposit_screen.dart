@@ -29,13 +29,18 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
 
   void _onDepositSubmit(Decimal balance, String currency) {
     if (_formKey.currentState?.validate() ?? false) {
-      ref.read(depositNotifierProvider.notifier).submitDeposit(
-            _amountController.text.trim(),
-          );
+      ref
+          .read(depositNotifierProvider.notifier)
+          .submitDeposit(_amountController.text.trim());
     }
   }
 
-  void _showSuccessDialog(BuildContext context, String journalId, String amount, String currency) {
+  void _showSuccessDialog(
+    BuildContext context,
+    String journalId,
+    String amount,
+    String currency,
+  ) {
     final money = Money.parse(amount, currency);
     final theme = Theme.of(context);
 
@@ -50,7 +55,11 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
           ),
           title: Row(
             children: [
-              const Icon(Icons.check_circle_outline, color: Colors.green, size: 28),
+              const Icon(
+                Icons.check_circle_outline,
+                color: Colors.green,
+                size: 28,
+              ),
               const SizedBox(width: AppSpacing.s),
               Text(
                 'Nạp tiền thành công',
@@ -73,18 +82,36 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Số tiền nạp:', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6))),
-                  Text(money.formatDisplay(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Số tiền nạp:',
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                  Text(
+                    money.formatDisplay(),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Mã giao dịch:', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6))),
                   Text(
-                    journalId.length > 15 ? '${journalId.substring(0, 15)}...' : journalId,
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                    'Mã giao dịch:',
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                  Text(
+                    journalId.length > 15
+                        ? '${journalId.substring(0, 15)}...'
+                        : journalId,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -128,11 +155,19 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
           _amountController.text.trim(),
           currency,
         );
-      } else if (next.status == DepositStatus.error && next.errorMessage != null) {
+      } else if (next.status == DepositStatus.error &&
+          next.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
             backgroundColor: theme.colorScheme.error,
+            action: SnackBarAction(
+              label: 'Thử lại',
+              textColor: Colors.white,
+              onPressed: () {
+                ref.read(depositNotifierProvider.notifier).retryDeposit();
+              },
+            ),
           ),
         );
       }
@@ -188,7 +223,9 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
                           Text(
                             'Số dư ví hiện tại',
                             style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.6,
+                              ),
                               fontSize: 14,
                             ),
                           ),
@@ -202,8 +239,13 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
                         ],
                       ),
                       CircleAvatar(
-                        backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
-                        child: Icon(Icons.account_balance_wallet, color: theme.colorScheme.primary),
+                        backgroundColor: theme.colorScheme.primary.withOpacity(
+                          0.08,
+                        ),
+                        child: Icon(
+                          Icons.account_balance_wallet,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                     ],
                   ),

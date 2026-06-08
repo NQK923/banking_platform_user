@@ -97,7 +97,7 @@ class _PinScreenState extends ConsumerState<PinScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.l),
-            
+
             // Indicators
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -113,7 +113,9 @@ class _PinScreenState extends ConsumerState<PinScreen> {
                         ? theme.colorScheme.primary
                         : theme.colorScheme.onBackground.withOpacity(0.15),
                     border: Border.all(
-                      color: isFilled ? theme.colorScheme.primary : theme.colorScheme.onBackground.withOpacity(0.3),
+                      color: isFilled
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onBackground.withOpacity(0.3),
                       width: 1.5,
                     ),
                   ),
@@ -121,7 +123,7 @@ class _PinScreenState extends ConsumerState<PinScreen> {
               }),
             ),
             const SizedBox(height: AppSpacing.m),
-            
+
             // Loading/Error Indicator
             SizedBox(
               height: 30,
@@ -132,15 +134,15 @@ class _PinScreenState extends ConsumerState<PinScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : _error != null
-                      ? Text(
-                          _error!,
-                          style: TextStyle(
-                            color: theme.colorScheme.error,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        )
-                      : null,
+                  ? Text(
+                      _error!,
+                      style: TextStyle(
+                        color: theme.colorScheme.error,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    )
+                  : null,
             ),
             const Spacer(),
 
@@ -179,7 +181,10 @@ class _PinScreenState extends ConsumerState<PinScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const SizedBox(width: 70, height: 70), // Empty left placeholder
+                      const SizedBox(
+                        width: 70,
+                        height: 70,
+                      ), // Empty left placeholder
                       _KeypadButton(number: 0, onTap: () => _onNumberTap(0)),
                       GestureDetector(
                         onTap: _onBackspace,

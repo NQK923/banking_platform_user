@@ -37,6 +37,10 @@ mixin _$TransferState {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
@@ -60,6 +64,10 @@ mixin _$TransferState {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
@@ -83,6 +91,10 @@ mixin _$TransferState {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,
@@ -243,6 +255,10 @@ class _$TransferStateIdleImpl implements _TransferStateIdle {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
@@ -270,6 +286,10 @@ class _$TransferStateIdleImpl implements _TransferStateIdle {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
@@ -297,6 +317,10 @@ class _$TransferStateIdleImpl implements _TransferStateIdle {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,
@@ -440,6 +464,10 @@ class _$TransferStateRecipientCheckingImpl
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
@@ -467,6 +495,10 @@ class _$TransferStateRecipientCheckingImpl
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
@@ -494,6 +526,10 @@ class _$TransferStateRecipientCheckingImpl
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,
@@ -673,6 +709,10 @@ class _$TransferStateRecipientCheckedImpl
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
@@ -700,6 +740,10 @@ class _$TransferStateRecipientCheckedImpl
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
@@ -727,6 +771,10 @@ class _$TransferStateRecipientCheckedImpl
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,
@@ -951,6 +999,10 @@ class _$TransferStateReviewImpl implements TransferStateReview {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
@@ -978,6 +1030,10 @@ class _$TransferStateReviewImpl implements TransferStateReview {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
@@ -1005,6 +1061,10 @@ class _$TransferStateReviewImpl implements TransferStateReview {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,
@@ -1153,6 +1213,10 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
@@ -1180,6 +1244,10 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
@@ -1207,6 +1275,10 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,
@@ -1393,6 +1465,10 @@ class _$TransferStateProcessingImpl implements TransferStateProcessing {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
@@ -1420,6 +1496,10 @@ class _$TransferStateProcessingImpl implements TransferStateProcessing {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
@@ -1447,6 +1527,10 @@ class _$TransferStateProcessingImpl implements TransferStateProcessing {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,
@@ -1634,6 +1718,10 @@ class _$TransferStateCompletedImpl implements TransferStateCompleted {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
@@ -1661,6 +1749,10 @@ class _$TransferStateCompletedImpl implements TransferStateCompleted {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
@@ -1688,6 +1780,10 @@ class _$TransferStateCompletedImpl implements TransferStateCompleted {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,
@@ -1775,9 +1871,18 @@ abstract class _$$TransferStateFailedImplCopyWith<$Res> {
     $Res Function(_$TransferStateFailedImpl) then,
   ) = __$$TransferStateFailedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String reason, bool wasRefunded, WalletTransaction? transaction});
+  $Res call({
+    String reason,
+    bool wasRefunded,
+    WalletTransaction? transaction,
+    AccountRecord? recipient,
+    String? amount,
+    String? note,
+    String? idempotencyKey,
+  });
 
   $WalletTransactionCopyWith<$Res>? get transaction;
+  $AccountRecordCopyWith<$Res>? get recipient;
 }
 
 /// @nodoc
@@ -1797,6 +1902,10 @@ class __$$TransferStateFailedImplCopyWithImpl<$Res>
     Object? reason = null,
     Object? wasRefunded = null,
     Object? transaction = freezed,
+    Object? recipient = freezed,
+    Object? amount = freezed,
+    Object? note = freezed,
+    Object? idempotencyKey = freezed,
   }) {
     return _then(
       _$TransferStateFailedImpl(
@@ -1812,6 +1921,22 @@ class __$$TransferStateFailedImplCopyWithImpl<$Res>
             ? _value.transaction
             : transaction // ignore: cast_nullable_to_non_nullable
                   as WalletTransaction?,
+        recipient: freezed == recipient
+            ? _value.recipient
+            : recipient // ignore: cast_nullable_to_non_nullable
+                  as AccountRecord?,
+        amount: freezed == amount
+            ? _value.amount
+            : amount // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        note: freezed == note
+            ? _value.note
+            : note // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        idempotencyKey: freezed == idempotencyKey
+            ? _value.idempotencyKey
+            : idempotencyKey // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -1829,6 +1954,20 @@ class __$$TransferStateFailedImplCopyWithImpl<$Res>
       return _then(_value.copyWith(transaction: value));
     });
   }
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AccountRecordCopyWith<$Res>? get recipient {
+    if (_value.recipient == null) {
+      return null;
+    }
+
+    return $AccountRecordCopyWith<$Res>(_value.recipient!, (value) {
+      return _then(_value.copyWith(recipient: value));
+    });
+  }
 }
 
 /// @nodoc
@@ -1838,6 +1977,10 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
     required this.reason,
     this.wasRefunded = false,
     this.transaction,
+    this.recipient,
+    this.amount,
+    this.note,
+    this.idempotencyKey,
   });
 
   @override
@@ -1847,10 +1990,18 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
   final bool wasRefunded;
   @override
   final WalletTransaction? transaction;
+  @override
+  final AccountRecord? recipient;
+  @override
+  final String? amount;
+  @override
+  final String? note;
+  @override
+  final String? idempotencyKey;
 
   @override
   String toString() {
-    return 'TransferState.failed(reason: $reason, wasRefunded: $wasRefunded, transaction: $transaction)';
+    return 'TransferState.failed(reason: $reason, wasRefunded: $wasRefunded, transaction: $transaction, recipient: $recipient, amount: $amount, note: $note, idempotencyKey: $idempotencyKey)';
   }
 
   @override
@@ -1862,12 +2013,26 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
             (identical(other.wasRefunded, wasRefunded) ||
                 other.wasRefunded == wasRefunded) &&
             (identical(other.transaction, transaction) ||
-                other.transaction == transaction));
+                other.transaction == transaction) &&
+            (identical(other.recipient, recipient) ||
+                other.recipient == recipient) &&
+            (identical(other.amount, amount) || other.amount == amount) &&
+            (identical(other.note, note) || other.note == note) &&
+            (identical(other.idempotencyKey, idempotencyKey) ||
+                other.idempotencyKey == idempotencyKey));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, reason, wasRefunded, transaction);
+  int get hashCode => Object.hash(
+    runtimeType,
+    reason,
+    wasRefunded,
+    transaction,
+    recipient,
+    amount,
+    note,
+    idempotencyKey,
+  );
 
   /// Create a copy of TransferState
   /// with the given fields replaced by the non-null parameter values.
@@ -1901,11 +2066,23 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
   }) {
-    return failed(reason, wasRefunded, transaction);
+    return failed(
+      reason,
+      wasRefunded,
+      transaction,
+      recipient,
+      amount,
+      note,
+      idempotencyKey,
+    );
   }
 
   @override
@@ -1928,11 +2105,23 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
   }) {
-    return failed?.call(reason, wasRefunded, transaction);
+    return failed?.call(
+      reason,
+      wasRefunded,
+      transaction,
+      recipient,
+      amount,
+      note,
+      idempotencyKey,
+    );
   }
 
   @override
@@ -1955,13 +2144,25 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,
     required TResult orElse(),
   }) {
     if (failed != null) {
-      return failed(reason, wasRefunded, transaction);
+      return failed(
+        reason,
+        wasRefunded,
+        transaction,
+        recipient,
+        amount,
+        note,
+        idempotencyKey,
+      );
     }
     return orElse();
   }
@@ -2026,11 +2227,19 @@ abstract class TransferStateFailed implements TransferState {
     required final String reason,
     final bool wasRefunded,
     final WalletTransaction? transaction,
+    final AccountRecord? recipient,
+    final String? amount,
+    final String? note,
+    final String? idempotencyKey,
   }) = _$TransferStateFailedImpl;
 
   String get reason;
   bool get wasRefunded;
   WalletTransaction? get transaction;
+  AccountRecord? get recipient;
+  String? get amount;
+  String? get note;
+  String? get idempotencyKey;
 
   /// Create a copy of TransferState
   /// with the given fields replaced by the non-null parameter values.
@@ -2144,6 +2353,10 @@ class _$TransferStateTimeoutImpl implements TransferStateTimeout {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )
     failed,
     required TResult Function(WalletTransaction transaction) timeout,
@@ -2171,6 +2384,10 @@ class _$TransferStateTimeoutImpl implements TransferStateTimeout {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult? Function(WalletTransaction transaction)? timeout,
@@ -2198,6 +2415,10 @@ class _$TransferStateTimeoutImpl implements TransferStateTimeout {
       String reason,
       bool wasRefunded,
       WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
     )?
     failed,
     TResult Function(WalletTransaction transaction)? timeout,

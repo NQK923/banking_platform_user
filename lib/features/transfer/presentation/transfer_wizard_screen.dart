@@ -21,7 +21,8 @@ class TransferWizardScreen extends ConsumerStatefulWidget {
   const TransferWizardScreen({super.key});
 
   @override
-  ConsumerState<TransferWizardScreen> createState() => _TransferWizardScreenState();
+  ConsumerState<TransferWizardScreen> createState() =>
+      _TransferWizardScreenState();
 }
 
 class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
@@ -45,26 +46,28 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
 
   void _onRecipientSubmit() {
     if (_recipientFormKey.currentState?.validate() ?? false) {
-      ref.read(transferProvider.notifier).lookupRecipient(
-            _recipientController.text.trim(),
-          );
+      ref
+          .read(transferProvider.notifier)
+          .lookupRecipient(_recipientController.text.trim());
     }
   }
 
   void _onAmountSubmit(Decimal availableBalance, String currency) {
     if (_amountFormKey.currentState?.validate() ?? false) {
-      ref.read(transferProvider.notifier).setAmountAndNote(
+      ref
+          .read(transferProvider.notifier)
+          .setAmountAndNote(
             _amountController.text.trim(),
-            _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+            _noteController.text.trim().isEmpty
+                ? null
+                : _noteController.text.trim(),
           );
     }
   }
 
   void _onPinSubmit() {
     if (_pinFormKey.currentState?.validate() ?? false) {
-      ref.read(transferProvider.notifier).submitTransfer(
-            _pinController.text,
-          );
+      ref.read(transferProvider.notifier).submitTransfer(_pinController.text);
     }
   }
 
@@ -131,7 +134,22 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           processing: (tx, count) => _buildProcessingState(theme, tx, count),
           completed: (tx) => _buildCompletedState(theme, tx),
-          failed: (reason, wasRefunded, tx) => _buildFailedState(theme, reason, wasRefunded, tx),
+          failed:
+              (
+                reason,
+                wasRefunded,
+                tx,
+                recipient,
+                amount,
+                note,
+                idempotencyKey,
+              ) => _buildFailedState(
+                theme,
+                reason,
+                wasRefunded,
+                tx,
+                recipient != null,
+              ),
           timeout: (tx) => _buildTimeoutState(theme, tx),
         ),
       ),
@@ -167,7 +185,9 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               decoration: BoxDecoration(
                 color: theme.colorScheme.error.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(AppRadius.m),
-                border: Border.all(color: theme.colorScheme.error.withOpacity(0.2)),
+                border: Border.all(
+                  color: theme.colorScheme.error.withOpacity(0.2),
+                ),
               ),
               child: Row(
                 children: [
@@ -199,10 +219,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             validator: Validator.validateIdentifier,
           ),
           const SizedBox(height: AppSpacing.l),
-          PrimaryButton(
-            text: 'Tiếp tục',
-            onPressed: _onRecipientSubmit,
-          ),
+          PrimaryButton(text: 'Tiếp tục', onPressed: _onRecipientSubmit),
         ],
       ),
     );
@@ -237,7 +254,10 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               child: const Icon(Icons.person),
             ),
             title: const Text('Người nhận'),
-            subtitle: Text(recipientCode, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(
+              recipientCode,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: AppSpacing.m),
           Container(
@@ -327,9 +347,19 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               padding: const EdgeInsets.all(AppSpacing.m),
               child: Column(
                 children: [
-                  _buildReviewRow(theme, 'Người nhận', recipientCode, isBold: true),
+                  _buildReviewRow(
+                    theme,
+                    'Người nhận',
+                    recipientCode,
+                    isBold: true,
+                  ),
                   const Divider(),
-                  _buildReviewRow(theme, 'Số tiền chuyển', money.formatDisplay(), isBold: true),
+                  _buildReviewRow(
+                    theme,
+                    'Số tiền chuyển',
+                    money.formatDisplay(),
+                    isBold: true,
+                  ),
                   _buildReviewRow(theme, 'Phí giao dịch', 'Miễn phí (0 ₫)'),
                   if (note != null && note.isNotEmpty) ...[
                     const Divider(),
@@ -362,22 +392,29 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.l),
 
-          PrimaryButton(
-            text: 'Xác Nhận Chuyển Tiền',
-            onPressed: _onPinSubmit,
-          ),
+          PrimaryButton(text: 'Xác Nhận Chuyển Tiền', onPressed: _onPinSubmit),
         ],
       ),
     );
   }
 
-  Widget _buildReviewRow(ThemeData theme, String label, String value, {bool isBold = false}) {
+  Widget _buildReviewRow(
+    ThemeData theme,
+    String label,
+    String value, {
+    bool isBold = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6))),
+          Text(
+            label,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
           Text(
             value,
             style: TextStyle(
@@ -391,7 +428,11 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
   }
 
   // --- SAGA PROCESSING HUD ---
-  Widget _buildProcessingState(ThemeData theme, WalletTransaction tx, int count) {
+  Widget _buildProcessingState(
+    ThemeData theme,
+    WalletTransaction tx,
+    int count,
+  ) {
     final money = Money(amount: tx.amount, currency: tx.currency);
 
     return Padding(
@@ -403,7 +444,9 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           const SizedBox(height: AppSpacing.l),
           Text(
             'Đang thực hiện chuyển tiền...',
-            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: AppSpacing.s),
           Text(
@@ -420,7 +463,11 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               padding: const EdgeInsets.all(AppSpacing.m),
               child: Column(
                 children: [
-                  _buildReviewRow(theme, 'Mã giao dịch', tx.id.substring(0, 8) + '...'),
+                  _buildReviewRow(
+                    theme,
+                    'Mã giao dịch',
+                    tx.id.substring(0, 8) + '...',
+                  ),
                   _buildReviewRow(theme, 'Số tiền', money.formatDisplay()),
                   _buildReviewRow(theme, 'Lần kiểm tra', '$count/10'),
                 ],
@@ -459,8 +506,17 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               padding: const EdgeInsets.all(AppSpacing.m),
               child: Column(
                 children: [
-                  _buildReviewRow(theme, 'Giao dịch ID', tx.id.substring(0, 8) + '...'),
-                  _buildReviewRow(theme, 'Tổng tiền', money.formatDisplay(), isBold: true),
+                  _buildReviewRow(
+                    theme,
+                    'Giao dịch ID',
+                    tx.id.substring(0, 8) + '...',
+                  ),
+                  _buildReviewRow(
+                    theme,
+                    'Tổng tiền',
+                    money.formatDisplay(),
+                    isBold: true,
+                  ),
                 ],
               ),
             ),
@@ -487,12 +543,88 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
     );
   }
 
+  void _showRetryPinDialog() {
+    final pinController = TextEditingController();
+    final pinFormKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.l),
+          ),
+          title: const Text(
+            'Nhập mã PIN để thử lại',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Form(
+            key: pinFormKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Vui lòng nhập mã PIN giao dịch để thực hiện lại yêu cầu.',
+                ),
+                const SizedBox(height: AppSpacing.m),
+                TextFormField(
+                  controller: pinController,
+                  obscureText: true,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    letterSpacing: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Mã PIN',
+                    counterText: '',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().length != 6) {
+                      return 'Mã PIN phải gồm đúng 6 chữ số.';
+                    }
+                    if (int.tryParse(value) == null) {
+                      return 'Mã PIN chỉ chứa chữ số.';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (pinFormKey.currentState?.validate() ?? false) {
+                  Navigator.of(ctx).pop();
+                  ref
+                      .read(transferProvider.notifier)
+                      .retryTransfer(pinController.text);
+                }
+              },
+              child: const Text('Xác nhận'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // --- SAGA FAILED RESULT SCREEN ---
   Widget _buildFailedState(
     ThemeData theme,
     String reason,
     bool wasRefunded,
     WalletTransaction? tx,
+    bool canRetry,
   ) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.l),
@@ -543,6 +675,14 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
+          ],
+
+          if (canRetry) ...[
+            PrimaryButton(
+              text: 'Thử lại giao dịch',
+              onPressed: _showRetryPinDialog,
+            ),
+            const SizedBox(height: AppSpacing.m),
           ],
 
           PrimaryButton(
@@ -598,7 +738,8 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
 
           PrimaryButton(
             text: 'Tiếp Tục Chờ / Kiểm Tra Lại',
-            onPressed: () => ref.read(transferProvider.notifier).retryPolling(tx),
+            onPressed: () =>
+                ref.read(transferProvider.notifier).retryPolling(tx),
           ),
           const SizedBox(height: AppSpacing.m),
           OutlinedButton(

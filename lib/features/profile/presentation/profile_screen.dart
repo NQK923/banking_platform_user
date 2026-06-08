@@ -51,9 +51,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cá nhân'),
-      ),
+      appBar: AppBar(title: const Text('Cá nhân')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.l),
         child: Column(
@@ -66,14 +64,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   final code = account.code;
                   final isEmail = code.contains('@');
                   final emailDisplay = isEmail ? code : 'Chưa cập nhật';
-                  final phoneDisplay = !isEmail ? _maskPhone(code) : 'Chưa cập nhật';
-                  final displayName = isEmail ? code.split('@')[0] : 'Người dùng E-Wallet';
+                  final phoneDisplay = !isEmail
+                      ? _maskPhone(code)
+                      : 'Chưa cập nhật';
+                  final displayName = isEmail
+                      ? code.split('@')[0]
+                      : 'Người dùng E-Wallet';
 
                   return Column(
                     children: [
                       CircleAvatar(
                         radius: 40,
-                        backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                        backgroundColor: theme.colorScheme.primary.withOpacity(
+                          0.1,
+                        ),
                         child: Icon(
                           Icons.person,
                           size: 48,
@@ -96,18 +100,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.m),
-                      
+
                       // Email & Phone info
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.email_outlined, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          Icon(
+                            Icons.email_outlined,
+                            size: 16,
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                          ),
                           const SizedBox(width: AppSpacing.xs),
-                          Text(emailDisplay, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7))),
+                          Text(
+                            emailDisplay,
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.7,
+                              ),
+                            ),
+                          ),
                           const SizedBox(width: AppSpacing.m),
-                          Icon(Icons.phone_outlined, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          Icon(
+                            Icons.phone_outlined,
+                            size: 16,
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                          ),
                           const SizedBox(width: AppSpacing.xs),
-                          Text(phoneDisplay, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7))),
+                          Text(
+                            phoneDisplay,
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.7,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -118,13 +144,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                      child: Icon(Icons.person, size: 48, color: theme.colorScheme.primary),
+                      backgroundColor: theme.colorScheme.error.withOpacity(0.1),
+                      child: Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: theme.colorScheme.error,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.m),
-                    const Text('Người dùng E-Wallet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    Text(
+                      'Không thể tải thông tin hồ sơ',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.xs),
-                    Text(userId, style: const TextStyle(fontFamily: 'monospace')),
+                    TextButton.icon(
+                      onPressed: () => ref.refresh(accountDetailsProvider),
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Thử lại'),
+                    ),
                   ],
                 ),
               ),
@@ -138,7 +178,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ListTile(
                     leading: const Icon(Icons.lock_outline),
                     title: const Text('Đổi mã PIN giao dịch'),
-                    subtitle: const Text('Đổi mã PIN bảo mật giao dịch chuyển tiền'),
+                    subtitle: const Text(
+                      'Đổi mã PIN bảo mật giao dịch chuyển tiền',
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => _showChangePinDialog(context),
                   ),
@@ -157,7 +199,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       'Đăng xuất',
                       style: TextStyle(color: theme.colorScheme.error),
                     ),
-                    trailing: Icon(Icons.chevron_right, color: theme.colorScheme.error),
+                    trailing: Icon(
+                      Icons.chevron_right,
+                      color: theme.colorScheme.error,
+                    ),
                     onTap: () {
                       ref.read(authNotifierProvider.notifier).logout();
                     },
@@ -184,7 +229,7 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
   final _currentPinController = TextEditingController();
   final _newPinController = TextEditingController();
   final _confirmPinController = TextEditingController();
-  
+
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -204,13 +249,12 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
       });
 
       try {
-        await ref.read(authRepositoryProvider).changePin(
-              _currentPinController.text,
-              _newPinController.text,
-            );
-        
+        await ref
+            .read(authRepositoryProvider)
+            .changePin(_currentPinController.text, _newPinController.text);
+
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đổi mã PIN giao dịch thành công!'),
@@ -220,7 +264,10 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
         Navigator.of(context).pop();
       } catch (e) {
         setState(() {
-          _errorMessage = e.toString().replaceAll('Exception: ', '').replaceAll('AppException: ', '');
+          _errorMessage = e
+              .toString()
+              .replaceAll('Exception: ', '')
+              .replaceAll('AppException: ', '');
           _isLoading = false;
         });
       }
@@ -265,11 +312,16 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
                         decoration: BoxDecoration(
                           color: theme.colorScheme.error.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(AppRadius.s),
-                          border: Border.all(color: theme.colorScheme.error.withOpacity(0.2)),
+                          border: Border.all(
+                            color: theme.colorScheme.error.withOpacity(0.2),
+                          ),
                         ),
                         child: Text(
                           _errorMessage!,
-                          style: TextStyle(color: theme.colorScheme.error, fontSize: 13),
+                          style: TextStyle(
+                            color: theme.colorScheme.error,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.m),

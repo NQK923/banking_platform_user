@@ -4,13 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'wallet_transaction.freezed.dart';
 part 'wallet_transaction.g.dart';
 
-enum TransactionStatus {
-  PENDING,
-  COMPLETED,
-  FAILED,
-  COMPENSATING,
-  CANCELLED,
-}
+enum TransactionStatus { PENDING, COMPLETED, FAILED, COMPENSATING, CANCELLED }
 
 class DecimalConverter implements JsonConverter<Decimal, dynamic> {
   const DecimalConverter();

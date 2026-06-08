@@ -21,11 +21,12 @@ class PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     final resolvedBgColor = backgroundColor ?? theme.colorScheme.primary;
-    final resolvedTextColor = textColor ?? 
-        (resolvedBgColor == theme.colorScheme.primary 
-            ? theme.colorScheme.onPrimary 
+    final resolvedTextColor =
+        textColor ??
+        (resolvedBgColor == theme.colorScheme.primary
+            ? theme.colorScheme.onPrimary
             : (isDark ? Colors.white : Colors.black));
 
     return SizedBox(

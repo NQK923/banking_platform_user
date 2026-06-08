@@ -5,14 +5,11 @@ class AppException implements Exception {
   final String message;
   final String? traceId;
 
-  const AppException({
-    required this.code,
-    required this.message,
-    this.traceId,
-  });
+  const AppException({required this.code, required this.message, this.traceId});
 
   @override
-  String toString() => 'AppException(code: $code, message: $message, traceId: $traceId)';
+  String toString() =>
+      'AppException(code: $code, message: $message, traceId: $traceId)';
 
   // Friendly localized or user-facing message mappings
   String get userFriendlyMessage {
@@ -39,7 +36,9 @@ class AppException implements Exception {
         return 'Kết nối mạng quá hạn. Vui lòng thử lại.';
       case 'INTERNAL':
       default:
-        return message.isNotEmpty ? message : 'Đã có lỗi xảy ra. Vui lòng thử lại sau.';
+        return message.isNotEmpty
+            ? message
+            : 'Đã có lỗi xảy ra. Vui lòng thử lại sau.';
     }
   }
 
@@ -79,9 +78,13 @@ class AppException implements Exception {
   factory AppException.unknown(dynamic error) {
     if (error is AppException) return error;
     if (error is DioException) return AppException.fromDioException(error);
-    return AppException(
+
+    // Log to console for debugging
+    print('[AppException Technical Details]: $error');
+
+    return const AppException(
       code: 'INTERNAL',
-      message: error.toString(),
+      message: 'Đã xảy ra lỗi hệ thống không xác định. Vui lòng thử lại sau.',
     );
   }
 }

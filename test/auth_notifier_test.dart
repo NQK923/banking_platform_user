@@ -82,9 +82,7 @@ void main() {
 
   ProviderContainer createContainer() {
     final container = ProviderContainer(
-      overrides: [
-        authRepositoryProvider.overrideWithValue(mockRepository),
-      ],
+      overrides: [authRepositoryProvider.overrideWithValue(mockRepository)],
     );
     addTearDown(container.dispose);
     return container;
@@ -92,17 +90,16 @@ void main() {
 
   Future<AuthState> waitForNextState(ProviderContainer container) async {
     final completer = Completer<AuthState>();
-    final sub = container.listen<AuthState>(
-      authNotifierProvider,
-      (previous, next) {
-        if (next is! AuthStateInitializing) {
-          if (!completer.isCompleted) {
-            completer.complete(next);
-          }
+    final sub = container.listen<AuthState>(authNotifierProvider, (
+      previous,
+      next,
+    ) {
+      if (next is! AuthStateInitializing) {
+        if (!completer.isCompleted) {
+          completer.complete(next);
         }
-      },
-      fireImmediately: true,
-    );
+      }
+    }, fireImmediately: true);
     final result = await completer.future;
     sub.close();
     return result;
@@ -136,7 +133,10 @@ void main() {
       final nextState = await waitForNextState(container);
       expect(
         nextState,
-        const AuthState.authenticated(userId: 'user-123', accountId: 'account-456'),
+        const AuthState.authenticated(
+          userId: 'user-123',
+          accountId: 'account-456',
+        ),
       );
     });
 
@@ -150,10 +150,9 @@ void main() {
       );
 
       // Trigger login
-      final future = container.read(authNotifierProvider.notifier).login(
-            'test@email.com',
-            'password123',
-          );
+      final future = container
+          .read(authNotifierProvider.notifier)
+          .login('test@email.com', 'password123');
 
       // Check for intermediate authenticating state
       expect(
@@ -166,7 +165,10 @@ void main() {
       // Check for authenticated state
       expect(
         container.read(authNotifierProvider),
-        const AuthState.authenticated(userId: 'user-123', accountId: 'account-456'),
+        const AuthState.authenticated(
+          userId: 'user-123',
+          accountId: 'account-456',
+        ),
       );
     });
 
@@ -176,10 +178,9 @@ void main() {
       final container = createContainer();
       await waitForNextState(container);
 
-      final future = container.read(authNotifierProvider.notifier).login(
-            'test@email.com',
-            'wrong_pass',
-          );
+      final future = container
+          .read(authNotifierProvider.notifier)
+          .login('test@email.com', 'wrong_pass');
 
       expect(
         container.read(authNotifierProvider),
@@ -191,7 +192,9 @@ void main() {
       // Transitions back to unauthenticated with error
       expect(
         container.read(authNotifierProvider),
-        const AuthState.unauthenticated(errorMessage: 'Exception: Wrong credentials'),
+        const AuthState.unauthenticated(
+          errorMessage: 'Exception: Wrong credentials',
+        ),
       );
     });
 
@@ -199,7 +202,9 @@ void main() {
       final container = createContainer();
       await waitForNextState(container);
 
-      final future = container.read(authNotifierProvider.notifier).register(
+      final future = container
+          .read(authNotifierProvider.notifier)
+          .register(
             email: 'new@email.com',
             password: 'password123',
             pin: '123456',
@@ -214,7 +219,10 @@ void main() {
 
       expect(
         container.read(authNotifierProvider),
-        const AuthState.authenticated(userId: 'user-123', accountId: 'account-456'),
+        const AuthState.authenticated(
+          userId: 'user-123',
+          accountId: 'account-456',
+        ),
       );
     });
 
@@ -225,7 +233,10 @@ void main() {
 
       expect(
         container.read(authNotifierProvider),
-        const AuthState.authenticated(userId: 'user-123', accountId: 'account-456'),
+        const AuthState.authenticated(
+          userId: 'user-123',
+          accountId: 'account-456',
+        ),
       );
 
       await container.read(authNotifierProvider.notifier).logout();

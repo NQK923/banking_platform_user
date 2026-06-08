@@ -22,9 +22,11 @@ class WalletRepository {
   Future<BalanceResponse> getBalance() async {
     final accountId = await _authRepository.getAccountId();
     if (accountId == null || accountId.isEmpty) {
-      throw Exception('Không tìm thấy tài khoản ví hoạt động. Vui lòng đăng ký ví.');
+      throw Exception(
+        'Không tìm thấy tài khoản ví hoạt động. Vui lòng đăng ký ví.',
+      );
     }
-    
+
     final response = await _apiClient.get('/api/accounts/$accountId/balance');
     return BalanceResponse.fromJson(response.data as Map<String, dynamic>);
   }
@@ -38,51 +40,35 @@ class WalletRepository {
     return AccountRecord.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<MovementResponse> deposit(String amount) async {
+  Future<MovementResponse> deposit(String amount, String idempotencyKey) async {
     final accountId = await _authRepository.getAccountId();
     if (accountId == null || accountId.isEmpty) {
       throw Exception('Không tìm thấy tài khoản ví hoạt động.');
     }
-    
-    final idempotencyKey = const Uuid().v4();
+
     final response = await _apiClient.post(
       '/api/accounts/$accountId/deposit',
-      data: {
-        'amount': amount,
-      },
-      options: Options(
-        headers: {
-          'Idempotency-Key': idempotencyKey,
-        },
-      ),
+      data: {'amount': amount},
+      options: Options(headers: {'Idempotency-Key': idempotencyKey}),
     );
-    // TODO: The backend deposit endpoint does not explicitly consume or validate the 
-    // Idempotency-Key header at the controller layer yet, but we attach it to adhere to 
-    // the system-wide money-moving POST contract.
     return MovementResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<MovementResponse> withdraw(String amount) async {
+  Future<MovementResponse> withdraw(
+    String amount,
+    String pin,
+    String idempotencyKey,
+  ) async {
     final accountId = await _authRepository.getAccountId();
     if (accountId == null || accountId.isEmpty) {
       throw Exception('Không tìm thấy tài khoản ví hoạt động.');
     }
-    
-    final idempotencyKey = const Uuid().v4();
+
     final response = await _apiClient.post(
       '/api/accounts/$accountId/withdraw',
-      data: {
-        'amount': amount,
-      },
-      options: Options(
-        headers: {
-          'Idempotency-Key': idempotencyKey,
-        },
-      ),
+      data: {'amount': amount, 'pin': pin},
+      options: Options(headers: {'Idempotency-Key': idempotencyKey}),
     );
-    // TODO: The backend withdraw endpoint does not explicitly consume or validate the 
-    // Idempotency-Key header at the controller layer yet, but we attach it to adhere to 
-    // the system-wide money-moving POST contract.
     return MovementResponse.fromJson(response.data as Map<String, dynamic>);
   }
 }

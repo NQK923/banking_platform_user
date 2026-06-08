@@ -4,13 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:banking_platform_user/main.dart';
 
 void main() {
-  testWidgets('App renders splash screen initially', (WidgetTester tester) async {
+  testWidgets('App renders splash screen initially', (
+    WidgetTester tester,
+  ) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: MyApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: MyApp()));
 
     // Verify that the splash screen shows E-Wallet title and loading spinner
     expect(find.text('E-Wallet'), findsOneWidget);

@@ -32,28 +32,17 @@ class AuthApi {
   }
 
   Future<bool> verifyPin(PinVerifyRequest request) async {
-    try {
-      final response = await _apiClient.post(
-        '/api/auth/pin/verify',
-        data: request.toJson(),
-      );
-      // If server returns 200, it means validation passed
-      return response.statusCode == 200;
-    } on AppException catch (e) {
-      // TODO: The backend does not expose a standalone /api/auth/pin/verify endpoint.
-      // Standalone PIN verification is simulated here. If it fails with 404 or connection
-      // error, we fall back to a simulation. In our simulation, the correct PIN is '123456'.
-      if (e.message.contains('404') || e.code == 'NETWORK_ERROR') {
-        // Simulated success check
-        if (request.pin == '123456') {
-          return true;
-        }
-        throw const AppException(
-          code: 'PIN_INVALID',
-          message: 'Mã PIN giao dịch không đúng (Thử mã PIN 123456 ở bản mô phỏng).',
-        );
-      }
-      rethrow;
-    }
+    final response = await _apiClient.post(
+      '/api/auth/pin/verify',
+      data: request.toJson(),
+    );
+    return response.statusCode == 200;
+  }
+
+  Future<void> changePin(String currentPin, String newPin) async {
+    await _apiClient.post(
+      '/api/accounts/pin/change',
+      data: {'currentPin': currentPin, 'newPin': newPin},
+    );
   }
 }

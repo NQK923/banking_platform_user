@@ -55,9 +55,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lịch sử giao dịch'),
-      ),
+      appBar: AppBar(title: const Text('Lịch sử giao dịch')),
       body: RefreshIndicator(
         onRefresh: onRefresh,
         child: _buildBody(theme, historyState, currentUserAccountId),
@@ -74,7 +72,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (historyState.errorMessage != null && historyState.transactions.isEmpty) {
+    if (historyState.errorMessage != null &&
+        historyState.transactions.isEmpty) {
       return ErrorView(
         error: historyState.errorMessage!,
         onRetry: () => ref.read(historyProvider.notifier).refresh(),
@@ -88,7 +87,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(AppSpacing.m),
-      itemCount: historyState.transactions.length + (historyState.hasMore ? 1 : 0),
+      itemCount:
+          historyState.transactions.length + (historyState.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == historyState.transactions.length) {
           return const Padding(

@@ -4,17 +4,16 @@ class Money {
   final Decimal amount;
   final String currency;
 
-  const Money({
-    required this.amount,
-    required this.currency,
-  });
+  const Money({required this.amount, required this.currency});
 
   factory Money.parse(String amountStr, String currency) {
     try {
       final parsed = Decimal.parse(amountStr);
       return Money(amount: parsed, currency: currency.toUpperCase());
     } catch (e) {
-      throw FormatException('Invalid decimal string representation: $amountStr');
+      throw FormatException(
+        'Invalid decimal string representation: $amountStr',
+      );
     }
   }
 
@@ -48,13 +47,13 @@ class Money {
   String formatDisplay() {
     final scaleVal = scale;
     final fixedStr = amount.toStringAsFixed(scaleVal);
-    
+
     if (currency == 'VND') {
       // Basic Vietnamese formatting, e.g. 1.000.000
       final parts = fixedStr.split('.');
       final integerPart = parts[0];
       final buffer = StringBuffer();
-      
+
       int len = integerPart.length;
       for (int i = 0; i < len; i++) {
         buffer.write(integerPart[i]);
@@ -68,7 +67,7 @@ class Money {
       final parts = fixedStr.split('.');
       final integerPart = parts[0];
       final decimalPart = parts.length > 1 ? parts[1] : '';
-      
+
       final buffer = StringBuffer();
       int len = integerPart.length;
       for (int i = 0; i < len; i++) {

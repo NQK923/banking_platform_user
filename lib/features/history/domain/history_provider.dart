@@ -1,8 +1,8 @@
-import 'dart:math' as math;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/history_repository.dart';
 import 'wallet_transaction.dart';
+import 'history_models.dart';
 
 part 'history_provider.freezed.dart';
 part 'history_provider.g.dart';
@@ -22,7 +22,6 @@ class HistoryState with _$HistoryState {
 @riverpod
 class History extends _$History {
   late final HistoryRepository _historyRepository;
-  List<WalletTransaction> _allTransactions = [];
   static const int _pageSize = 10;
 
   @override
@@ -40,17 +39,16 @@ class History extends _$History {
 
   Future<void> _init() async {
     try {
-      _allTransactions = await _historyRepository.getHistory();
-      final initialSlice = _allTransactions.sublist(
-        0,
-        math.min(_pageSize, _allTransactions.length),
+      final response = await _historyRepository.getHistory(
+        page: 0,
+        size: _pageSize,
       );
       state = HistoryState(
-        transactions: initialSlice,
+        transactions: response.items,
         isLoading: false,
-        hasMore: _allTransactions.length > _pageSize,
+        hasMore: response.page < response.totalPages - 1,
         isLoadingMore: false,
-        currentPage: 1,
+        currentPage: 0,
       );
     } catch (e) {
       state = HistoryState(
@@ -78,19 +76,23 @@ class History extends _$History {
     await Future.delayed(const Duration(milliseconds: 600));
 
     final nextPage = state.currentPage + 1;
-    final endIndex = nextPage * _pageSize;
-    final hasMore = _allTransactions.length > endIndex;
 
-    final nextSlice = _allTransactions.sublist(
-      0,
-      math.min(endIndex, _allTransactions.length),
-    );
+    try {
+      final response = await _historyRepository.getHistory(
+        page: nextPage,
+        size: _pageSize,
+      );
+      final newTransactions = [...state.transactions, ...response.items];
+      final hasMore = response.page < response.totalPages - 1;
 
-    state = state.copyWith(
-      transactions: nextSlice,
-      currentPage: nextPage,
-      hasMore: hasMore,
-      isLoadingMore: false,
-    );
+      state = state.copyWith(
+        transactions: newTransactions,
+        currentPage: nextPage,
+        hasMore: hasMore,
+        isLoadingMore: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoadingMore: false, errorMessage: e.toString());
+    }
   }
 }

@@ -5,7 +5,8 @@ part 'auth_state.freezed.dart';
 @freezed
 class AuthState with _$AuthState {
   const factory AuthState.initializing() = AuthStateInitializing;
-  const factory AuthState.unauthenticated({String? errorMessage}) = AuthStateUnauthenticated;
+  const factory AuthState.unauthenticated({String? errorMessage}) =
+      AuthStateUnauthenticated;
   const factory AuthState.authenticating() = AuthStateAuthenticating;
   const factory AuthState.authenticated({
     required String userId,

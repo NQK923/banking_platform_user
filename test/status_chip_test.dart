@@ -7,9 +7,7 @@ void main() {
     testWidgets('COMPLETED status mapping', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: StatusChip(status: 'COMPLETED'),
-          ),
+          home: Scaffold(body: StatusChip(status: 'COMPLETED')),
         ),
       );
       expect(find.text('Thành công'), findsOneWidget);
@@ -20,9 +18,7 @@ void main() {
     testWidgets('PENDING status mapping', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: StatusChip(status: 'PENDING'),
-          ),
+          home: Scaffold(body: StatusChip(status: 'PENDING')),
         ),
       );
       expect(find.text('Đang xử lý'), findsOneWidget);
@@ -33,9 +29,7 @@ void main() {
     testWidgets('COMPENSATING status mapping', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: StatusChip(status: 'COMPENSATING'),
-          ),
+          home: Scaffold(body: StatusChip(status: 'COMPENSATING')),
         ),
       );
       expect(find.text('Đang hoàn tiền'), findsOneWidget);
@@ -46,9 +40,7 @@ void main() {
     testWidgets('FAILED status mapping', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: StatusChip(status: 'FAILED'),
-          ),
+          home: Scaffold(body: StatusChip(status: 'FAILED')),
         ),
       );
       expect(find.text('Thất bại'), findsOneWidget);
@@ -59,9 +51,7 @@ void main() {
     testWidgets('CANCELLED status mapping', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: StatusChip(status: 'CANCELLED'),
-          ),
+          home: Scaffold(body: StatusChip(status: 'CANCELLED')),
         ),
       );
       expect(find.text('Đã hủy'), findsOneWidget);

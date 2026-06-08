@@ -30,7 +30,9 @@ class Transfer extends _$Transfer {
 
   Future<void> lookupRecipient(String identifier) async {
     if (identifier.trim().isEmpty) {
-      state = const TransferState.idle(errorMessage: 'Vui lòng nhập Email hoặc Số điện thoại.');
+      state = const TransferState.idle(
+        errorMessage: 'Vui lòng nhập Email hoặc Số điện thoại.',
+      );
       return;
     }
 
@@ -46,14 +48,16 @@ class Transfer extends _$Transfer {
       final currentUserAccountId = await _authRepository.getAccountId();
       if (recipient.id == currentUserAccountId) {
         state = const TransferState.idle(
-          errorMessage: 'Không thể chuyển tiền cho tài khoản ví của chính mình.',
+          errorMessage:
+              'Không thể chuyển tiền cho tài khoản ví của chính mình.',
         );
         return;
       }
 
       if (recipient.status != AccountStatus.ACTIVE) {
         state = const TransferState.idle(
-          errorMessage: 'Tài khoản người nhận đang bị khóa hoặc không hoạt động.',
+          errorMessage:
+              'Tài khoản người nhận đang bị khóa hoặc không hoạt động.',
         );
         return;
       }
@@ -92,23 +96,79 @@ class Transfer extends _$Transfer {
 
     try {
       final isEmail = recipient.code.contains('@');
-      final backendPin = await _authRepository.getOriginalPin() ?? pin;
       final tx = await _transferRepository.initiateTransfer(
         TransferRequest(
           recipientEmail: isEmail ? recipient.code : null,
           recipientPhone: !isEmail ? recipient.code : null,
           amount: amount,
           idempotencyKey: idempotencyKey,
-          pin: backendPin,
+          pin: pin,
         ),
       );
 
       state = TransferState.processing(transaction: tx, pollCount: 0);
       _pollStatus(tx.id);
     } on AppException catch (e) {
-      state = TransferState.failed(reason: e.userFriendlyMessage);
+      state = TransferState.failed(
+        reason: e.userFriendlyMessage,
+        recipient: recipient,
+        amount: amount,
+        note: note,
+        idempotencyKey: idempotencyKey,
+      );
     } catch (e) {
-      state = TransferState.failed(reason: e.toString());
+      state = TransferState.failed(
+        reason: e.toString(),
+        recipient: recipient,
+        amount: amount,
+        note: note,
+        idempotencyKey: idempotencyKey,
+      );
+    }
+  }
+
+  Future<void> retryTransfer(String pin) async {
+    final currentState = state;
+    if (currentState is! TransferStateFailed) return;
+
+    final recipient = currentState.recipient;
+    final amount = currentState.amount;
+    final note = currentState.note;
+    final idempotencyKey = currentState.idempotencyKey;
+    if (recipient == null || amount == null || idempotencyKey == null) return;
+
+    state = const TransferState.submitting();
+
+    try {
+      final isEmail = recipient.code.contains('@');
+      final tx = await _transferRepository.initiateTransfer(
+        TransferRequest(
+          recipientEmail: isEmail ? recipient.code : null,
+          recipientPhone: !isEmail ? recipient.code : null,
+          amount: amount,
+          idempotencyKey: idempotencyKey,
+          pin: pin,
+        ),
+      );
+
+      state = TransferState.processing(transaction: tx, pollCount: 0);
+      _pollStatus(tx.id);
+    } on AppException catch (e) {
+      state = TransferState.failed(
+        reason: e.userFriendlyMessage,
+        recipient: recipient,
+        amount: amount,
+        note: note,
+        idempotencyKey: idempotencyKey,
+      );
+    } catch (e) {
+      state = TransferState.failed(
+        reason: e.toString(),
+        recipient: recipient,
+        amount: amount,
+        note: note,
+        idempotencyKey: idempotencyKey,
+      );
     }
   }
 
@@ -121,30 +181,44 @@ class Transfer extends _$Transfer {
     await Future.delayed(const Duration(milliseconds: 1500));
 
     final currentState = state;
-    if (currentState is! TransferStateProcessing || currentState.transaction.id != txId) {
+    if (currentState is! TransferStateProcessing ||
+        currentState.transaction.id != txId) {
       return;
     }
 
     final count = currentState.pollCount + 1;
 
     try {
-      final tx = await ref.read(historyRepositoryProvider).getTransactionDetail(txId);
+      final tx = await ref
+          .read(historyRepositoryProvider)
+          .getTransactionDetail(txId);
 
       if (tx.status == TransactionStatus.COMPLETED) {
         state = TransferState.completed(transaction: tx);
         // Refresh balance and history on completion
         ref.read(balanceProvider.notifier).refreshBalance();
       } else if (tx.status == TransactionStatus.FAILED) {
+        final failureReason =
+            tx.failureReason ??
+            'Chuyển tiền thất bại. Giao dịch đã được hủy bỏ và bồi hoàn.';
+        final wasRefunded =
+            tx.failureReason != null &&
+            tx.failureReason!.toLowerCase().contains('compensated');
         state = TransferState.failed(
-          reason: 'Chuyển tiền thất bại. Giao dịch đã được hủy bỏ và bồi hoàn.',
-          wasRefunded: tx.debitApplied,
+          reason: failureReason,
+          wasRefunded: wasRefunded,
           transaction: tx,
         );
         ref.read(balanceProvider.notifier).refreshBalance();
       } else if (tx.status == TransactionStatus.CANCELLED) {
+        final failureReason =
+            tx.failureReason ?? 'Giao dịch chuyển tiền đã bị hủy.';
+        final wasRefunded =
+            tx.failureReason != null &&
+            tx.failureReason!.toLowerCase().contains('compensated');
         state = TransferState.failed(
-          reason: 'Giao dịch chuyển tiền đã bị hủy.',
-          wasRefunded: tx.debitApplied,
+          reason: failureReason,
+          wasRefunded: wasRefunded,
           transaction: tx,
         );
       } else {

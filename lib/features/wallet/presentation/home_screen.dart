@@ -39,10 +39,7 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('E-Wallet'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: onRefresh,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: onRefresh),
         ],
       ),
       body: RefreshIndicator(
@@ -58,7 +55,8 @@ class HomeScreen extends ConsumerWidget {
                 loading: () => const _CardLoadingStub(),
                 error: (err, stack) => ErrorView(
                   error: err,
-                  onRetry: () => ref.read(balanceProvider.notifier).refreshBalance(),
+                  onRetry: () =>
+                      ref.read(balanceProvider.notifier).refreshBalance(),
                   inline: true,
                 ),
                 data: (balanceData) {
@@ -76,7 +74,9 @@ class HomeScreen extends ConsumerWidget {
                           Text(
                             'Tài khoản chính',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onPrimary.withOpacity(0.7),
+                              color: theme.colorScheme.onPrimary.withOpacity(
+                                0.7,
+                              ),
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xs),
@@ -88,7 +88,9 @@ class HomeScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: AppSpacing.m),
-                          Divider(color: theme.colorScheme.onPrimary.withOpacity(0.2)),
+                          Divider(
+                            color: theme.colorScheme.onPrimary.withOpacity(0.2),
+                          ),
                           const SizedBox(height: AppSpacing.s),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,7 +98,8 @@ class HomeScreen extends ConsumerWidget {
                               Text(
                                 'ID Ví:',
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onPrimary.withOpacity(0.7),
+                                  color: theme.colorScheme.onPrimary
+                                      .withOpacity(0.7),
                                 ),
                               ),
                               Text(
@@ -171,7 +174,8 @@ class HomeScreen extends ConsumerWidget {
                     child: CircularProgressIndicator(),
                   ),
                 )
-              else if (historyState.errorMessage != null && historyState.transactions.isEmpty)
+              else if (historyState.errorMessage != null &&
+                  historyState.transactions.isEmpty)
                 ErrorView(
                   error: historyState.errorMessage!,
                   onRetry: () => ref.read(historyProvider.notifier).refresh(),
@@ -184,13 +188,18 @@ class HomeScreen extends ConsumerWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: math.min(5, historyState.transactions.length),
-                  separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.s),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: AppSpacing.s),
                   itemBuilder: (context, index) {
                     final tx = historyState.transactions[index];
                     final isDebit = tx.senderId == currentUserAccountId;
                     final txTitle = isDebit ? 'Chuyển tiền' : 'Nhận tiền';
-                    final txIcon = isDebit ? Icons.arrow_outward : Icons.arrow_downward;
-                    final iconColor = isDebit ? theme.colorScheme.error : Colors.green;
+                    final txIcon = isDebit
+                        ? Icons.arrow_outward
+                        : Icons.arrow_downward;
+                    final iconColor = isDebit
+                        ? theme.colorScheme.error
+                        : Colors.green;
 
                     return Card(
                       child: ListTile(
@@ -254,9 +263,7 @@ class _CardLoadingStub extends StatelessWidget {
       color: theme.colorScheme.primary.withOpacity(0.5),
       child: const SizedBox(
         height: 150,
-        child: Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
+        child: Center(child: CircularProgressIndicator(color: Colors.white)),
       ),
     );
   }
@@ -271,7 +278,9 @@ class _EmptyTransactionsStub extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppRadius.l),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
+        border: Border.all(
+          color: theme.colorScheme.onSurface.withOpacity(0.05),
+        ),
       ),
       child: Column(
         children: [
@@ -319,10 +328,7 @@ class _QuickActionButton extends StatelessWidget {
               color: theme.colorScheme.primary.withOpacity(0.08),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: theme.colorScheme.primary,
-            ),
+            child: Icon(icon, color: theme.colorScheme.primary),
           ),
         ),
         const SizedBox(height: AppSpacing.xs),

@@ -9,8 +9,6 @@ class AuthTokenStorage {
   static const _refreshTokenKey = 'refresh_token';
   static const _userIdKey = 'user_id';
   static const _accountIdKey = 'account_id';
-  static const _simulatedPinKey = 'simulated_pin';
-  static const _originalPinKey = 'original_pin';
 
   Future<void> saveSession({
     required String accessToken,
@@ -29,20 +27,15 @@ class AuthTokenStorage {
   }
 
   Future<String?> getAccessToken() => _secureStorage.read(key: _accessTokenKey);
-  Future<String?> getRefreshToken() => _secureStorage.read(key: _refreshTokenKey);
+  Future<String?> getRefreshToken() =>
+      _secureStorage.read(key: _refreshTokenKey);
   Future<String?> getUserId() => _secureStorage.read(key: _userIdKey);
   Future<String?> getAccountId() => _secureStorage.read(key: _accountIdKey);
-  Future<String?> getSimulatedPin() => _secureStorage.read(key: _simulatedPinKey);
-  Future<void> saveSimulatedPin(String pin) => _secureStorage.write(key: _simulatedPinKey, value: pin);
-  Future<String?> getOriginalPin() => _secureStorage.read(key: _originalPinKey);
-  Future<void> saveOriginalPin(String pin) => _secureStorage.write(key: _originalPinKey, value: pin);
 
   Future<void> clearSession() async {
     await _secureStorage.delete(key: _accessTokenKey);
     await _secureStorage.delete(key: _refreshTokenKey);
     await _secureStorage.delete(key: _userIdKey);
     await _secureStorage.delete(key: _accountIdKey);
-    await _secureStorage.delete(key: _simulatedPinKey);
-    await _secureStorage.delete(key: _originalPinKey);
   }
 }

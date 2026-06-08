@@ -41,28 +41,16 @@ class MockAuthTokenStorage implements AuthTokenStorage {
   Future<String?> getAccountId() async => _storage['account_id'];
 
   @override
-  Future<String?> getSimulatedPin() async => _storage['simulated_pin'];
-
-  @override
-  Future<void> saveSimulatedPin(String pin) async {
-    _storage['simulated_pin'] = pin;
-  }
-
-  @override
-  Future<String?> getOriginalPin() async => _storage['original_pin'];
-
-  @override
-  Future<void> saveOriginalPin(String pin) async {
-    _storage['original_pin'] = pin;
-  }
-
-  @override
   Future<void> clearSession() async {
     _storage.clear();
   }
 }
 
 class MockAuthApi implements AuthApi {
+  String? lastCurrentPin;
+  String? lastNewPin;
+  bool changePinCalled = false;
+  bool shouldChangePinFail = false;
 
   @override
   Future<AuthResponse> login(LoginRequest request) async {
@@ -104,6 +92,19 @@ class MockAuthApi implements AuthApi {
     }
     return false;
   }
+
+  @override
+  Future<void> changePin(String currentPin, String newPin) async {
+    lastCurrentPin = currentPin;
+    lastNewPin = newPin;
+    changePinCalled = true;
+    if (shouldChangePinFail) {
+      throw const AppException(
+        code: 'PIN_INVALID',
+        message: 'Mã PIN hiện tại không chính xác. Vui lòng thử lại.',
+      );
+    }
+  }
 }
 
 void main() {
@@ -126,71 +127,50 @@ void main() {
     return container;
   }
 
-  group('Profile & PIN Change Simulated Tests', () {
-    test('verifyPin falls back to original registered PIN', () async {
-      final container = createContainer();
-      final authRepo = container.read(authRepositoryProvider);
-      
-      // Populate session
-      await mockAuthTokenStorage.saveSession(
-        accessToken: 'access',
-        refreshToken: 'refresh',
-        userId: 'test-user-id',
-      );
-      await mockAuthTokenStorage.saveOriginalPin('123456');
-
-      // Verify original PIN succeeds
-      final success = await authRepo.verifyPin('123456');
-      expect(success, isTrue);
-
-      // Verify wrong PIN fails
-      final fail = await authRepo.verifyPin('000000');
-      expect(fail, isFalse);
-    });
-
-    test('changePin updates simulated PIN and verifyPin intercepts it', () async {
+  group('Profile & PIN Change Tests', () {
+    test('changePin delegates to AuthApi and verifies payload', () async {
       final container = createContainer();
       final authRepo = container.read(authRepositoryProvider);
 
-      await mockAuthTokenStorage.saveSession(
-        accessToken: 'access',
-        refreshToken: 'refresh',
-        userId: 'test-user-id',
-      );
-      await mockAuthTokenStorage.saveOriginalPin('123456');
-
-      // Verify original works initially
-      expect(await authRepo.verifyPin('123456'), isTrue);
-
-      // Change PIN to 654321 (verifying 123456 as current)
       await authRepo.changePin('123456', '654321');
 
-      // Verify old PIN no longer works
-      expect(await authRepo.verifyPin('123456'), isFalse);
-
-      // Verify new PIN works
-      expect(await authRepo.verifyPin('654321'), isTrue);
+      expect(mockAuthApi.changePinCalled, isTrue);
+      expect(mockAuthApi.lastCurrentPin, '123456');
+      expect(mockAuthApi.lastNewPin, '654321');
     });
 
-    test('changePin throws PIN_INVALID if current PIN is incorrect', () async {
+    test('changePin propagates AuthApi PIN_INVALID exception', () async {
       final container = createContainer();
       final authRepo = container.read(authRepositoryProvider);
 
-      await mockAuthTokenStorage.saveSession(
-        accessToken: 'access',
-        refreshToken: 'refresh',
-        userId: 'test-user-id',
-      );
-      await mockAuthTokenStorage.saveOriginalPin('123456');
+      mockAuthApi.shouldChangePinFail = true;
 
-      // Attempt PIN change with incorrect current PIN
       expect(
         () => authRepo.changePin('999999', '654321'),
-        throwsA(isA<AppException>().having((e) => e.code, 'code', 'PIN_INVALID')),
+        throwsA(
+          isA<AppException>().having((e) => e.code, 'code', 'PIN_INVALID'),
+        ),
       );
-
-      // Verify PIN remains unchanged (123456 still works)
-      expect(await authRepo.verifyPin('123456'), isTrue);
     });
+
+    test(
+      'verifyPin delegates directly to AuthApi without local fakes',
+      () async {
+        final container = createContainer();
+        final authRepo = container.read(authRepositoryProvider);
+
+        await mockAuthTokenStorage.saveSession(
+          accessToken: 'access',
+          refreshToken: 'refresh',
+          userId: 'test-user-id',
+        );
+
+        final success = await authRepo.verifyPin('123456');
+        expect(success, isTrue);
+
+        final fail = await authRepo.verifyPin('999999');
+        expect(fail, isFalse);
+      },
+    );
   });
 }

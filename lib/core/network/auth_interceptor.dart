@@ -3,19 +3,21 @@ import 'package:dio/dio.dart';
 import '../../features/auth/data/auth_token_storage.dart';
 import '../config/app_config.dart';
 
-class AuthInterceptor extends QueuedInterceptor {
+class AuthInterceptor extends Interceptor {
   final AuthTokenStorage _tokenStorage;
   final void Function() _onLogoutRequired;
   final Dio _refreshDio;
 
-  AuthInterceptor(this._tokenStorage, this._onLogoutRequired)
-      : _refreshDio = Dio(
-          BaseOptions(
-            baseUrl: AppConfig.apiBaseUrl,
-            connectTimeout: const Duration(seconds: 10),
-            receiveTimeout: const Duration(seconds: 10),
-          ),
-        );
+  AuthInterceptor(this._tokenStorage, this._onLogoutRequired, {Dio? refreshDio})
+    : _refreshDio =
+          refreshDio ??
+          Dio(
+            BaseOptions(
+              baseUrl: AppConfig.apiBaseUrl,
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 10),
+            ),
+          );
 
   Future<String?>? _refreshFuture;
 
@@ -45,13 +47,36 @@ class AuthInterceptor extends QueuedInterceptor {
     // Handle 401 Unauthorized errors
     if (response != null && response.statusCode == 401) {
       final requestOptions = err.requestOptions;
-      
+
       // If we already retried this request once, pass the error along
       if (requestOptions.extra['retried'] == true) {
         return handler.next(err);
       }
 
       requestOptions.extra['retried'] = true;
+
+      final requestToken = requestOptions.headers['Authorization']?.toString();
+      final storedToken = await _tokenStorage.getAccessToken();
+
+      if (storedToken != null && requestToken != 'Bearer $storedToken') {
+        requestOptions.headers['Authorization'] = 'Bearer $storedToken';
+        try {
+          final retryResponse = await _refreshDio.request(
+            requestOptions.path,
+            data: requestOptions.data,
+            queryParameters: requestOptions.queryParameters,
+            options: Options(
+              method: requestOptions.method,
+              headers: requestOptions.headers,
+              extra: requestOptions.extra,
+            ),
+          );
+          return handler.resolve(retryResponse);
+        } on DioException catch (retryErr) {
+          return handler.next(retryErr);
+        }
+      }
+
       String? newAccessToken;
 
       try {
@@ -103,38 +128,41 @@ class AuthInterceptor extends QueuedInterceptor {
   }
 
   Future<String?> _performRefresh() async {
-    final userId = await _tokenStorage.getUserId();
-    final refreshToken = await _tokenStorage.getRefreshToken();
+    try {
+      final userId = await _tokenStorage.getUserId();
+      final refreshToken = await _tokenStorage.getRefreshToken();
 
-    if (userId == null || refreshToken == null) {
-      return null;
-    }
-
-    final response = await _refreshDio.post(
-      '/api/auth/refresh',
-      data: {
-        'userId': userId,
-        'refreshToken': refreshToken,
-      },
-    );
-
-    if (response.statusCode == 200 && response.data != null) {
-      final data = response.data as Map<String, dynamic>;
-      final newAccessToken = data['accessToken']?.toString();
-      final newRefreshToken = data['refreshToken']?.toString();
-      final responseUserId = data['userId']?.toString();
-      final responseAccountId = data['accountId']?.toString();
-
-      if (newAccessToken != null && newRefreshToken != null && responseUserId != null) {
-        await _tokenStorage.saveSession(
-          accessToken: newAccessToken,
-          refreshToken: newRefreshToken,
-          userId: responseUserId,
-          accountId: responseAccountId,
-        );
-        return newAccessToken;
+      if (userId == null || refreshToken == null) {
+        return null;
       }
+
+      final response = await _refreshDio.post(
+        '/api/auth/refresh',
+        data: {'userId': userId, 'refreshToken': refreshToken},
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        final newAccessToken = data['accessToken']?.toString();
+        final newRefreshToken = data['refreshToken']?.toString();
+        final responseUserId = data['userId']?.toString();
+        final responseAccountId = data['accountId']?.toString();
+
+        if (newAccessToken != null &&
+            newRefreshToken != null &&
+            responseUserId != null) {
+          await _tokenStorage.saveSession(
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+            userId: responseUserId,
+            accountId: responseAccountId,
+          );
+          return newAccessToken;
+        }
+      }
+      return null;
+    } catch (e) {
+      rethrow;
     }
-    return null;
   }
 }

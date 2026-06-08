@@ -14,7 +14,7 @@ void main() {
     test('VND Formatting (0 decimals)', () {
       final money = Money.parse('1000000', 'VND');
       expect(money.formatDisplay(), '1.000.000 ₫');
-      
+
       final money2 = Money.parse('500', 'VND');
       expect(money2.formatDisplay(), '500 ₫');
     });
@@ -22,7 +22,7 @@ void main() {
     test('USD Formatting (2 decimals)', () {
       final money = Money.parse('1250.50', 'USD');
       expect(money.formatDisplay(), '\$1,250.50');
-      
+
       final money2 = Money.parse('5', 'USD');
       expect(money2.formatDisplay(), '\$5.00');
     });

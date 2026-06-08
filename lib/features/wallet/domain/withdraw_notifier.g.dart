@@ -6,7 +6,7 @@ part of 'withdraw_notifier.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$withdrawNotifierHash() => r'916f114610f9c06eb09f138aa2efe1d16b6e38fa';
+String _$withdrawNotifierHash() => r'df0a7a7bb1c4c7b7a6ebdb3e4db0f465294b50f9';
 
 /// See also [WithdrawNotifier].
 @ProviderFor(WithdrawNotifier)

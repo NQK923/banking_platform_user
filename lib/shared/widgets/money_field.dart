@@ -42,26 +42,21 @@ class MoneyField extends StatelessWidget {
         FilteringTextInputFormatter.digitsOnly
       else
         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-      
+
       // Enforce the decimal precision limit
-      if (scale > 0)
-        _DecimalLimitFormatter(scale),
+      if (scale > 0) _DecimalLimitFormatter(scale),
     ];
 
     return TextFormField(
       controller: controller,
-      keyboardType: TextInputType.numberWithOptions(
-        decimal: scale > 0,
-      ),
+      keyboardType: TextInputType.numberWithOptions(decimal: scale > 0),
       inputFormatters: formatters,
       decoration: InputDecoration(
         labelText: labelText,
         hintText: scale > 0 ? '0.${'0' * scale}' : '0',
         prefixIcon: const Icon(Icons.monetization_on_outlined),
         suffixText: currency.toUpperCase(),
-        suffixStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        suffixStyle: const TextStyle(fontWeight: FontWeight.bold),
       ),
       validator: validator,
       onChanged: onChanged,

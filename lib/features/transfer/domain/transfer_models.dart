@@ -3,16 +3,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'transfer_models.freezed.dart';
 part 'transfer_models.g.dart';
 
-enum AccountKind {
-  USER,
-  SYSTEM,
-}
+enum AccountKind { USER, SYSTEM }
 
-enum AccountStatus {
-  ACTIVE,
-  SUSPENDED,
-  CLOSED,
-}
+enum AccountStatus { ACTIVE, SUSPENDED, CLOSED }
 
 @freezed
 class AccountRecord with _$AccountRecord {

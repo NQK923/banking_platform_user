@@ -33,11 +33,7 @@ class TransferRepository {
     final response = await _apiClient.post(
       '/api/transactions/transfer',
       data: request.toJson(),
-      options: Options(
-        headers: {
-          'Idempotency-Key': request.idempotencyKey,
-        },
-      ),
+      options: Options(headers: {'Idempotency-Key': request.idempotencyKey}),
     );
     return WalletTransaction.fromJson(response.data as Map<String, dynamic>);
   }

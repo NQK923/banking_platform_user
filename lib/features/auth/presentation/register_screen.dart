@@ -21,7 +21,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _pinController = TextEditingController();
-  
+
   bool _obscurePassword = true;
   String _selectedCurrency = 'VND';
 
@@ -36,9 +36,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      ref.read(authNotifierProvider.notifier).register(
+      ref
+          .read(authNotifierProvider.notifier)
+          .register(
             email: _emailController.text.trim(),
-            phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+            phone: _phoneController.text.trim().isEmpty
+                ? null
+                : _phoneController.text.trim(),
             password: _passwordController.text,
             pin: _pinController.text,
             currency: _selectedCurrency,
@@ -52,7 +56,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final theme = Theme.of(context);
 
     final isLoading = authState is AuthStateAuthenticating;
-    final errorMessage = authState is AuthStateUnauthenticated ? authState.errorMessage : null;
+    final errorMessage = authState is AuthStateUnauthenticated
+        ? authState.errorMessage
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -103,7 +109,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.error_outline, color: theme.colorScheme.error),
+                          Icon(
+                            Icons.error_outline,
+                            color: theme.colorScheme.error,
+                          ),
                           const SizedBox(width: AppSpacing.s),
                           Expanded(
                             child: Text(
@@ -155,7 +164,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
                         ),
                         onPressed: () {
                           setState(() {
@@ -193,8 +204,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       prefixIcon: Icon(Icons.payments_outlined),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'VND', child: Text('VND (Việt Nam Đồng)')),
-                      DropdownMenuItem(value: 'USD', child: Text('USD (Đô la Mỹ)')),
+                      DropdownMenuItem(
+                        value: 'VND',
+                        child: Text('VND (Việt Nam Đồng)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'USD',
+                        child: Text('USD (Đô la Mỹ)'),
+                      ),
                     ],
                     onChanged: isLoading
                         ? null

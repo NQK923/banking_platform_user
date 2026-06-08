@@ -6,7 +6,7 @@ part of 'deposit_notifier.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$depositNotifierHash() => r'7eecd7b55d46d6111e0364d2a4d2cf49e2f6b1e4';
+String _$depositNotifierHash() => r'b34255ee3e5356246de31986e1206c41bc2d8bc1';
 
 /// See also [DepositNotifier].
 @ProviderFor(DepositNotifier)

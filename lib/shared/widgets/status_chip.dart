@@ -49,10 +49,7 @@ class StatusChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: statusColor.withOpacity(0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: statusColor.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: statusColor.withOpacity(0.3), width: 1),
       ),
       child: Text(
         text,

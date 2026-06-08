@@ -76,9 +76,7 @@ class ErrorView extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.error.withOpacity(0.08),
           borderRadius: BorderRadius.circular(AppRadius.m),
-          border: Border.all(
-            color: theme.colorScheme.error.withOpacity(0.2),
-          ),
+          border: Border.all(color: theme.colorScheme.error.withOpacity(0.2)),
         ),
         child: content,
       );

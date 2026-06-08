@@ -32,8 +32,6 @@ class AuthRepository {
       userId: response.userId,
       accountId: response.accountId,
     );
-    // Since login doesn't return the PIN, we default to the backend seed PIN '123456'
-    await _tokenStorage.saveOriginalPin('123456');
     return response;
   }
 
@@ -59,36 +57,18 @@ class AuthRepository {
       userId: response.userId,
       accountId: response.accountId,
     );
-    await _tokenStorage.saveOriginalPin(pin);
     return response;
   }
-
-  Future<String?> getOriginalPin() => _tokenStorage.getOriginalPin();
 
   Future<bool> verifyPin(String pin) async {
     final userId = await _tokenStorage.getUserId();
     if (userId == null) return false;
-    
-    // Check local simulated PIN override first
-    final simulatedPin = await _tokenStorage.getSimulatedPin();
-    if (simulatedPin != null) {
-      return pin == simulatedPin;
-    }
-    
-    return await _authApi.verifyPin(
-      PinVerifyRequest(userId: userId, pin: pin),
-    );
+
+    return await _authApi.verifyPin(PinVerifyRequest(userId: userId, pin: pin));
   }
 
   Future<void> changePin(String currentPin, String newPin) async {
-    final pinValid = await verifyPin(currentPin);
-    if (!pinValid) {
-      throw const AppException(
-        code: 'PIN_INVALID',
-        message: 'Mã PIN hiện tại không chính xác. Vui lòng thử lại.',
-      );
-    }
-    await _tokenStorage.saveSimulatedPin(newPin);
+    await _authApi.changePin(currentPin, newPin);
   }
 
   Future<bool> hasSession() async {

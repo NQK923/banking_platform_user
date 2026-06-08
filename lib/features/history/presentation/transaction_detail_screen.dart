@@ -77,9 +77,13 @@ class TransactionDetailScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.m),
                       Text(
-                        isDebit ? 'Chuyển tiền thành công' : 'Nhận tiền thành công',
+                        isDebit
+                            ? 'Chuyển tiền thành công'
+                            : 'Nhận tiền thành công',
                         style: theme.textTheme.titleMedium?.copyWith(
-                          color: theme.colorScheme.onBackground.withOpacity(0.6),
+                          color: theme.colorScheme.onBackground.withOpacity(
+                            0.6,
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
@@ -113,7 +117,10 @@ class TransactionDetailScreen extends ConsumerWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.error_outline, color: theme.colorScheme.error),
+                            Icon(
+                              Icons.error_outline,
+                              color: theme.colorScheme.error,
+                            ),
                             const SizedBox(width: AppSpacing.s),
                             Text(
                               'Lỗi giao dịch',
@@ -162,14 +169,18 @@ class TransactionDetailScreen extends ConsumerWidget {
                           context: context,
                           label: 'Tài khoản gửi',
                           value: tx.senderId,
-                          subValue: tx.senderId == currentUserAccountId ? '(Ví của bạn)' : null,
+                          subValue: tx.senderId == currentUserAccountId
+                              ? '(Ví của bạn)'
+                              : null,
                           isCopyable: true,
                         ),
                         _buildDetailRow(
                           context: context,
                           label: 'Tài khoản nhận',
                           value: tx.receiverId,
-                          subValue: tx.receiverId == currentUserAccountId ? '(Ví của bạn)' : null,
+                          subValue: tx.receiverId == currentUserAccountId
+                              ? '(Ví của bạn)'
+                              : null,
                           isCopyable: true,
                         ),
                         _buildDetailRow(
@@ -238,7 +249,9 @@ class TransactionDetailScreen extends ConsumerWidget {
                 child: Text(
                   value,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: isCopyable ? FontWeight.w500 : FontWeight.normal,
+                    fontWeight: isCopyable
+                        ? FontWeight.w500
+                        : FontWeight.normal,
                     fontFamily: isCopyable ? 'monospace' : null,
                   ),
                 ),

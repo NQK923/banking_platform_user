@@ -426,7 +426,8 @@ void main() {
         final failedTx = initialTx.copyWith(
           status: TransactionStatus.FAILED,
           failureReason:
-              'Credit failed: account suspended, transaction compensated', // contains compensated
+              'Credit failed: account suspended', // no longer relies on text matching
+          compensated: true,
           updatedAt: '2026-06-07T00:00:05Z',
         );
         mockHistoryRepository.transactions[txId] = failedTx;
@@ -436,14 +437,84 @@ void main() {
         expect(
           container.read(transferProvider),
           TransferState.failed(
-            reason: 'Credit failed: account suspended, transaction compensated',
+            reason: 'Credit failed: account suspended',
             wasRefunded:
-                true, // Derived from failureReason containing "compensated"
+                true, // Derived from compensated: true
             transaction: failedTx,
           ),
         );
 
         expect(mockWalletRepository.getBalanceCallCount, 2);
+      });
+    });
+
+    test('submitTransfer and failed path status polling (compensated is false/null -> not wasRefunded)', () {
+      fakeAsync((async) {
+        final container = createContainer();
+        final recipient = AccountRecord(
+          id: 'recipient-account-id',
+          userId: 'recipient-user-id',
+          code: 'recipient@email.com',
+          currency: 'VND',
+          kind: AccountKind.USER,
+          status: AccountStatus.ACTIVE,
+          version: 1,
+          createdAt: '2026-06-07T00:00:00Z',
+        );
+
+        final txId = 'tx-456-uncompensated';
+        final initialTx = WalletTransaction(
+          id: txId,
+          senderId: 'sender-account-id',
+          receiverId: 'recipient-account-id',
+          amount: Decimal.parse('100000'),
+          currency: 'VND',
+          status: TransactionStatus.PENDING,
+          idempotencyKey: 'idemp-key',
+          createdAt: '2026-06-07T00:00:00Z',
+          updatedAt: '2026-06-07T00:00:00Z',
+          debitApplied: true,
+        );
+
+        mockTransferRepository.lookupResult = recipient;
+        mockTransferRepository.transferResult = initialTx;
+        mockHistoryRepository.transactions[txId] = initialTx;
+
+        final notifier = container.read(transferProvider.notifier);
+
+        notifier.lookupRecipient('recipient@email.com');
+        async.elapse(const Duration(milliseconds: 10));
+        notifier.setAmountAndNote('100000', 'Sad Path B');
+
+        notifier.submitTransfer('123456');
+        async.elapse(const Duration(milliseconds: 10));
+
+        expect(
+          container.read(transferProvider),
+          isA<TransferStateProcessing>(),
+        );
+
+        async.elapse(const Duration(milliseconds: 1500));
+
+        final failedTx = initialTx.copyWith(
+          status: TransactionStatus.FAILED,
+          failureReason: 'Credit failed: account suspended',
+          compensated: false,
+          updatedAt: '2026-06-07T00:00:05Z',
+        );
+        mockHistoryRepository.transactions[txId] = failedTx;
+
+        async.elapse(const Duration(milliseconds: 1500));
+
+        expect(
+          container.read(transferProvider),
+          TransferState.failed(
+            reason: 'Credit failed: account suspended',
+            wasRefunded:
+                false, // compensated is false, not refunded
+            transaction: failedTx,
+          ),
+        );
       });
     });
 

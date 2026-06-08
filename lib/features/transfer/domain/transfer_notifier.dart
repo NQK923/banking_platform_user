@@ -202,8 +202,9 @@ class Transfer extends _$Transfer {
             tx.failureReason ??
             'Chuyển tiền thất bại. Giao dịch đã được hủy bỏ và bồi hoàn.';
         final wasRefunded =
-            tx.failureReason != null &&
-            tx.failureReason!.toLowerCase().contains('compensated');
+            tx.compensated == true ||
+            (tx.failureReason != null &&
+             tx.failureReason!.toLowerCase().contains('compensated'));
         state = TransferState.failed(
           reason: failureReason,
           wasRefunded: wasRefunded,
@@ -214,8 +215,9 @@ class Transfer extends _$Transfer {
         final failureReason =
             tx.failureReason ?? 'Giao dịch chuyển tiền đã bị hủy.';
         final wasRefunded =
-            tx.failureReason != null &&
-            tx.failureReason!.toLowerCase().contains('compensated');
+            tx.compensated == true ||
+            (tx.failureReason != null &&
+             tx.failureReason!.toLowerCase().contains('compensated'));
         state = TransferState.failed(
           reason: failureReason,
           wasRefunded: wasRefunded,

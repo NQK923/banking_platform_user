@@ -22,6 +22,7 @@ _$WalletTransactionImpl _$$WalletTransactionImplFromJson(
   debitApplied: json['debitApplied'] as bool,
   note: json['note'] as String?,
   failureReason: json['failureReason'] as String?,
+  compensated: json['compensated'] as bool?,
 );
 
 Map<String, dynamic> _$$WalletTransactionImplToJson(
@@ -40,6 +41,7 @@ Map<String, dynamic> _$$WalletTransactionImplToJson(
   'debitApplied': instance.debitApplied,
   'note': instance.note,
   'failureReason': instance.failureReason,
+  'compensated': instance.compensated,
 };
 
 const _$TransactionStatusEnumMap = {

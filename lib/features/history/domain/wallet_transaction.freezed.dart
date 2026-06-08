@@ -37,6 +37,7 @@ mixin _$WalletTransaction {
   // We declare these fields as optional in our DTO for M2 compliance and will fallback/mock them.
   String? get note => throw _privateConstructorUsedError;
   String? get failureReason => throw _privateConstructorUsedError;
+  bool? get compensated => throw _privateConstructorUsedError;
 
   /// Serializes this WalletTransaction to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -69,6 +70,7 @@ abstract class $WalletTransactionCopyWith<$Res> {
     bool debitApplied,
     String? note,
     String? failureReason,
+    bool? compensated,
   });
 }
 
@@ -100,6 +102,7 @@ class _$WalletTransactionCopyWithImpl<$Res, $Val extends WalletTransaction>
     Object? debitApplied = null,
     Object? note = freezed,
     Object? failureReason = freezed,
+    Object? compensated = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -155,6 +158,10 @@ class _$WalletTransactionCopyWithImpl<$Res, $Val extends WalletTransaction>
                 ? _value.failureReason
                 : failureReason // ignore: cast_nullable_to_non_nullable
                       as String?,
+            compensated: freezed == compensated
+                ? _value.compensated
+                : compensated // ignore: cast_nullable_to_non_nullable
+                      as bool?,
           )
           as $Val,
     );
@@ -184,6 +191,7 @@ abstract class _$$WalletTransactionImplCopyWith<$Res>
     bool debitApplied,
     String? note,
     String? failureReason,
+    bool? compensated,
   });
 }
 
@@ -214,6 +222,7 @@ class __$$WalletTransactionImplCopyWithImpl<$Res>
     Object? debitApplied = null,
     Object? note = freezed,
     Object? failureReason = freezed,
+    Object? compensated = freezed,
   }) {
     return _then(
       _$WalletTransactionImpl(
@@ -269,6 +278,10 @@ class __$$WalletTransactionImplCopyWithImpl<$Res>
             ? _value.failureReason
             : failureReason // ignore: cast_nullable_to_non_nullable
                   as String?,
+        compensated: freezed == compensated
+            ? _value.compensated
+            : compensated // ignore: cast_nullable_to_non_nullable
+                  as bool?,
       ),
     );
   }
@@ -291,6 +304,7 @@ class _$WalletTransactionImpl implements _WalletTransaction {
     required this.debitApplied,
     this.note,
     this.failureReason,
+    this.compensated,
   });
 
   factory _$WalletTransactionImpl.fromJson(Map<String, dynamic> json) =>
@@ -325,10 +339,12 @@ class _$WalletTransactionImpl implements _WalletTransaction {
   final String? note;
   @override
   final String? failureReason;
+  @override
+  final bool? compensated;
 
   @override
   String toString() {
-    return 'WalletTransaction(id: $id, senderId: $senderId, receiverId: $receiverId, amount: $amount, currency: $currency, status: $status, idempotencyKey: $idempotencyKey, correlationId: $correlationId, createdAt: $createdAt, updatedAt: $updatedAt, debitApplied: $debitApplied, note: $note, failureReason: $failureReason)';
+    return 'WalletTransaction(id: $id, senderId: $senderId, receiverId: $receiverId, amount: $amount, currency: $currency, status: $status, idempotencyKey: $idempotencyKey, correlationId: $correlationId, createdAt: $createdAt, updatedAt: $updatedAt, debitApplied: $debitApplied, note: $note, failureReason: $failureReason, compensated: $compensated)';
   }
 
   @override
@@ -357,7 +373,9 @@ class _$WalletTransactionImpl implements _WalletTransaction {
                 other.debitApplied == debitApplied) &&
             (identical(other.note, note) || other.note == note) &&
             (identical(other.failureReason, failureReason) ||
-                other.failureReason == failureReason));
+                other.failureReason == failureReason) &&
+            (identical(other.compensated, compensated) ||
+                other.compensated == compensated));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -377,6 +395,7 @@ class _$WalletTransactionImpl implements _WalletTransaction {
     debitApplied,
     note,
     failureReason,
+    compensated,
   );
 
   /// Create a copy of WalletTransaction
@@ -411,6 +430,7 @@ abstract class _WalletTransaction implements WalletTransaction {
     required final bool debitApplied,
     final String? note,
     final String? failureReason,
+    final bool? compensated,
   }) = _$WalletTransactionImpl;
 
   factory _WalletTransaction.fromJson(Map<String, dynamic> json) =
@@ -444,6 +464,8 @@ abstract class _WalletTransaction implements WalletTransaction {
   String? get note;
   @override
   String? get failureReason;
+  @override
+  bool? get compensated;
 
   /// Create a copy of WalletTransaction
   /// with the given fields replaced by the non-null parameter values.

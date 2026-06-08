@@ -37,6 +37,7 @@ class WalletTransaction with _$WalletTransaction {
     // We declare these fields as optional in our DTO for M2 compliance and will fallback/mock them.
     String? note,
     String? failureReason,
+    bool? compensated,
   }) = _WalletTransaction;
 
   factory WalletTransaction.fromJson(Map<String, dynamic> json) =>

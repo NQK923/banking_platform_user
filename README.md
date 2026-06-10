@@ -122,7 +122,7 @@ The API endpoint is injected via `--dart-define` during compilation.
 
 | Variable Name | Default Value | Description |
 |---|---|---|
-| `API_BASE_URL` | `http://localhost:8080` | Root URL of the Spring Boot backend service |
+| `API_BASE_URL` | Android emulator: `http://10.0.2.2:8080`; other dev targets: `http://localhost:8080` | Root URL of the Spring Boot backend service. Override with `--dart-define` for physical devices or custom hosts. |
 
 ---
 

@@ -212,7 +212,7 @@ class _$AccountRecordImpl implements _AccountRecord {
   const _$AccountRecordImpl({
     required this.id,
     required this.userId,
-    required this.code,
+    this.code = '',
     required this.currency,
     required this.kind,
     required this.status,
@@ -228,6 +228,7 @@ class _$AccountRecordImpl implements _AccountRecord {
   @override
   final String userId;
   @override
+  @JsonKey()
   final String code;
   @override
   final String currency;
@@ -294,7 +295,7 @@ abstract class _AccountRecord implements AccountRecord {
   const factory _AccountRecord({
     required final String id,
     required final String userId,
-    required final String code,
+    final String code,
     required final String currency,
     required final AccountKind kind,
     required final AccountStatus status,

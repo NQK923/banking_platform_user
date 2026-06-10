@@ -186,10 +186,13 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final code = account.code;
-    final isEmail = code.contains('@');
+    final code = account.code.trim();
+    final hasContactCode = code.isNotEmpty;
+    final isEmail = hasContactCode && code.contains('@');
     final emailDisplay = isEmail ? code : 'Not added';
-    final phoneDisplay = !isEmail ? maskPhone(code) : 'Not added';
+    final phoneDisplay = hasContactCode && !isEmail
+        ? maskPhone(code)
+        : 'Not added';
     final displayName = isEmail ? code.split('@')[0] : 'E-Wallet user';
 
     return AppCard(

@@ -10,7 +10,7 @@ _$AccountRecordImpl _$$AccountRecordImplFromJson(Map<String, dynamic> json) =>
     _$AccountRecordImpl(
       id: json['id'] as String,
       userId: json['userId'] as String,
-      code: json['code'] as String,
+      code: json['code'] as String? ?? '',
       currency: json['currency'] as String,
       kind: $enumDecode(_$AccountKindEnumMap, json['kind']),
       status: $enumDecode(_$AccountStatusEnumMap, json['status']),

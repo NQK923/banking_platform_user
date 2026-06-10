@@ -49,21 +49,23 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           title: const Text('Confirm with PIN'),
           content: Form(
             key: pinFormKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Enter your 6-digit transaction PIN to authorize this withdrawal.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(ctx).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: AppSpacing.l),
-                PinEntryField(
-                  controller: pinController,
-                  autofocus: true,
-                  validator: _pinValidator,
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Enter your 6-digit transaction PIN to authorize this withdrawal.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(ctx).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.l),
+                  PinEntryField(
+                    controller: pinController,
+                    autofocus: true,
+                    validator: _pinValidator,
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -373,7 +375,15 @@ class _ResultRow extends StatelessWidget {
               ),
             ),
           ),
-          Text(value, style: theme.textTheme.titleSmall),
+          Flexible(
+            child: Text(
+              value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+              style: theme.textTheme.titleSmall,
+            ),
+          ),
         ],
       ),
     );

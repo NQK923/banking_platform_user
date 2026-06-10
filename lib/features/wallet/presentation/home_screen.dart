@@ -76,30 +76,22 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Row(
-                children: [
-                  Expanded(
-                    child: _QuickActionButton(
-                      icon: Icons.send_rounded,
-                      label: 'Send',
-                      onTap: () => context.push('/transfer'),
-                    ),
+              _QuickActionsGrid(
+                actions: [
+                  _QuickActionData(
+                    icon: Icons.send_rounded,
+                    label: 'Send',
+                    onTap: () => context.push('/transfer'),
                   ),
-                  const SizedBox(width: AppSpacing.m),
-                  Expanded(
-                    child: _QuickActionButton(
-                      icon: Icons.add_card_rounded,
-                      label: 'Deposit',
-                      onTap: () => context.push('/deposit'),
-                    ),
+                  _QuickActionData(
+                    icon: Icons.add_card_rounded,
+                    label: 'Deposit',
+                    onTap: () => context.push('/deposit'),
                   ),
-                  const SizedBox(width: AppSpacing.m),
-                  Expanded(
-                    child: _QuickActionButton(
-                      icon: Icons.south_west_rounded,
-                      label: 'Withdraw',
-                      onTap: () => context.push('/withdraw'),
-                    ),
+                  _QuickActionData(
+                    icon: Icons.south_west_rounded,
+                    label: 'Withdraw',
+                    onTap: () => context.push('/withdraw'),
                   ),
                 ],
               ),
@@ -165,6 +157,54 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _QuickActionData {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _QuickActionData({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+}
+
+class _QuickActionsGrid extends StatelessWidget {
+  final List<_QuickActionData> actions;
+
+  const _QuickActionsGrid({required this.actions});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final textScale = MediaQuery.textScalerOf(context).scale(1);
+        final columns = constraints.maxWidth < 380 || textScale > 1.25 ? 2 : 3;
+        const gap = AppSpacing.m;
+        final itemWidth =
+            (constraints.maxWidth - (gap * (columns - 1))) / columns;
+
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: actions
+              .map(
+                (action) => SizedBox(
+                  width: itemWidth,
+                  child: _QuickActionButton(
+                    icon: action.icon,
+                    label: action.label,
+                    onTap: action.onTap,
+                  ),
+                ),
+              )
+              .toList(),
+        );
+      },
     );
   }
 }

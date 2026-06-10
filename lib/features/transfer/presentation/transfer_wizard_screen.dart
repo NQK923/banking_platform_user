@@ -581,19 +581,21 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           title: const Text('Retry with PIN'),
           content: Form(
             key: pinFormKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Enter your transaction PIN to retry with the same idempotency key.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.l),
-                PinEntryField(
-                  controller: pinController,
-                  validator: Validator.validatePin,
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Enter your transaction PIN to retry with the same idempotency key.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.l),
+                  PinEntryField(
+                    controller: pinController,
+                    validator: Validator.validatePin,
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -741,32 +743,48 @@ class _ReviewRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stacked = constraints.maxWidth < 330 || textScale > 1.25;
+          final labelText = Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
-          ),
-          Flexible(
-            child: Text(
-              value,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.end,
-              style:
-                  (emphatic
-                          ? theme.textTheme.titleMedium
-                          : theme.textTheme.bodyMedium)
-                      ?.copyWith(fontWeight: emphatic ? FontWeight.w900 : null),
-            ),
-          ),
-        ],
+          );
+          final valueText = Text(
+            value,
+            maxLines: stacked ? 4 : 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: stacked ? TextAlign.start : TextAlign.end,
+            style:
+                (emphatic
+                        ? theme.textTheme.titleMedium
+                        : theme.textTheme.bodyMedium)
+                    ?.copyWith(fontWeight: emphatic ? FontWeight.w900 : null),
+          );
+
+          if (stacked) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                labelText,
+                const SizedBox(height: AppSpacing.xs),
+                valueText,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(child: labelText),
+              Flexible(child: valueText),
+            ],
+          );
+        },
       ),
     );
   }
@@ -813,11 +831,14 @@ class _ResultShell extends StatelessWidget {
           style: theme.textTheme.headlineSmall?.copyWith(color: color),
         ),
         const SizedBox(height: AppSpacing.s),
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+        Semantics(
+          liveRegion: true,
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.xl),

@@ -115,29 +115,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ],
                         ),
                         const SizedBox(height: AppSpacing.m),
-                        SegmentedButton<ThemeMode>(
-                          segments: const [
-                            ButtonSegment(
-                              value: ThemeMode.system,
-                              icon: Icon(Icons.settings_suggest_rounded),
-                              label: Text('System'),
-                            ),
-                            ButtonSegment(
-                              value: ThemeMode.light,
-                              icon: Icon(Icons.light_mode_rounded),
-                              label: Text('Light'),
-                            ),
-                            ButtonSegment(
-                              value: ThemeMode.dark,
-                              icon: Icon(Icons.dark_mode_rounded),
-                              label: Text('Dark'),
-                            ),
-                          ],
-                          selected: {themeMode},
-                          onSelectionChanged: (selection) {
-                            ref.read(themeModeProvider.notifier).state =
-                                selection.first;
-                          },
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SegmentedButton<ThemeMode>(
+                            segments: const [
+                              ButtonSegment(
+                                value: ThemeMode.system,
+                                icon: Icon(Icons.settings_suggest_rounded),
+                                label: Text('System'),
+                              ),
+                              ButtonSegment(
+                                value: ThemeMode.light,
+                                icon: Icon(Icons.light_mode_rounded),
+                                label: Text('Light'),
+                              ),
+                              ButtonSegment(
+                                value: ThemeMode.dark,
+                                icon: Icon(Icons.dark_mode_rounded),
+                                label: Text('Dark'),
+                              ),
+                            ],
+                            selected: {themeMode},
+                            onSelectionChanged: (selection) {
+                              ref.read(themeModeProvider.notifier).state =
+                                  selection.first;
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -204,7 +207,13 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.l),
-          Text(displayName, style: theme.textTheme.titleLarge),
+          Text(
+            displayName,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleLarge,
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'ID: $userId',
@@ -256,7 +265,10 @@ class _ContactChip extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: theme.colorScheme.primary),
           const SizedBox(width: AppSpacing.s),
-          Text(label),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 220),
+            child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
         ],
       ),
     );

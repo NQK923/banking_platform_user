@@ -303,7 +303,15 @@ class _ResultRow extends StatelessWidget {
               ),
             ),
           ),
-          Text(value, style: theme.textTheme.titleSmall),
+          Flexible(
+            child: Text(
+              value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+              style: theme.textTheme.titleSmall,
+            ),
+          ),
         ],
       ),
     );

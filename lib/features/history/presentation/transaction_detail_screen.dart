@@ -141,7 +141,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(height: AppSpacing.xs),
-                              Text(failureText),
+                              Text(failureText, softWrap: true),
                             ],
                           ),
                         ),
@@ -279,6 +279,8 @@ class _DetailRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   value,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: copyable ? FontWeight.w700 : FontWeight.w500,
                     fontFamily: copyable ? 'monospace' : null,

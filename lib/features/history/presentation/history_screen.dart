@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/widgets/amount_text.dart';
+import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_view.dart';
-import '../../../shared/widgets/status_chip.dart';
+import '../../../shared/widgets/skeleton.dart';
+import '../../../shared/widgets/transaction_row.dart';
 import '../../auth/domain/auth_notifier.dart';
 import '../../auth/domain/auth_state.dart';
 import '../domain/history_provider.dart';
+import '../domain/wallet_transaction.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -41,7 +43,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final authState = ref.watch(authNotifierProvider);
     final historyState = ref.watch(historyProvider);
 
@@ -55,21 +56,21 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Lịch sử giao dịch')),
+      appBar: AppBar(title: const Text('History')),
       body: RefreshIndicator(
         onRefresh: onRefresh,
-        child: _buildBody(theme, historyState, currentUserAccountId),
+        child: _buildBody(historyState, currentUserAccountId),
       ),
     );
   }
 
-  Widget _buildBody(
-    ThemeData theme,
-    HistoryState historyState,
-    String currentUserAccountId,
-  ) {
+  Widget _buildBody(HistoryState historyState, String currentUserAccountId) {
     if (historyState.isLoading && historyState.transactions.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(AppSpacing.l),
+        child: AppCard(child: TransactionSkeletonList(itemCount: 8)),
+      );
     }
 
     if (historyState.errorMessage != null &&
@@ -81,130 +82,104 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     }
 
     if (historyState.transactions.isEmpty) {
-      return _buildEmptyState(theme);
+      return SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(AppSpacing.l),
+        child: EmptyState(
+          icon: Icons.history_rounded,
+          title: 'No transaction history',
+          message:
+              'Transfers, deposits, and withdrawals will be grouped by date here.',
+          actionLabel: 'Refresh',
+          onAction: () => ref.read(historyProvider.notifier).refresh(),
+        ),
+      );
     }
+
+    final grouped = _groupByDate(historyState.transactions);
+    final entries = grouped.entries.toList();
 
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.all(AppSpacing.m),
-      itemCount:
-          historyState.transactions.length + (historyState.hasMore ? 1 : 0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.l,
+        AppSpacing.s,
+        AppSpacing.l,
+        AppSpacing.xxl,
+      ),
+      itemCount: entries.length + (historyState.isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index == historyState.transactions.length) {
+        if (index == entries.length) {
           return const Padding(
-            padding: EdgeInsets.symmetric(vertical: AppSpacing.m),
-            child: Center(
-              child: SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
+            padding: EdgeInsets.only(top: AppSpacing.m),
+            child: AppCard(child: TransactionSkeletonList(itemCount: 2)),
           );
         }
 
-        final tx = historyState.transactions[index];
-        final isDebit = tx.senderId == currentUserAccountId;
-        final txTitle = isDebit ? 'Chuyển tiền' : 'Nhận tiền';
-        final txIcon = isDebit ? Icons.arrow_outward : Icons.arrow_downward;
-        final iconColor = isDebit ? theme.colorScheme.error : Colors.green;
-
-        // Counterparty info: the other party's account ID
-        final counterpartyId = isDebit ? tx.receiverId : tx.senderId;
-
-        return Card(
-          margin: const EdgeInsets.only(bottom: AppSpacing.s),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: iconColor.withOpacity(0.08),
-              child: Icon(txIcon, color: iconColor),
-            ),
-            title: Text(
-              txTitle,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 2),
-                Text(
-                  'Đối tác: ${counterpartyId.substring(0, 8)}...',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                  ),
+        final group = entries[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.l),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                group.key,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  _formatDateTime(tx.createdAt),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.4),
-                  ),
+              ),
+              const SizedBox(height: AppSpacing.s),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
+                child: Column(
+                  children: List.generate(group.value.length, (txIndex) {
+                    final tx = group.value[txIndex];
+                    return Column(
+                      children: [
+                        TransactionRow(
+                          transaction: tx,
+                          currentUserAccountId: currentUserAccountId,
+                          onTap: () => context.push('/transactions/${tx.id}'),
+                        ),
+                        if (txIndex != group.value.length - 1)
+                          Divider(
+                            height: 1,
+                            indent: 72,
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                      ],
+                    );
+                  }),
                 ),
-              ],
-            ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                AmountText.forTransaction(
-                  transaction: tx,
-                  currentUserAccountId: currentUserAccountId,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                StatusChip(status: tx.status.name),
-              ],
-            ),
-            onTap: () {
-              context.push('/transactions/${tx.id}');
-            },
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
-    return Center(
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.history,
-                size: 64,
-                color: theme.colorScheme.onBackground.withOpacity(0.2),
-              ),
-              const SizedBox(height: AppSpacing.m),
-              Text(
-                'Chưa có lịch sử giao dịch',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onBackground.withOpacity(0.5),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Thực hiện các giao dịch chuyển tiền, nạp tiền để xem ở đây.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onBackground.withOpacity(0.4),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  Map<String, List<WalletTransaction>> _groupByDate(
+    List<WalletTransaction> transactions,
+  ) {
+    final groups = <String, List<WalletTransaction>>{};
+    for (final tx in transactions) {
+      final key = _formatDate(tx.createdAt);
+      groups.putIfAbsent(key, () => []).add(tx);
+    }
+    return groups;
   }
 
-  String _formatDateTime(String isoString) {
+  String _formatDate(String isoString) {
     try {
       final dateTime = DateTime.parse(isoString).toLocal();
-      return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} - ${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}';
-    } catch (e) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final txDay = DateTime(dateTime.year, dateTime.month, dateTime.day);
+      if (txDay == today) return 'Today';
+      if (txDay == today.subtract(const Duration(days: 1))) return 'Yesterday';
+      return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}';
+    } catch (_) {
       return isoString;
     }
   }

@@ -69,7 +69,6 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<void> changePin(String currentPin, String newPin) async {}
 
-  @override
   Future<String?> getOriginalPin() async => '123456';
 }
 

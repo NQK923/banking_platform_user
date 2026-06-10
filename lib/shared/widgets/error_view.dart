@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/error/app_exception.dart';
 import '../../core/theme/app_theme.dart';
+import 'app_card.dart';
 
 class ErrorView extends StatelessWidget {
   final Object error;
@@ -18,66 +19,62 @@ class ErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final appException = AppException.unknown(error);
-    final displayMsg = appException.userFriendlyMessage;
-
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(
-          Icons.error_outline_outlined,
-          color: theme.colorScheme.error,
-          size: inline ? 36 : 48,
-        ),
-        const SizedBox(height: AppSpacing.s),
-        Text(
-          displayMsg,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+        Container(
+          width: inline ? 48 : 64,
+          height: inline ? 48 : 64,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.errorContainer,
+            shape: BoxShape.circle,
           ),
+          child: Icon(
+            Icons.warning_amber_rounded,
+            color: theme.colorScheme.onErrorContainer,
+            size: inline ? 26 : 34,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.m),
+        Text(
+          appException.userFriendlyMessage,
+          style: theme.textTheme.titleMedium,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Mã lỗi: ${appException.code}',
+          'Code: ${appException.code}',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurfaceVariant,
           ),
+          textAlign: TextAlign.center,
         ),
         if (appException.traceId != null) ...[
-          const SizedBox(height: AppSpacing.xxs),
+          const SizedBox(height: AppSpacing.xs),
           Text(
-            'Trace ID: ${appException.traceId}',
+            'Trace: ${appException.traceId}',
             style: theme.textTheme.bodySmall?.copyWith(
               fontFamily: 'monospace',
-              fontSize: 10,
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
+              color: theme.colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
         ],
         if (onRetry != null) ...[
-          const SizedBox(height: AppSpacing.m),
-          TextButton.icon(
+          const SizedBox(height: AppSpacing.l),
+          OutlinedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh),
-            label: const Text('Thử lại'),
-            style: TextButton.styleFrom(
-              foregroundColor: theme.colorScheme.primary,
-            ),
+            label: const Text('Retry'),
           ),
         ],
       ],
     );
 
     if (inline) {
-      return Container(
-        padding: const EdgeInsets.all(AppSpacing.m),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.error.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(AppRadius.m),
-          border: Border.all(color: theme.colorScheme.error.withOpacity(0.2)),
-        ),
+      return AppCard(
+        color: theme.colorScheme.errorContainer.withValues(alpha: 0.26),
         child: content,
       );
     }
@@ -85,13 +82,7 @@ class ErrorView extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Card(
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            child: content,
-          ),
-        ),
+        child: AppCard(child: content),
       ),
     );
   }

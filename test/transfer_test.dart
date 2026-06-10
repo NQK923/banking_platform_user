@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +14,6 @@ import 'package:banking_platform_user/features/transfer/domain/transfer_models.d
 import 'package:banking_platform_user/features/transfer/domain/transfer_notifier.dart';
 import 'package:banking_platform_user/features/transfer/domain/transfer_state.dart';
 import 'package:banking_platform_user/features/wallet/data/wallet_repository.dart';
-import 'package:banking_platform_user/features/wallet/domain/balance_provider.dart';
 import 'package:banking_platform_user/features/wallet/domain/wallet_models.dart';
 
 class MockAuthRepository implements AuthRepository {
@@ -151,7 +149,7 @@ class MockWalletRepository implements WalletRepository {
 
   @override
   Future<AccountRecord> getAccountDetails() async {
-    return AccountRecord(
+    return const AccountRecord(
       id: 'sender-account-id',
       userId: 'sender-user-id',
       code: 'sender@email.com',
@@ -227,7 +225,7 @@ void main() {
 
     test('Successful recipient lookup transitions to checked', () async {
       final container = createContainer();
-      final recipient = AccountRecord(
+      const recipient = AccountRecord(
         id: 'recipient-account-id',
         userId: 'recipient-user-id',
         code: 'recipient@email.com',
@@ -244,7 +242,7 @@ void main() {
 
       expect(
         container.read(transferProvider),
-        TransferState.recipientChecked(recipient: recipient),
+        const TransferState.recipientChecked(recipient: recipient),
       );
     });
 
@@ -252,7 +250,7 @@ void main() {
       'Self-transfer lookup transitions to idle with error message',
       () async {
         final container = createContainer();
-        final recipient = AccountRecord(
+        const recipient = AccountRecord(
           id: 'sender-account-id',
           userId: 'sender-user-id',
           code: 'sender@email.com',
@@ -279,7 +277,7 @@ void main() {
 
     test('setAmountAndNote transitions to review state', () async {
       final container = createContainer();
-      final recipient = AccountRecord(
+      const recipient = AccountRecord(
         id: 'recipient-account-id',
         userId: 'recipient-user-id',
         code: 'recipient@email.com',
@@ -307,7 +305,7 @@ void main() {
     test('submitTransfer and happy path status polling', () {
       fakeAsync((async) {
         final container = createContainer();
-        final recipient = AccountRecord(
+        const recipient = AccountRecord(
           id: 'recipient-account-id',
           userId: 'recipient-user-id',
           code: 'recipient@email.com',
@@ -318,7 +316,7 @@ void main() {
           createdAt: '2026-06-07T00:00:00Z',
         );
 
-        final txId = 'tx-123';
+        const txId = 'tx-123';
         final initialTx = WalletTransaction(
           id: txId,
           senderId: 'sender-account-id',
@@ -378,7 +376,7 @@ void main() {
     test('submitTransfer and compensation failed path status polling', () {
       fakeAsync((async) {
         final container = createContainer();
-        final recipient = AccountRecord(
+        const recipient = AccountRecord(
           id: 'recipient-account-id',
           userId: 'recipient-user-id',
           code: 'recipient@email.com',
@@ -389,7 +387,7 @@ void main() {
           createdAt: '2026-06-07T00:00:00Z',
         );
 
-        final txId = 'tx-456';
+        const txId = 'tx-456';
         final initialTx = WalletTransaction(
           id: txId,
           senderId: 'sender-account-id',
@@ -438,8 +436,7 @@ void main() {
           container.read(transferProvider),
           TransferState.failed(
             reason: 'Credit failed: account suspended',
-            wasRefunded:
-                true, // Derived from compensated: true
+            wasRefunded: true, // Derived from compensated: true
             transaction: failedTx,
           ),
         );
@@ -448,79 +445,81 @@ void main() {
       });
     });
 
-    test('submitTransfer and failed path status polling (compensated is false/null -> not wasRefunded)', () {
-      fakeAsync((async) {
-        final container = createContainer();
-        final recipient = AccountRecord(
-          id: 'recipient-account-id',
-          userId: 'recipient-user-id',
-          code: 'recipient@email.com',
-          currency: 'VND',
-          kind: AccountKind.USER,
-          status: AccountStatus.ACTIVE,
-          version: 1,
-          createdAt: '2026-06-07T00:00:00Z',
-        );
+    test(
+      'submitTransfer and failed path status polling (compensated is false/null -> not wasRefunded)',
+      () {
+        fakeAsync((async) {
+          final container = createContainer();
+          const recipient = AccountRecord(
+            id: 'recipient-account-id',
+            userId: 'recipient-user-id',
+            code: 'recipient@email.com',
+            currency: 'VND',
+            kind: AccountKind.USER,
+            status: AccountStatus.ACTIVE,
+            version: 1,
+            createdAt: '2026-06-07T00:00:00Z',
+          );
 
-        final txId = 'tx-456-uncompensated';
-        final initialTx = WalletTransaction(
-          id: txId,
-          senderId: 'sender-account-id',
-          receiverId: 'recipient-account-id',
-          amount: Decimal.parse('100000'),
-          currency: 'VND',
-          status: TransactionStatus.PENDING,
-          idempotencyKey: 'idemp-key',
-          createdAt: '2026-06-07T00:00:00Z',
-          updatedAt: '2026-06-07T00:00:00Z',
-          debitApplied: true,
-        );
+          const txId = 'tx-456-uncompensated';
+          final initialTx = WalletTransaction(
+            id: txId,
+            senderId: 'sender-account-id',
+            receiverId: 'recipient-account-id',
+            amount: Decimal.parse('100000'),
+            currency: 'VND',
+            status: TransactionStatus.PENDING,
+            idempotencyKey: 'idemp-key',
+            createdAt: '2026-06-07T00:00:00Z',
+            updatedAt: '2026-06-07T00:00:00Z',
+            debitApplied: true,
+          );
 
-        mockTransferRepository.lookupResult = recipient;
-        mockTransferRepository.transferResult = initialTx;
-        mockHistoryRepository.transactions[txId] = initialTx;
+          mockTransferRepository.lookupResult = recipient;
+          mockTransferRepository.transferResult = initialTx;
+          mockHistoryRepository.transactions[txId] = initialTx;
 
-        final notifier = container.read(transferProvider.notifier);
+          final notifier = container.read(transferProvider.notifier);
 
-        notifier.lookupRecipient('recipient@email.com');
-        async.elapse(const Duration(milliseconds: 10));
-        notifier.setAmountAndNote('100000', 'Sad Path B');
+          notifier.lookupRecipient('recipient@email.com');
+          async.elapse(const Duration(milliseconds: 10));
+          notifier.setAmountAndNote('100000', 'Sad Path B');
 
-        notifier.submitTransfer('123456');
-        async.elapse(const Duration(milliseconds: 10));
+          notifier.submitTransfer('123456');
+          async.elapse(const Duration(milliseconds: 10));
 
-        expect(
-          container.read(transferProvider),
-          isA<TransferStateProcessing>(),
-        );
+          expect(
+            container.read(transferProvider),
+            isA<TransferStateProcessing>(),
+          );
 
-        async.elapse(const Duration(milliseconds: 1500));
+          async.elapse(const Duration(milliseconds: 1500));
 
-        final failedTx = initialTx.copyWith(
-          status: TransactionStatus.FAILED,
-          failureReason: 'Credit failed: account suspended',
-          compensated: false,
-          updatedAt: '2026-06-07T00:00:05Z',
-        );
-        mockHistoryRepository.transactions[txId] = failedTx;
+          final failedTx = initialTx.copyWith(
+            status: TransactionStatus.FAILED,
+            failureReason: 'Credit failed: account suspended',
+            compensated: false,
+            updatedAt: '2026-06-07T00:00:05Z',
+          );
+          mockHistoryRepository.transactions[txId] = failedTx;
 
-        async.elapse(const Duration(milliseconds: 1500));
+          async.elapse(const Duration(milliseconds: 1500));
 
-        expect(
-          container.read(transferProvider),
-          TransferState.failed(
-            reason: 'Credit failed: account suspended',
-            wasRefunded:
-                false, // compensated is false, not refunded
-            transaction: failedTx,
-          ),
-        );
-      });
-    });
+          expect(
+            container.read(transferProvider),
+            TransferState.failed(
+              reason: 'Credit failed: account suspended',
+              wasRefunded: false, // compensated is false, not refunded
+              transaction: failedTx,
+            ),
+          );
+        });
+      },
+    );
 
     test('submitTransfer fails and retry submission reuses key', () async {
       final container = createContainer();
-      final recipient = AccountRecord(
+      const recipient = AccountRecord(
         id: 'recipient-account-id',
         userId: 'recipient-user-id',
         code: 'recipient@email.com',
@@ -563,7 +562,7 @@ void main() {
 
       // Retry submission
       mockTransferRepository.transferError = null;
-      final txId = 'tx-retry';
+      const txId = 'tx-retry';
       final completedTx = WalletTransaction(
         id: txId,
         senderId: 'sender-account-id',
@@ -592,7 +591,7 @@ void main() {
       test('submitTransfer and timeout status polling', () {
         fakeAsync((async) {
           final container = createContainer();
-          final recipient = AccountRecord(
+          const recipient = AccountRecord(
             id: 'recipient-account-id',
             userId: 'recipient-user-id',
             code: 'recipient@email.com',
@@ -603,7 +602,7 @@ void main() {
             createdAt: '2026-06-07T00:00:00Z',
           );
 
-          final txId = 'tx-789';
+          const txId = 'tx-789';
           final initialTx = WalletTransaction(
             id: txId,
             senderId: 'sender-account-id',

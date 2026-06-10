@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validator.dart';
-import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/error_view.dart';
+import '../../../shared/widgets/pin_entry_field.dart';
+import '../../../shared/widgets/skeleton.dart';
+import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/auth_notifier.dart';
 import '../../auth/domain/auth_state.dart';
-import '../../auth/data/auth_repository.dart';
 import '../../transfer/domain/transfer_models.dart';
 import '../../wallet/domain/balance_provider.dart';
 
@@ -24,11 +26,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final start = phone.substring(0, 3);
       final end = phone.substring(phone.length - 3);
       return '$start******$end';
-    } else {
-      final start = phone.substring(0, 2);
-      final end = phone.substring(phone.length - 2);
-      return '$start******$end';
     }
+    final start = phone.substring(0, 2);
+    final end = phone.substring(phone.length - 2);
+    return '$start******$end';
   }
 
   void _showChangePinDialog(BuildContext context) {
@@ -43,7 +44,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final accountState = ref.watch(accountDetailsProvider);
-    final theme = Theme.of(context);
+    final themeMode = ref.watch(themeModeProvider);
 
     String userId = '';
     if (authState is AuthStateAuthenticated) {
@@ -51,158 +52,109 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cá nhân')),
+      appBar: AppBar(title: const Text('Profile')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.l),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // User Profile Card
-            Center(
-              child: accountState.when(
-                data: (account) {
-                  final code = account.code;
-                  final isEmail = code.contains('@');
-                  final emailDisplay = isEmail ? code : 'Chưa cập nhật';
-                  final phoneDisplay = !isEmail
-                      ? _maskPhone(code)
-                      : 'Chưa cập nhật';
-                  final displayName = isEmail
-                      ? code.split('@')[0]
-                      : 'Người dùng E-Wallet';
-
-                  return Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundColor: theme.colorScheme.primary.withOpacity(
-                          0.1,
-                        ),
-                        child: Icon(
-                          Icons.person,
-                          size: 48,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.m),
-                      Text(
-                        displayName,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        'ID: $userId',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontFamily: 'monospace',
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.m),
-
-                      // Email & Phone info
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.email_outlined,
-                            size: 16,
-                            color: theme.colorScheme.onSurface.withOpacity(0.5),
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            emailDisplay,
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.7,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.m),
-                          Icon(
-                            Icons.phone_outlined,
-                            size: 16,
-                            color: theme.colorScheme.onSurface.withOpacity(0.5),
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            phoneDisplay,
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.7,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, s) => Column(
+            accountState.when(
+              data: (account) => _ProfileHeader(
+                account: account,
+                userId: userId,
+                maskPhone: _maskPhone,
+              ),
+              loading: () => const AppCard(
+                child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: theme.colorScheme.error.withOpacity(0.1),
-                      child: Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: theme.colorScheme.error,
-                      ),
+                    SkeletonBox(
+                      height: 80,
+                      width: 80,
+                      borderRadius: BorderRadius.all(Radius.circular(40)),
                     ),
-                    const SizedBox(height: AppSpacing.m),
-                    Text(
-                      'Không thể tải thông tin hồ sơ',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.error,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    TextButton.icon(
-                      onPressed: () => ref.refresh(accountDetailsProvider),
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Thử lại'),
-                    ),
+                    SizedBox(height: AppSpacing.l),
+                    SkeletonBox(height: 20, width: 160),
+                    SizedBox(height: AppSpacing.s),
+                    SkeletonBox(height: 14, width: 220),
                   ],
                 ),
               ),
+              error: (e, s) => ErrorView(
+                error: e,
+                inline: true,
+                onRetry: () => ref.refresh(accountDetailsProvider),
+              ),
             ),
             const SizedBox(height: AppSpacing.xl),
-
-            // Options List
-            Card(
+            const SectionHeader(title: 'Settings'),
+            const SizedBox(height: AppSpacing.s),
+            AppCard(
+              padding: EdgeInsets.zero,
               child: Column(
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.lock_outline),
-                    title: const Text('Đổi mã PIN giao dịch'),
-                    subtitle: const Text(
-                      'Đổi mã PIN bảo mật giao dịch chuyển tiền',
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
+                  _SettingsTile(
+                    icon: Icons.password_rounded,
+                    title: 'Change transaction PIN',
+                    subtitle: 'Update the 6-digit PIN used for transfers.',
                     onTap: () => _showChangePinDialog(context),
                   ),
                   const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.language_outlined),
-                    title: const Text('Ngôn ngữ'),
-                    subtitle: const Text('Tiếng Việt (vi-VN)'),
-                    trailing: const Icon(Icons.chevron_right),
+                  Padding(
+                    padding: const EdgeInsets.all(AppSpacing.m),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.contrast_rounded),
+                            const SizedBox(width: AppSpacing.m),
+                            Text(
+                              'Appearance',
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.m),
+                        SegmentedButton<ThemeMode>(
+                          segments: const [
+                            ButtonSegment(
+                              value: ThemeMode.system,
+                              icon: Icon(Icons.settings_suggest_rounded),
+                              label: Text('System'),
+                            ),
+                            ButtonSegment(
+                              value: ThemeMode.light,
+                              icon: Icon(Icons.light_mode_rounded),
+                              label: Text('Light'),
+                            ),
+                            ButtonSegment(
+                              value: ThemeMode.dark,
+                              icon: Icon(Icons.dark_mode_rounded),
+                              label: Text('Dark'),
+                            ),
+                          ],
+                          selected: {themeMode},
+                          onSelectionChanged: (selection) {
+                            ref.read(themeModeProvider.notifier).state =
+                                selection.first;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  _SettingsTile(
+                    icon: Icons.language_rounded,
+                    title: 'Language',
+                    subtitle: 'English',
                     onTap: () {},
                   ),
                   const Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.logout, color: theme.colorScheme.error),
-                    title: Text(
-                      'Đăng xuất',
-                      style: TextStyle(color: theme.colorScheme.error),
-                    ),
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: theme.colorScheme.error,
-                    ),
+                  _SettingsTile(
+                    icon: Icons.logout_rounded,
+                    title: 'Sign out',
+                    subtitle: 'End this secure session.',
+                    danger: true,
                     onTap: () {
                       ref.read(authNotifierProvider.notifier).logout();
                     },
@@ -213,6 +165,142 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ProfileHeader extends StatelessWidget {
+  final AccountRecord account;
+  final String userId;
+  final String Function(String phone) maskPhone;
+
+  const _ProfileHeader({
+    required this.account,
+    required this.userId,
+    required this.maskPhone,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final code = account.code;
+    final isEmail = code.contains('@');
+    final emailDisplay = isEmail ? code : 'Not added';
+    final phoneDisplay = !isEmail ? maskPhone(code) : 'Not added';
+    final displayName = isEmail ? code.split('@')[0] : 'E-Wallet user';
+
+    return AppCard(
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 42,
+            backgroundColor: theme.colorScheme.primaryContainer,
+            child: Text(
+              displayName.isEmpty ? 'U' : displayName[0].toUpperCase(),
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: theme.colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.l),
+          Text(displayName, style: theme.textTheme.titleLarge),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'ID: $userId',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontFamily: 'monospace',
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.l),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppSpacing.m,
+            runSpacing: AppSpacing.s,
+            children: [
+              _ContactChip(icon: Icons.email_rounded, label: emailDisplay),
+              _ContactChip(icon: Icons.phone_rounded, label: phoneDisplay),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContactChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _ContactChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      constraints: const BoxConstraints(minHeight: 36),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.m,
+        vertical: AppSpacing.s,
+      ),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: theme.colorScheme.primary),
+          const SizedBox(width: AppSpacing.s),
+          Text(label),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool danger;
+  final VoidCallback onTap;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.danger = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = danger ? theme.colorScheme.error : theme.colorScheme.primary;
+    return ListTile(
+      minVerticalPadding: AppSpacing.m,
+      leading: CircleAvatar(
+        backgroundColor: color.withValues(alpha: 0.12),
+        child: Icon(icon, color: color),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: danger ? theme.colorScheme.error : null,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      subtitle: Text(subtitle),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: danger ? theme.colorScheme.error : null,
+      ),
+      onTap: onTap,
     );
   }
 }
@@ -241,7 +329,7 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
     super.dispose();
   }
 
-  void _onSubmit() async {
+  Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
         _isLoading = true;
@@ -256,10 +344,7 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đổi mã PIN giao dịch thành công!'),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('Transaction PIN changed.')),
         );
         Navigator.of(context).pop();
       } catch (e) {
@@ -279,25 +364,21 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.l),
-      ),
-      title: const Text(
-        'Đổi mã PIN giao dịch',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
+      icon: const Icon(Icons.password_rounded),
+      title: const Text('Change transaction PIN'),
       content: _isLoading
-          ? const SizedBox(
-              height: 120,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: AppSpacing.m),
-                    Text('Đang xử lý đổi mã PIN...'),
-                  ],
-                ),
+          ? SizedBox(
+              height: 112,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  LinearProgressIndicator(
+                    minHeight: 5,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  const SizedBox(height: AppSpacing.l),
+                  const Text('Updating PIN...'),
+                ],
               ),
             )
           : Form(
@@ -307,66 +388,37 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (_errorMessage != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.s),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.error.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(AppRadius.s),
-                          border: Border.all(
-                            color: theme.colorScheme.error.withOpacity(0.2),
-                          ),
+                      AppCard(
+                        color: theme.colorScheme.errorContainer.withValues(
+                          alpha: 0.32,
                         ),
                         child: Text(
                           _errorMessage!,
-                          style: TextStyle(
-                            color: theme.colorScheme.error,
-                            fontSize: 13,
-                          ),
+                          style: TextStyle(color: theme.colorScheme.error),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.m),
                     ],
-                    TextFormField(
+                    PinEntryField(
                       controller: _currentPinController,
-                      obscureText: true,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                      textAlign: TextAlign.center,
-                      decoration: const InputDecoration(
-                        labelText: 'Mã PIN hiện tại',
-                        counterText: '',
-                      ),
+                      labelText: 'Current PIN',
                       validator: Validator.validatePin,
                     ),
                     const SizedBox(height: AppSpacing.m),
-                    TextFormField(
+                    PinEntryField(
                       controller: _newPinController,
-                      obscureText: true,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                      textAlign: TextAlign.center,
-                      decoration: const InputDecoration(
-                        labelText: 'Mã PIN mới',
-                        counterText: '',
-                      ),
+                      labelText: 'New PIN',
                       validator: Validator.validatePin,
                     ),
                     const SizedBox(height: AppSpacing.m),
-                    TextFormField(
+                    PinEntryField(
                       controller: _confirmPinController,
-                      obscureText: true,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                      textAlign: TextAlign.center,
-                      decoration: const InputDecoration(
-                        labelText: 'Xác nhận mã PIN mới',
-                        counterText: '',
-                      ),
+                      labelText: 'Confirm new PIN',
                       validator: (value) {
                         final valErr = Validator.validatePin(value);
                         if (valErr != null) return valErr;
                         if (value != _newPinController.text) {
-                          return 'Xác nhận mã PIN không khớp.';
+                          return 'PIN confirmation does not match.';
                         }
                         return null;
                       },
@@ -380,12 +432,9 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
           : [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Hủy'),
+                child: const Text('Cancel'),
               ),
-              ElevatedButton(
-                onPressed: _onSubmit,
-                child: const Text('Lưu thay đổi'),
-              ),
+              FilledButton(onPressed: _onSubmit, child: const Text('Save')),
             ],
     );
   }

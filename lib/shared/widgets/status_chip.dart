@@ -1,64 +1,78 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme.dart';
 
 class StatusChip extends StatelessWidget {
   final String status;
 
   const StatusChip({super.key, required this.status});
 
-  Color _getStatusColor(String statusValue, ColorScheme colors) {
-    switch (statusValue.toUpperCase()) {
+  _StatusStyle _style(String raw, ColorScheme colors) {
+    switch (raw.toUpperCase()) {
       case 'COMPLETED':
-        return Colors.green;
+        return const _StatusStyle(
+          'Completed',
+          Icons.check_circle,
+          AppTheme.success,
+        );
       case 'PENDING':
-        return Colors.orange;
+        return const _StatusStyle('Pending', Icons.schedule, AppTheme.warning);
+      case 'PROCESSING':
+        return const _StatusStyle('Processing', Icons.sync, AppTheme.info);
       case 'COMPENSATING':
-        return Colors.purple;
+        return const _StatusStyle(
+          'Refunding',
+          Icons.replay_circle_filled,
+          AppTheme.violet,
+        );
       case 'FAILED':
+        return _StatusStyle('Failed', Icons.error, colors.error);
       case 'CANCELLED':
-        return colors.error;
+        return _StatusStyle('Cancelled', Icons.block, colors.outline);
       default:
-        return colors.onSurface.withOpacity(0.5);
-    }
-  }
-
-  String _getStatusText(String statusValue) {
-    switch (statusValue.toUpperCase()) {
-      case 'COMPLETED':
-        return 'Thành công';
-      case 'PENDING':
-        return 'Đang xử lý';
-      case 'COMPENSATING':
-        return 'Đang hoàn tiền';
-      case 'FAILED':
-        return 'Thất bại';
-      case 'CANCELLED':
-        return 'Đã hủy';
-      default:
-        return statusValue;
+        return _StatusStyle(raw, Icons.help_outline, colors.onSurfaceVariant);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final statusColor = _getStatusColor(status, theme.colorScheme);
-    final text = _getStatusText(status);
+    final style = _style(status, theme.colorScheme);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withOpacity(0.3), width: 1),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: statusColor,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
+    return Semantics(
+      label: 'Transaction status ${style.label}',
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 28),
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+        decoration: BoxDecoration(
+          color: style.color.withValues(
+            alpha: theme.brightness == Brightness.dark ? 0.20 : 0.12,
+          ),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: style.color.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(style.icon, size: 14, color: style.color),
+            const SizedBox(width: 5),
+            Text(
+              style.label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: style.color,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _StatusStyle {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _StatusStyle(this.label, this.icon, this.color);
 }

@@ -4,8 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/amount_text.dart';
 import '../../../shared/widgets/loading_overlay.dart';
 import '../../../shared/widgets/money_field.dart';
+import '../../../shared/widgets/pin_entry_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../domain/balance_provider.dart';
 import '../domain/withdraw_notifier.dart';
@@ -29,11 +32,11 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
 
   void _onWithdrawSubmit(Decimal balance, String currency) {
     if (_formKey.currentState?.validate() ?? false) {
-      _showPinDialog(balance, currency);
+      _showPinDialog();
     }
   }
 
-  void _showPinDialog(Decimal balance, String currency) {
+  void _showPinDialog() {
     final pinController = TextEditingController();
     final pinFormKey = GlobalKey<FormState>();
 
@@ -42,46 +45,23 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
       barrierDismissible: true,
       builder: (ctx) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.l),
-          ),
-          title: const Text(
-            'Nhập mã PIN giao dịch',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          icon: const Icon(Icons.lock_rounded),
+          title: const Text('Confirm with PIN'),
           content: Form(
             key: pinFormKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Vui lòng nhập mã PIN 6 chữ số để xác nhận giao dịch rút tiền.',
-                ),
-                const SizedBox(height: AppSpacing.m),
-                TextFormField(
-                  controller: pinController,
-                  obscureText: true,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
+                Text(
+                  'Enter your 6-digit transaction PIN to authorize this withdrawal.',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    letterSpacing: 8,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: 'Mã PIN',
-                    counterText: '',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().length != 6) {
-                      return 'Mã PIN phải gồm đúng 6 chữ số.';
-                    }
-                    if (int.tryParse(value) == null) {
-                      return 'Mã PIN chỉ chứa chữ số.';
-                    }
-                    return null;
-                  },
+                  style: Theme.of(ctx).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: AppSpacing.l),
+                PinEntryField(
+                  controller: pinController,
+                  autofocus: true,
+                  validator: _pinValidator,
                 ),
               ],
             ),
@@ -89,9 +69,9 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Hủy'),
+              child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 if (pinFormKey.currentState?.validate() ?? false) {
                   Navigator.of(ctx).pop();
@@ -103,7 +83,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                       );
                 }
               },
-              child: const Text('Xác nhận'),
+              child: const Text('Confirm'),
             ),
           ],
         );
@@ -123,74 +103,29 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => WillPopScope(
-        onWillPop: () async => false,
+      builder: (ctx) => PopScope(
+        canPop: false,
         child: AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.l),
+          icon: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.75, end: 1),
+            duration: const Duration(milliseconds: 220),
+            builder: (context, scale, child) =>
+                Transform.scale(scale: scale, child: child),
+            child: const Icon(Icons.check_circle_rounded, size: 58),
           ),
-          title: Row(
-            children: [
-              const Icon(
-                Icons.check_circle_outline,
-                color: Colors.green,
-                size: 28,
-              ),
-              const SizedBox(width: AppSpacing.s),
-              Text(
-                'Rút tiền thành công',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-            ],
-          ),
+          iconColor: AppTheme.success,
+          title: const Text('Withdrawal completed'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Số tiền đã được trừ khỏi tài khoản ví của bạn và chuyển về tài khoản nguồn.',
+                'Funds were debited from your wallet and moved through the mock clearing flow.',
+                textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium,
               ),
-              const SizedBox(height: AppSpacing.m),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Số tiền rút:',
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                  ),
-                  Text(
-                    money.formatDisplay(),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Mã giao dịch:',
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                  ),
-                  Text(
-                    journalId.length > 15
-                        ? '${journalId.substring(0, 15)}...'
-                        : journalId,
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
+              const SizedBox(height: AppSpacing.l),
+              _ResultRow(label: 'Amount', value: money.formatDisplay()),
+              _ResultRow(label: 'Journal', value: _short(journalId)),
             ],
           ),
           actions: [
@@ -200,7 +135,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                 Navigator.of(ctx).pop();
                 context.go('/home');
               },
-              child: const Text('Quay lại Trang Chủ'),
+              child: const Text('Back to home'),
             ),
           ],
         ),
@@ -214,7 +149,6 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
     final withdrawState = ref.watch(withdrawNotifierProvider);
     final theme = Theme.of(context);
 
-    // Get current balance details
     Decimal currentBalance = Decimal.zero;
     String currency = 'VND';
     balanceState.whenData((data) {
@@ -222,7 +156,6 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
       currency = data.currency;
     });
 
-    // Listen for state changes
     ref.listen<WithdrawState>(withdrawNotifierProvider, (previous, next) {
       if (next.status == WithdrawStatus.success && next.response != null) {
         _showSuccessDialog(
@@ -238,8 +171,8 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
             content: Text(next.errorMessage!),
             backgroundColor: theme.colorScheme.error,
             action: SnackBarAction(
-              label: 'Thử lại',
-              textColor: Colors.white,
+              label: 'Retry',
+              textColor: theme.colorScheme.onError,
               onPressed: () {
                 ref.read(withdrawNotifierProvider.notifier).retryWithdraw();
               },
@@ -249,13 +182,12 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
       }
     });
 
-    final displayMoney = Money(amount: currentBalance, currency: currency);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rút tiền'),
+        title: const Text('Withdraw'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
             ref.read(withdrawNotifierProvider.notifier).reset();
             context.pop();
@@ -264,98 +196,185 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
       ),
       body: LoadingOverlay(
         isLoading: withdrawState.status == WithdrawStatus.submitting,
-        message: 'Đang thực hiện rút tiền...',
+        message: 'Submitting withdrawal...',
         child: Form(
           key: _formKey,
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
-              Text(
-                'Rút tiền khỏi ví E-Wallet',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s),
-              Text(
-                'Giao dịch rút tiền được mô phỏng đối ứng qua tài khoản nguồn CASH_CLEARING.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onBackground.withOpacity(0.6),
-                ),
+              const _StepHeader(
+                icon: Icons.south_west_rounded,
+                title: 'Withdraw funds',
+                subtitle: 'Move money out through the mock clearing account.',
               ),
               const SizedBox(height: AppSpacing.xl),
-
-              // Available Balance Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.m),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Số dư khả dụng',
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.6,
-                              ),
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            displayMoney.formatDisplay(),
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      CircleAvatar(
-                        backgroundColor: theme.colorScheme.primary.withOpacity(
-                          0.08,
-                        ),
-                        child: Icon(
-                          Icons.account_balance_wallet,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              _BalanceCard(balance: currentBalance, currency: currency),
               const SizedBox(height: AppSpacing.l),
-
-              // Money Field input
-              MoneyField(
-                controller: _amountController,
-                currency: currency,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Vui lòng nhập số tiền.';
-                  }
-                  final amount = Decimal.tryParse(value.trim());
-                  if (amount == null || amount <= Decimal.zero) {
-                    return 'Số tiền rút phải lớn hơn 0.';
-                  }
-                  if (amount > currentBalance) {
-                    return 'Số dư khả dụng không đủ.';
-                  }
-                  return null;
-                },
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Withdrawal amount',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.m),
+                    MoneyField(
+                      controller: _amountController,
+                      currency: currency,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Enter an amount.';
+                        }
+                        final amount = Decimal.tryParse(value.trim());
+                        if (amount == null || amount <= Decimal.zero) {
+                          return 'Withdrawal amount must be greater than 0.';
+                        }
+                        if (amount > currentBalance) {
+                          return 'Available balance is not enough.';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
-
               PrimaryButton(
-                text: 'Xác nhận rút tiền',
+                text: 'Review withdrawal',
+                icon: Icons.lock_rounded,
                 onPressed: () => _onWithdrawSubmit(currentBalance, currency),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  String? _pinValidator(String? value) {
+    if (value == null || value.trim().length != 6) {
+      return 'PIN must be exactly 6 digits.';
+    }
+    if (int.tryParse(value) == null) {
+      return 'PIN can contain digits only.';
+    }
+    return null;
+  }
+
+  String _short(String value) {
+    if (value.length <= 16) return value;
+    return '${value.substring(0, 12)}...';
+  }
+}
+
+class _BalanceCard extends StatelessWidget {
+  final Decimal balance;
+  final String currency;
+
+  const _BalanceCard({required this.balance, required this.currency});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AppCard(
+      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.42),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: theme.colorScheme.surface,
+            child: Icon(
+              Icons.account_balance_wallet,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.m),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Available balance',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                AmountText.neutral(amount: balance, currency: currency),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepHeader extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _StepHeader({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 28,
+          backgroundColor: theme.colorScheme.primaryContainer,
+          child: Icon(icon, color: theme.colorScheme.onPrimaryContainer),
+        ),
+        const SizedBox(width: AppSpacing.m),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: theme.textTheme.headlineSmall),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ResultRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ResultRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Text(value, style: theme.textTheme.titleSmall),
+        ],
       ),
     );
   }

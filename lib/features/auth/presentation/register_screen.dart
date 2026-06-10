@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validator.dart';
+import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/loading_overlay.dart';
+import '../../../shared/widgets/pin_entry_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../domain/auth_notifier.dart';
 import '../domain/auth_state.dart';
@@ -54,7 +56,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final theme = Theme.of(context);
-
     final isLoading = authState is AuthStateAuthenticating;
     final errorMessage = authState is AuthStateUnauthenticated
         ? authState.errorMessage
@@ -62,204 +63,192 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Đăng ký tài khoản'),
+        title: const Text('Create account'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
       ),
       body: LoadingOverlay(
         isLoading: isLoading,
-        message: 'Đang đăng ký...',
+        message: 'Creating wallet...',
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.l),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Tạo tài khoản mới',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Start with a secure wallet',
+                      style: theme.textTheme.headlineMedium,
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.s),
-                  Text(
-                    'Đăng ký thông tin ví điện tử E-Wallet',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  if (errorMessage != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.m),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.error.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(AppRadius.m),
-                        border: Border.all(
-                          color: theme.colorScheme.error.withOpacity(0.2),
-                        ),
+                    const SizedBox(height: AppSpacing.s),
+                    Text(
+                      'Your login password and transaction PIN stay separate.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
-                      child: Row(
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    AppCard(
+                      child: Column(
                         children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: theme.colorScheme.error,
+                          if (errorMessage != null) ...[
+                            _AuthError(message: errorMessage),
+                            const SizedBox(height: AppSpacing.m),
+                          ],
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              prefixIcon: Icon(Icons.email_outlined),
+                            ),
+                            validator: Validator.validateEmail,
+                            enabled: !isLoading,
                           ),
-                          const SizedBox(width: AppSpacing.s),
-                          Expanded(
-                            child: Text(
-                              errorMessage,
-                              style: TextStyle(
-                                color: theme.colorScheme.error,
-                                fontWeight: FontWeight.w500,
+                          const SizedBox(height: AppSpacing.m),
+                          TextFormField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              labelText: 'Phone (optional)',
+                              prefixIcon: Icon(Icons.phone_outlined),
+                            ),
+                            validator: Validator.validatePhone,
+                            enabled: !isLoading,
+                          ),
+                          const SizedBox(height: AppSpacing.m),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(
+                                Icons.lock_outline_rounded,
+                              ),
+                              suffixIcon: IconButton(
+                                tooltip: _obscurePassword
+                                    ? 'Show password'
+                                    : 'Hide password',
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
                               ),
                             ),
+                            validator: Validator.validatePassword,
+                            enabled: !isLoading,
+                          ),
+                          const SizedBox(height: AppSpacing.m),
+                          PinEntryField(
+                            controller: _pinController,
+                            labelText: 'Transaction PIN',
+                            validator: Validator.validatePin,
+                          ),
+                          const SizedBox(height: AppSpacing.m),
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedCurrency,
+                            decoration: const InputDecoration(
+                              labelText: 'Default currency',
+                              prefixIcon: Icon(Icons.payments_outlined),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'VND',
+                                child: Text('VND'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'USD',
+                                child: Text('USD'),
+                              ),
+                            ],
+                            onChanged: isLoading
+                                ? null
+                                : (val) {
+                                    if (val != null) {
+                                      setState(() => _selectedCurrency = val);
+                                    }
+                                  },
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          PrimaryButton(
+                            text: 'Create wallet',
+                            icon: Icons.person_add_alt_1_rounded,
+                            onPressed: _submit,
+                            isLoading: isLoading,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.m),
-                  ],
-
-                  // Email Field
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
-                    ),
-                    validator: Validator.validateEmail,
-                    enabled: !isLoading,
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-
-                  // Phone Field (Optional)
-                  TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
-                      labelText: 'Số điện thoại (Tùy chọn)',
-                      prefixIcon: Icon(Icons.phone_outlined),
-                    ),
-                    validator: Validator.validatePhone,
-                    enabled: !isLoading,
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-
-                  // Password Field
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: 'Mật khẩu',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
-                    validator: Validator.validatePassword,
-                    enabled: !isLoading,
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-
-                  // 6-digit PIN Field
-                  TextFormField(
-                    controller: _pinController,
-                    obscureText: true,
-                    keyboardType: TextInputType.number,
-                    maxLength: 6,
-                    decoration: const InputDecoration(
-                      labelText: 'Mã PIN giao dịch (6 chữ số)',
-                      prefixIcon: Icon(Icons.password_outlined),
-                      counterText: '',
-                    ),
-                    validator: Validator.validatePin,
-                    enabled: !isLoading,
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-
-                  // Currency Selection Dropdown
-                  DropdownButtonFormField<String>(
-                    value: _selectedCurrency,
-                    decoration: const InputDecoration(
-                      labelText: 'Đơn vị tiền tệ mặc định',
-                      prefixIcon: Icon(Icons.payments_outlined),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'VND',
-                        child: Text('VND (Việt Nam Đồng)'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'USD',
-                        child: Text('USD (Đô la Mỹ)'),
-                      ),
-                    ],
-                    onChanged: isLoading
-                        ? null
-                        : (val) {
-                            if (val != null) {
-                              setState(() {
-                                _selectedCurrency = val;
-                              });
-                            }
-                          },
-                  ),
-                  const SizedBox(height: AppSpacing.l),
-
-                  PrimaryButton(
-                    text: 'Đăng Ký',
-                    onPressed: _submit,
-                    isLoading: isLoading,
-                  ),
-                  const SizedBox(height: AppSpacing.l),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Đã có tài khoản? ',
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          context.pop();
-                        },
-                        child: Text(
-                          'Đăng nhập ngay',
+                    const SizedBox(height: AppSpacing.l),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Already registered? ',
                           style: TextStyle(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          child: const Text('Sign in'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AuthError extends StatelessWidget {
+  final String message;
+
+  const _AuthError({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.m),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer.withValues(alpha: 0.34),
+        borderRadius: BorderRadius.circular(AppRadius.m),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline_rounded, color: theme.colorScheme.error),
+          const SizedBox(width: AppSpacing.m),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: theme.colorScheme.error,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

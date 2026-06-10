@@ -79,9 +79,6 @@ class AppException implements Exception {
     if (error is AppException) return error;
     if (error is DioException) return AppException.fromDioException(error);
 
-    // Log to console for debugging
-    print('[AppException Technical Details]: $error');
-
     return const AppException(
       code: 'INTERNAL',
       message: 'Đã xảy ra lỗi hệ thống không xác định. Vui lòng thử lại sau.',

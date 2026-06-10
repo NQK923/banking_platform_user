@@ -1,67 +1,110 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 
-class PrimaryButton extends StatelessWidget {
+class PrimaryButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
-  final Color? backgroundColor;
-  final Color? textColor;
+  final IconData? icon;
 
   const PrimaryButton({
     super.key,
     required this.text,
     this.onPressed,
     this.isLoading = false,
-    this.backgroundColor,
-    this.textColor,
+    this.icon,
+    Color? backgroundColor,
+    Color? textColor,
+  });
+
+  @override
+  State<PrimaryButton> createState() => _PrimaryButtonState();
+}
+
+class _PrimaryButtonState extends State<PrimaryButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = !widget.isLoading && widget.onPressed != null;
+    final child = widget.isLoading
+        ? const SizedBox(
+            height: 22,
+            width: 22,
+            child: CircularProgressIndicator(strokeWidth: 2.4),
+          )
+        : _ButtonLabel(text: widget.text, icon: widget.icon);
+
+    return AnimatedScale(
+      scale: _pressed && enabled ? 0.98 : 1,
+      duration: const Duration(milliseconds: 90),
+      child: Listener(
+        onPointerDown: (_) => setState(() => _pressed = true),
+        onPointerCancel: (_) => setState(() => _pressed = false),
+        onPointerUp: (_) => setState(() => _pressed = false),
+        child: SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: FilledButton(
+            onPressed: enabled ? widget.onPressed : null,
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SecondaryButton extends StatelessWidget {
+  final String text;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+
+  const SecondaryButton({
+    super.key,
+    required this.text,
+    this.onPressed,
+    this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final resolvedBgColor = backgroundColor ?? theme.colorScheme.primary;
-    final resolvedTextColor =
-        textColor ??
-        (resolvedBgColor == theme.colorScheme.primary
-            ? theme.colorScheme.onPrimary
-            : (isDark ? Colors.white : Colors.black));
-
     return SizedBox(
       width: double.infinity,
       height: 52,
-      child: ElevatedButton(
-        onPressed: (isLoading || onPressed == null) ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: resolvedBgColor,
-          foregroundColor: resolvedTextColor,
-          disabledBackgroundColor: resolvedBgColor.withOpacity(0.5),
-          disabledForegroundColor: resolvedTextColor.withOpacity(0.6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.m),
-          ),
-          elevation: 0,
-        ),
-        child: isLoading
-            ? SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(resolvedTextColor),
-                ),
-              )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
+      child: OutlinedButton(
+        onPressed: onPressed,
+        child: _ButtonLabel(text: text, icon: icon),
       ),
+    );
+  }
+}
+
+class _ButtonLabel extends StatelessWidget {
+  final String text;
+  final IconData? icon;
+
+  const _ButtonLabel({required this.text, this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = Text(
+      text,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(letterSpacing: 0),
+    );
+
+    if (icon == null) return label;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 19),
+        const SizedBox(width: AppSpacing.s),
+        Flexible(child: label),
+      ],
     );
   }
 }

@@ -4,14 +4,14 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/auth_notifier.dart';
 import '../../features/auth/domain/auth_state.dart';
 import '../../features/auth/presentation/login_screen.dart';
-import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/pin_screen.dart';
-import '../../features/wallet/presentation/home_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/transaction_detail_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/transfer/presentation/transfer_wizard_screen.dart';
 import '../../features/wallet/presentation/deposit_screen.dart';
+import '../../features/wallet/presentation/home_screen.dart';
 import '../../features/wallet/presentation/withdraw_screen.dart';
 import '../theme/app_theme.dart';
 
@@ -40,7 +40,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final currentAuthState = ref.read(authNotifierProvider);
       final location = state.uri.path;
 
-      // If initializing, stay on splash screen
       if (currentAuthState is AuthStateInitializing) {
         return '/splash';
       }
@@ -48,14 +47,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = currentAuthState is AuthStateAuthenticated;
       final isAuthRoute = location == '/login' || location == '/register';
 
-      if (!isLoggedIn) {
-        if (!isAuthRoute) {
-          return '/login';
-        }
-      } else {
-        if (location == '/splash' || isAuthRoute) {
-          return '/home';
-        }
+      if (!isLoggedIn && !isAuthRoute) {
+        return '/login';
+      }
+
+      if (isLoggedIn && (location == '/splash' || isAuthRoute)) {
+        return '/home';
       }
 
       return null;
@@ -91,9 +88,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const WithdrawScreen(),
       ),
       ShellRoute(
-        builder: (context, state, child) {
-          return MainShell(child: child);
-        },
+        builder: (context, state, child) => MainShell(child: child),
         routes: [
           GoRoute(
             path: '/home',
@@ -127,22 +122,29 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Premium App Logo
-            Icon(
-              Icons.account_balance_wallet,
-              size: 80,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: AppSpacing.l),
-            Text(
-              'E-Wallet',
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary,
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.account_balance_wallet,
+                size: 46,
+                color: theme.colorScheme.onPrimaryContainer,
               ),
             ),
+            const SizedBox(height: AppSpacing.l),
+            Text('E-Wallet', style: theme.textTheme.headlineMedium),
             const SizedBox(height: AppSpacing.xl),
-            CircularProgressIndicator(color: theme.colorScheme.secondary),
+            SizedBox(
+              width: 180,
+              child: LinearProgressIndicator(
+                minHeight: 5,
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
           ],
         ),
       ),
@@ -167,89 +169,42 @@ class MainShell extends StatelessWidget {
     switch (index) {
       case 0:
         GoRouter.of(context).go('/home');
-        break;
       case 1:
         GoRouter.of(context).go('/history');
-        break;
       case 2:
         GoRouter.of(context).go('/profile');
-        break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final selectedIndex = _calculateSelectedIndex(context);
 
     return Scaffold(
-      body: child,
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 180),
+        child: KeyedSubtree(key: ValueKey(selectedIndex), child: child),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) => _onItemTapped(index, context),
-        backgroundColor: theme.colorScheme.surface,
-        indicatorColor: theme.colorScheme.primary.withOpacity(0.1),
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Trang chủ',
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.history_outlined),
-            selectedIcon: Icon(Icons.history),
-            label: 'Lịch sử',
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long_rounded),
+            label: 'History',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Cá nhân',
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Profile',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.build_circle_outlined,
-                size: 64,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(height: AppSpacing.m),
-              Text(
-                'Tính năng đang phát triển',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s),
-              Text(
-                'Tính năng $title sẽ được ra mắt ở các cột mốc tiếp theo.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: theme.colorScheme.onBackground.withOpacity(0.6),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/pin_entry_field.dart';
 import '../data/auth_repository.dart';
 
 class PinScreen extends ConsumerStatefulWidget {
@@ -10,8 +12,8 @@ class PinScreen extends ConsumerStatefulWidget {
 
   const PinScreen({
     super.key,
-    this.title = 'Mã PIN Giao Dịch',
-    this.description = 'Nhập mã PIN 6 chữ số để xác thực',
+    this.title = 'Transaction PIN',
+    this.description = 'Enter your 6-digit PIN to continue.',
   });
 
   @override
@@ -21,10 +23,12 @@ class PinScreen extends ConsumerStatefulWidget {
 class _PinScreenState extends ConsumerState<PinScreen> {
   String _pin = '';
   bool _isLoading = false;
+  bool _shake = false;
   String? _error;
 
   void _onNumberTap(int number) {
     if (_pin.length < 6 && !_isLoading) {
+      HapticFeedback.selectionClick();
       setState(() {
         _error = null;
         _pin += number.toString();
@@ -37,6 +41,7 @@ class _PinScreenState extends ConsumerState<PinScreen> {
 
   void _onBackspace() {
     if (_pin.isNotEmpty && !_isLoading) {
+      HapticFeedback.selectionClick();
       setState(() {
         _error = null;
         _pin = _pin.substring(0, _pin.length - 1);
@@ -52,25 +57,31 @@ class _PinScreenState extends ConsumerState<PinScreen> {
     try {
       final success = await ref.read(authRepositoryProvider).verifyPin(_pin);
       if (success) {
-        if (mounted) {
-          context.pop(true);
-        }
+        HapticFeedback.lightImpact();
+        if (mounted) context.pop(true);
       } else {
-        setState(() {
-          _pin = '';
-          _error = 'Mã PIN giao dịch không chính xác.';
-          _isLoading = false;
-        });
+        _showPinError('Transaction PIN is not correct.');
       }
     } catch (e) {
-      setState(() {
-        _pin = '';
-        _error = e.toString().contains('PIN_INVALID')
-            ? 'Mã PIN giao dịch không chính xác.'
-            : 'Đã xảy ra lỗi khi xác thực PIN.';
-        _isLoading = false;
-      });
+      _showPinError(
+        e.toString().contains('PIN_INVALID')
+            ? 'Transaction PIN is not correct.'
+            : 'PIN verification failed. Try again.',
+      );
     }
+  }
+
+  void _showPinError(String message) {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _pin = '';
+      _error = message;
+      _isLoading = false;
+      _shake = true;
+    });
+    Future<void>.delayed(const Duration(milliseconds: 180), () {
+      if (mounted) setState(() => _shake = false);
+    });
   }
 
   @override
@@ -81,131 +92,102 @@ class _PinScreenState extends ConsumerState<PinScreen> {
       appBar: AppBar(
         title: Text(widget.title),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          tooltip: 'Close',
+          icon: const Icon(Icons.close_rounded),
           onPressed: () => context.pop(false),
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            const Spacer(),
-            Text(
-              widget.description,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onBackground.withOpacity(0.7),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.l),
+          child: Column(
+            children: [
+              const Spacer(),
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: theme.colorScheme.primaryContainer,
+                child: Icon(
+                  Icons.lock_rounded,
+                  size: 38,
+                  color: theme.colorScheme.onPrimaryContainer,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.l),
-
-            // Indicators
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(6, (index) {
-                final isFilled = index < _pin.length;
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isFilled
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.onBackground.withOpacity(0.15),
-                    border: Border.all(
-                      color: isFilled
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onBackground.withOpacity(0.3),
-                      width: 1.5,
-                    ),
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: AppSpacing.m),
-
-            // Loading/Error Indicator
-            SizedBox(
-              height: 30,
-              child: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : _error != null
-                  ? Text(
-                      _error!,
-                      style: TextStyle(
-                        color: theme.colorScheme.error,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    )
-                  : null,
-            ),
-            const Spacer(),
-
-            // Keypad
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _KeypadButton(number: 1, onTap: () => _onNumberTap(1)),
-                      _KeypadButton(number: 2, onTap: () => _onNumberTap(2)),
-                      _KeypadButton(number: 3, onTap: () => _onNumberTap(3)),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _KeypadButton(number: 4, onTap: () => _onNumberTap(4)),
-                      _KeypadButton(number: 5, onTap: () => _onNumberTap(5)),
-                      _KeypadButton(number: 6, onTap: () => _onNumberTap(6)),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _KeypadButton(number: 7, onTap: () => _onNumberTap(7)),
-                      _KeypadButton(number: 8, onTap: () => _onNumberTap(8)),
-                      _KeypadButton(number: 9, onTap: () => _onNumberTap(9)),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox(
-                        width: 70,
-                        height: 70,
-                      ), // Empty left placeholder
-                      _KeypadButton(number: 0, onTap: () => _onNumberTap(0)),
-                      GestureDetector(
-                        onTap: _onBackspace,
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          width: 70,
-                          height: 70,
-                          alignment: Alignment.center,
-                          child: Icon(
-                            Icons.backspace_outlined,
-                            size: 28,
-                            color: theme.colorScheme.onBackground,
+              const SizedBox(height: AppSpacing.l),
+              Text(
+                widget.description,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AnimatedSlide(
+                offset: _shake ? const Offset(0.04, 0) : Offset.zero,
+                duration: const Duration(milliseconds: 70),
+                child: PinDots(length: _pin.length, hasError: _error != null),
+              ),
+              const SizedBox(height: AppSpacing.l),
+              SizedBox(
+                height: 44,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 150),
+                  child: _isLoading
+                      ? LinearProgressIndicator(
+                          minHeight: 5,
+                          borderRadius: BorderRadius.circular(999),
+                        )
+                      : _error != null
+                      ? Text(
+                          _error!,
+                          key: const ValueKey('pin-error'),
+                          style: TextStyle(
+                            color: theme.colorScheme.error,
+                            fontWeight: FontWeight.w800,
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                          textAlign: TextAlign.center,
+                        )
+                      : const SizedBox.shrink(),
+                ),
               ),
-            ),
-          ],
+              const Spacer(),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 340),
+                child: Column(
+                  children: [
+                    for (final row in const [
+                      [1, 2, 3],
+                      [4, 5, 6],
+                      [7, 8, 9],
+                    ]) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: row
+                            .map(
+                              (number) => _KeypadButton(
+                                number: number,
+                                onTap: () => _onNumberTap(number),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: AppSpacing.m),
+                    ],
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const SizedBox(width: 72, height: 72),
+                        _KeypadButton(number: 0, onTap: () => _onNumberTap(0)),
+                        _IconKeypadButton(
+                          icon: Icons.backspace_outlined,
+                          onTap: _onBackspace,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -220,24 +202,59 @@ class _KeypadButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GestureDetector(
+    return _KeyShell(
+      semanticLabel: 'Digit $number',
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: 70,
-        height: 70,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: theme.colorScheme.onBackground.withOpacity(0.05),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          number.toString(),
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onBackground,
-          ),
+      child: Text(
+        number.toString(),
+        style: Theme.of(
+          context,
+        ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
+      ),
+    );
+  }
+}
+
+class _IconKeypadButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _IconKeypadButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return _KeyShell(
+      semanticLabel: 'Backspace',
+      onTap: onTap,
+      child: Icon(icon, size: 26),
+    );
+  }
+}
+
+class _KeyShell extends StatelessWidget {
+  final String semanticLabel;
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _KeyShell({
+    required this.semanticLabel,
+    required this.child,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: Material(
+        color: theme.colorScheme.surfaceContainerLow,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox(width: 72, height: 72, child: Center(child: child)),
         ),
       ),
     );

@@ -12,12 +12,11 @@ class MoneyField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.currency,
-    this.labelText = 'Số tiền',
+    this.labelText = 'Amount',
     this.validator,
     this.onChanged,
   });
 
-  // Determines the decimals scale allowed for this currency input
   int get _currencyScale {
     switch (currency.toUpperCase()) {
       case 'VND':
@@ -34,32 +33,35 @@ class MoneyField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scale = _currencyScale;
-
-    // Build the list of text input formatters
     final formatters = <TextInputFormatter>[
-      // Allow only numbers and optionally one dot/comma based on the scale
       if (scale == 0)
         FilteringTextInputFormatter.digitsOnly
       else
         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-
-      // Enforce the decimal precision limit
       if (scale > 0) _DecimalLimitFormatter(scale),
     ];
 
-    return TextFormField(
-      controller: controller,
-      keyboardType: TextInputType.numberWithOptions(decimal: scale > 0),
-      inputFormatters: formatters,
-      decoration: InputDecoration(
-        labelText: labelText,
-        hintText: scale > 0 ? '0.${'0' * scale}' : '0',
-        prefixIcon: const Icon(Icons.monetization_on_outlined),
-        suffixText: currency.toUpperCase(),
-        suffixStyle: const TextStyle(fontWeight: FontWeight.bold),
+    return Semantics(
+      label: '$labelText in ${currency.toUpperCase()}',
+      textField: true,
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.numberWithOptions(decimal: scale > 0),
+        inputFormatters: formatters,
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w900,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
+        decoration: InputDecoration(
+          labelText: labelText,
+          hintText: scale > 0 ? '0.${'0' * scale}' : '0',
+          prefixIcon: const Icon(Icons.payments_outlined),
+          suffixText: currency.toUpperCase(),
+          suffixStyle: const TextStyle(fontWeight: FontWeight.w900),
+        ),
+        validator: validator,
+        onChanged: onChanged,
       ),
-      validator: validator,
-      onChanged: onChanged,
     );
   }
 }
@@ -77,15 +79,8 @@ class _DecimalLimitFormatter extends TextInputFormatter {
     final text = newValue.text;
     if (text.contains('.')) {
       final parts = text.split('.');
-      if (parts.length > 2) {
-        // More than one dot, reject change
-        return oldValue;
-      }
-      final decimals = parts[1];
-      if (decimals.length > maxDecimals) {
-        // Exceeds decimals, truncate or reject
-        return oldValue;
-      }
+      if (parts.length > 2) return oldValue;
+      if (parts[1].length > maxDecimals) return oldValue;
     }
     return newValue;
   }

@@ -13,10 +13,10 @@ void main() {
 
     test('VND Formatting (0 decimals)', () {
       final money = Money.parse('1000000', 'VND');
-      expect(money.formatDisplay(), '1.000.000 ₫');
+      expect(money.formatDisplay(), '1.000.000 VND');
 
       final money2 = Money.parse('500', 'VND');
-      expect(money2.formatDisplay(), '500 ₫');
+      expect(money2.formatDisplay(), '500 VND');
     });
 
     test('USD Formatting (2 decimals)', () {

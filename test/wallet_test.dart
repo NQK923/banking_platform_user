@@ -6,7 +6,6 @@ import 'package:banking_platform_user/core/error/app_exception.dart';
 import 'package:banking_platform_user/features/auth/data/auth_repository.dart';
 import 'package:banking_platform_user/features/auth/domain/auth_models.dart';
 import 'package:banking_platform_user/features/wallet/data/wallet_repository.dart';
-import 'package:banking_platform_user/features/wallet/domain/balance_provider.dart';
 import 'package:banking_platform_user/features/wallet/domain/wallet_models.dart';
 import 'package:banking_platform_user/features/wallet/domain/deposit_notifier.dart';
 import 'package:banking_platform_user/features/wallet/domain/withdraw_notifier.dart';
@@ -84,7 +83,7 @@ class MockWalletRepository implements WalletRepository {
 
   @override
   Future<AccountRecord> getAccountDetails() async {
-    return AccountRecord(
+    return const AccountRecord(
       id: 'test-account-id',
       userId: 'test-user-id',
       code: 'test@email.com',

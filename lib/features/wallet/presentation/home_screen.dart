@@ -4,21 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/amount_text.dart';
 import '../../../shared/widgets/error_view.dart';
-import '../../../shared/widgets/status_chip.dart';
+import '../../../shared/widgets/skeleton.dart';
+import '../../../shared/widgets/transaction_row.dart';
 import '../../auth/domain/auth_notifier.dart';
 import '../../auth/domain/auth_state.dart';
-import '../domain/balance_provider.dart';
 import '../../history/domain/history_provider.dart';
-import '../../history/domain/wallet_transaction.dart';
+import '../domain/balance_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final authState = ref.watch(authNotifierProvider);
     final balanceState = ref.watch(balanceProvider);
     final historyState = ref.watch(historyProvider);
@@ -37,143 +37,81 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('E-Wallet'),
+        title: const Text('Wallet'),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: onRefresh),
+          IconButton(
+            tooltip: 'Refresh',
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: onRefresh,
+          ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: onRefresh,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(AppSpacing.l),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            AppSpacing.s,
+            AppSpacing.l,
+            AppSpacing.xxl,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Balance Section
               balanceState.when(
-                loading: () => const _CardLoadingStub(),
+                loading: () => const _BalanceSkeleton(),
                 error: (err, stack) => ErrorView(
                   error: err,
                   onRetry: () =>
                       ref.read(balanceProvider.notifier).refreshBalance(),
                   inline: true,
                 ),
-                data: (balanceData) {
-                  final money = Money(
+                data: (balanceData) => _BalanceHero(
+                  balance: Money(
                     amount: balanceData.balance,
                     currency: balanceData.currency,
-                  );
-                  return Card(
-                    color: theme.colorScheme.primary,
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.l),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tài khoản chính',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onPrimary.withOpacity(
-                                0.7,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            money.formatDisplay(),
-                            style: theme.textTheme.headlineLarge?.copyWith(
-                              color: theme.colorScheme.onPrimary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.m),
-                          Divider(
-                            color: theme.colorScheme.onPrimary.withOpacity(0.2),
-                          ),
-                          const SizedBox(height: AppSpacing.s),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'ID Ví:',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onPrimary
-                                      .withOpacity(0.7),
-                                ),
-                              ),
-                              Text(
-                                balanceData.accountId,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onPrimary,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'monospace',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                  ),
+                  accountId: balanceData.accountId,
+                ),
               ),
-              const SizedBox(height: AppSpacing.l),
-
-              // Quick Actions
+              const SizedBox(height: AppSpacing.xl),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _QuickActionButton(
-                    icon: Icons.send_outlined,
-                    label: 'Chuyển tiền',
-                    onTap: () => context.push('/transfer'),
+                  Expanded(
+                    child: _QuickActionButton(
+                      icon: Icons.send_rounded,
+                      label: 'Send',
+                      onTap: () => context.push('/transfer'),
+                    ),
                   ),
-                  _QuickActionButton(
-                    icon: Icons.add_circle_outline,
-                    label: 'Nạp tiền',
-                    onTap: () => context.push('/deposit'),
+                  const SizedBox(width: AppSpacing.m),
+                  Expanded(
+                    child: _QuickActionButton(
+                      icon: Icons.add_card_rounded,
+                      label: 'Deposit',
+                      onTap: () => context.push('/deposit'),
+                    ),
                   ),
-                  _QuickActionButton(
-                    icon: Icons.arrow_downward_outlined,
-                    label: 'Rút tiền',
-                    onTap: () => context.push('/withdraw'),
-                  ),
-                  _QuickActionButton(
-                    icon: Icons.history_outlined,
-                    label: 'Lịch sử',
-                    onTap: () => GoRouter.of(context).go('/history'),
+                  const SizedBox(width: AppSpacing.m),
+                  Expanded(
+                    child: _QuickActionButton(
+                      icon: Icons.south_west_rounded,
+                      label: 'Withdraw',
+                      onTap: () => context.push('/withdraw'),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xl),
-
-              // Recent Transactions Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Giao dịch gần đây',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => GoRouter.of(context).go('/history'),
-                    child: const Text('Xem tất cả'),
-                  ),
-                ],
+              SectionHeader(
+                title: 'Recent activity',
+                actionLabel: 'View all',
+                onAction: () => GoRouter.of(context).go('/history'),
               ),
               const SizedBox(height: AppSpacing.s),
-
-              // Recent Transactions List
               if (historyState.isLoading && historyState.transactions.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(AppSpacing.l),
-                    child: CircularProgressIndicator(),
-                  ),
-                )
+                const AppCard(child: TransactionSkeletonList(itemCount: 4))
               else if (historyState.errorMessage != null &&
                   historyState.transactions.isEmpty)
                 ErrorView(
@@ -182,59 +120,46 @@ class HomeScreen extends ConsumerWidget {
                   inline: true,
                 )
               else if (historyState.transactions.isEmpty)
-                _EmptyTransactionsStub()
+                EmptyState(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'No transactions yet',
+                  message:
+                      'Your deposits, withdrawals, and transfers will appear here.',
+                  actionLabel: 'Make a deposit',
+                  onAction: () => context.push('/deposit'),
+                )
               else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: math.min(5, historyState.transactions.length),
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: AppSpacing.s),
-                  itemBuilder: (context, index) {
-                    final tx = historyState.transactions[index];
-                    final isDebit = tx.senderId == currentUserAccountId;
-                    final txTitle = isDebit ? 'Chuyển tiền' : 'Nhận tiền';
-                    final txIcon = isDebit
-                        ? Icons.arrow_outward
-                        : Icons.arrow_downward;
-                    final iconColor = isDebit
-                        ? theme.colorScheme.error
-                        : Colors.green;
-
-                    return Card(
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: iconColor.withOpacity(0.08),
-                          child: Icon(txIcon, color: iconColor),
-                        ),
-                        title: Text(
-                          txTitle,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          _formatDateTime(tx.createdAt),
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
-                          ),
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                AppCard(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
+                  child: Column(
+                    children: List.generate(
+                      math.min(5, historyState.transactions.length),
+                      (index) {
+                        final tx = historyState.transactions[index];
+                        return Column(
                           children: [
-                            AmountText.forTransaction(
+                            TransactionRow(
                               transaction: tx,
                               currentUserAccountId: currentUserAccountId,
+                              compact: true,
+                              onTap: () =>
+                                  context.push('/transactions/${tx.id}'),
                             ),
-                            const SizedBox(height: AppSpacing.xs),
-                            StatusChip(status: tx.status.name),
+                            if (index !=
+                                math.min(5, historyState.transactions.length) -
+                                    1)
+                              Divider(
+                                height: 1,
+                                indent: 72,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
+                              ),
                           ],
-                        ),
-                        onTap: () {
-                          context.push('/transactions/${tx.id}');
-                        },
-                      ),
-                    );
-                  },
+                        );
+                      },
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -242,61 +167,131 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
-
-  String _formatDateTime(String isoString) {
-    try {
-      final dateTime = DateTime.parse(isoString).toLocal();
-      return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} - ${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}';
-    } catch (e) {
-      return isoString;
-    }
-  }
 }
 
-class _CardLoadingStub extends StatelessWidget {
-  const _CardLoadingStub();
+class _BalanceHero extends StatelessWidget {
+  final Money balance;
+  final String accountId;
+
+  const _BalanceHero({required this.balance, required this.accountId});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      color: theme.colorScheme.primary.withOpacity(0.5),
-      child: const SizedBox(
-        height: 150,
-        child: Center(child: CircularProgressIndicator(color: Colors.white)),
+    final colors = theme.colorScheme;
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          colors.primary,
+          Color.lerp(colors.primary, colors.secondary, 0.65)!,
+          colors.tertiary,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: colors.onPrimary.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(AppRadius.m),
+                ),
+                child: Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: colors.onPrimary,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.m,
+                  vertical: AppSpacing.s,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.onPrimary.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  balance.currency,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colors.onPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            'Available balance',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colors.onPrimary.withValues(alpha: 0.78),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          AmountText.neutral(
+            amount: balance.amount,
+            currency: balance.currency,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: colors.onPrimary,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            'Wallet ID',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colors.onPrimary.withValues(alpha: 0.72),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            _short(accountId),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colors.onPrimary,
+              fontFamily: 'monospace',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  String _short(String value) {
+    if (value.length <= 20) return value;
+    return '${value.substring(0, 10)}...${value.substring(value.length - 6)}';
+  }
 }
 
-class _EmptyTransactionsStub extends StatelessWidget {
+class _BalanceSkeleton extends StatelessWidget {
+  const _BalanceSkeleton();
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppRadius.l),
-        border: Border.all(
-          color: theme.colorScheme.onSurface.withOpacity(0.05),
-        ),
-      ),
+    return const AppCard(
+      padding: EdgeInsets.all(AppSpacing.xl),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 48,
-            color: theme.colorScheme.onSurface.withOpacity(0.3),
-          ),
-          const SizedBox(height: AppSpacing.s),
-          Text(
-            'Chưa có giao dịch nào',
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          SkeletonBox(height: 42, width: 42),
+          SizedBox(height: AppSpacing.xl),
+          SkeletonBox(height: 14, width: 140),
+          SizedBox(height: AppSpacing.s),
+          SkeletonBox(height: 36, width: 240),
+          SizedBox(height: AppSpacing.xl),
+          SkeletonBox(height: 12, width: 90),
+          SizedBox(height: AppSpacing.s),
+          SkeletonBox(height: 14, width: 180),
         ],
       ),
     );
@@ -317,28 +312,38 @@ class _QuickActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      children: [
-        GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
+      child: Material(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.l),
+        child: InkWell(
           onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.l),
           child: Container(
-            width: 56,
-            height: 56,
+            constraints: const BoxConstraints(minHeight: 92),
+            padding: const EdgeInsets.all(AppSpacing.m),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.08),
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(AppRadius.l),
+              border: Border.all(color: theme.colorScheme.outlineVariant),
             ),
-            child: Icon(icon, color: theme.colorScheme.primary),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: theme.colorScheme.primary, size: 26),
+                const SizedBox(height: AppSpacing.s),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelLarge,
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

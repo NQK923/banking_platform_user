@@ -66,7 +66,9 @@ class Transfer extends _$Transfer {
     } on AppException catch (e) {
       state = TransferState.idle(errorMessage: e.userFriendlyMessage);
     } catch (e) {
-      state = TransferState.idle(errorMessage: 'Không tìm thấy người nhận.');
+      state = const TransferState.idle(
+        errorMessage: 'Không tìm thấy người nhận.',
+      );
     }
   }
 
@@ -204,7 +206,7 @@ class Transfer extends _$Transfer {
         final wasRefunded =
             tx.compensated == true ||
             (tx.failureReason != null &&
-             tx.failureReason!.toLowerCase().contains('compensated'));
+                tx.failureReason!.toLowerCase().contains('compensated'));
         state = TransferState.failed(
           reason: failureReason,
           wasRefunded: wasRefunded,
@@ -217,7 +219,7 @@ class Transfer extends _$Transfer {
         final wasRefunded =
             tx.compensated == true ||
             (tx.failureReason != null &&
-             tx.failureReason!.toLowerCase().contains('compensated'));
+                tx.failureReason!.toLowerCase().contains('compensated'));
         state = TransferState.failed(
           reason: failureReason,
           wasRefunded: wasRefunded,

@@ -10,8 +10,8 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const ProviderScope(child: MyApp()));
 
-    // Verify that the splash screen shows E-Wallet title and loading spinner
+    // Verify that the splash screen shows E-Wallet title and loading indicator.
     expect(find.text('E-Wallet'), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
   });
 }

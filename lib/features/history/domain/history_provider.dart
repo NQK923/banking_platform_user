@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/history_repository.dart';
 import 'wallet_transaction.dart';
-import 'history_models.dart';
 
 part 'history_provider.freezed.dart';
 part 'history_provider.g.dart';

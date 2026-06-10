@@ -10,7 +10,7 @@ class Money {
     try {
       final parsed = Decimal.parse(amountStr);
       return Money(amount: parsed, currency: currency.toUpperCase());
-    } catch (e) {
+    } catch (_) {
       throw FormatException(
         'Invalid decimal string representation: $amountStr',
       );
@@ -21,7 +21,6 @@ class Money {
     return Money(amount: Decimal.zero, currency: currency.toUpperCase());
   }
 
-  // Gets the standard scale for formatting
   int get scale {
     switch (currency) {
       case 'VND':
@@ -31,59 +30,32 @@ class Money {
       case 'BTC':
         return 8;
       default:
-        return 4; // default to DECIMAL(19,4) scale
+        return 4;
     }
   }
 
-  // Formats the amount exactly as a decimal string matching the scale
   String toDecimalString() {
-    // Rounds or formats to the exact scale for database compatibility
-    // In Dart decimal package, we can get the string or scale it.
-    // For simplicity, we serialize the amount to string.
     return amount.toString();
   }
 
-  // Returns a styled/formatted string suitable for display (e.g. 1.000.000 ₫ or $1,250.00)
   String formatDisplay() {
     final scaleVal = scale;
     final fixedStr = amount.toStringAsFixed(scaleVal);
 
     if (currency == 'VND') {
-      // Basic Vietnamese formatting, e.g. 1.000.000
-      final parts = fixedStr.split('.');
-      final integerPart = parts[0];
-      final buffer = StringBuffer();
-
-      int len = integerPart.length;
-      for (int i = 0; i < len; i++) {
-        buffer.write(integerPart[i]);
-        if ((len - i - 1) % 3 == 0 && i != len - 1) {
-          buffer.write('.');
-        }
-      }
-      return '${buffer.toString()} ₫';
-    } else if (currency == 'USD') {
-      // Basic US formatting, e.g. $1,250.00
-      final parts = fixedStr.split('.');
-      final integerPart = parts[0];
-      final decimalPart = parts.length > 1 ? parts[1] : '';
-
-      final buffer = StringBuffer();
-      int len = integerPart.length;
-      for (int i = 0; i < len; i++) {
-        buffer.write(integerPart[i]);
-        if ((len - i - 1) % 3 == 0 && i != len - 1) {
-          buffer.write(',');
-        }
-      }
-      final decStr = decimalPart.isNotEmpty ? '.$decimalPart' : '';
-      return '\$${buffer.toString()}$decStr';
-    } else {
-      return '$fixedStr $currency';
+      return '${_formatInteger(fixedStr.split('.').first, '.')} VND';
     }
+
+    if (currency == 'USD') {
+      final parts = fixedStr.split('.');
+      final integerPart = _formatInteger(parts.first, ',');
+      final decimalPart = parts.length > 1 ? '.${parts[1]}' : '';
+      return '\$$integerPart$decimalPart';
+    }
+
+    return '$fixedStr $currency';
   }
 
-  // Math operations
   Money add(Money other) {
     _checkCurrency(other);
     return Money(amount: amount + other.amount, currency: currency);
@@ -106,6 +78,18 @@ class Money {
 
   bool isNegative() {
     return amount < Decimal.zero;
+  }
+
+  String _formatInteger(String integerPart, String separator) {
+    final buffer = StringBuffer();
+    final len = integerPart.length;
+    for (int i = 0; i < len; i++) {
+      buffer.write(integerPart[i]);
+      if ((len - i - 1) % 3 == 0 && i != len - 1) {
+        buffer.write(separator);
+      }
+    }
+    return buffer.toString();
   }
 
   void _checkCurrency(Money other) {

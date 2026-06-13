@@ -24,6 +24,30 @@ class TransferState with _$TransferState {
 
   const factory TransferState.submitting() = TransferStateSubmitting;
 
+  const factory TransferState.riskWarningRequired({
+    required AccountRecord recipient,
+    required String amount,
+    String? note,
+    required String idempotencyKey,
+    required TransferRiskResponse risk,
+  }) = TransferStateRiskWarningRequired;
+
+  const factory TransferState.stepUpRequired({
+    required AccountRecord recipient,
+    required String amount,
+    String? note,
+    required String idempotencyKey,
+    required TransferRiskResponse risk,
+  }) = TransferStateStepUpRequired;
+
+  const factory TransferState.manualReviewRequired({
+    required TransferRiskResponse risk,
+  }) = TransferStateManualReviewRequired;
+
+  const factory TransferState.riskBlocked({
+    required TransferRiskResponse risk,
+  }) = TransferStateRiskBlocked;
+
   const factory TransferState.processing({
     required WalletTransaction transaction,
     @Default(0) int pollCount,

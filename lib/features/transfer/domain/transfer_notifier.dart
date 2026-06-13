@@ -105,11 +105,11 @@ class Transfer extends _$Transfer {
           amount: amount,
           idempotencyKey: idempotencyKey,
           pin: pin,
+          note: note,
         ),
       );
 
-      state = TransferState.processing(transaction: tx, pollCount: 0);
-      _pollStatus(tx.id);
+      _handleSubmissionResult(tx, recipient, amount, note, idempotencyKey);
     } on AppException catch (e) {
       state = TransferState.failed(
         reason: e.userFriendlyMessage,
@@ -150,11 +150,11 @@ class Transfer extends _$Transfer {
           amount: amount,
           idempotencyKey: idempotencyKey,
           pin: pin,
+          note: note,
         ),
       );
 
-      state = TransferState.processing(transaction: tx, pollCount: 0);
-      _pollStatus(tx.id);
+      _handleSubmissionResult(tx, recipient, amount, note, idempotencyKey);
     } on AppException catch (e) {
       state = TransferState.failed(
         reason: e.userFriendlyMessage,
@@ -177,6 +177,125 @@ class Transfer extends _$Transfer {
   void retryPolling(WalletTransaction transaction) {
     state = TransferState.processing(transaction: transaction, pollCount: 0);
     _pollStatus(transaction.id);
+  }
+
+  Future<void> acknowledgeRiskWarning(String pin) async {
+    final currentState = state;
+    if (currentState is! TransferStateRiskWarningRequired) return;
+    await _continueRiskTransfer(
+      recipient: currentState.recipient,
+      amount: currentState.amount,
+      note: currentState.note,
+      idempotencyKey: currentState.idempotencyKey,
+      pin: pin,
+      risk: currentState.risk,
+      riskAcknowledged: true,
+    );
+  }
+
+  Future<void> submitStepUp(String pin, String stepUpPin) async {
+    final currentState = state;
+    if (currentState is! TransferStateStepUpRequired) return;
+    await _continueRiskTransfer(
+      recipient: currentState.recipient,
+      amount: currentState.amount,
+      note: currentState.note,
+      idempotencyKey: currentState.idempotencyKey,
+      pin: pin,
+      risk: currentState.risk,
+      stepUpPin: stepUpPin,
+    );
+  }
+
+  Future<void> _continueRiskTransfer({
+    required AccountRecord recipient,
+    required String amount,
+    required String idempotencyKey,
+    required String pin,
+    required TransferRiskResponse risk,
+    String? note,
+    bool? riskAcknowledged,
+    String? stepUpPin,
+  }) async {
+    state = const TransferState.submitting();
+    try {
+      final isEmail = recipient.code.contains('@');
+      final result = await _transferRepository.initiateTransfer(
+        TransferRequest(
+          recipientEmail: isEmail ? recipient.code : null,
+          recipientPhone: !isEmail ? recipient.code : null,
+          amount: amount,
+          idempotencyKey: idempotencyKey,
+          pin: pin,
+          note: note,
+          riskEvaluationId: risk.riskEvaluationId,
+          riskAcknowledged: riskAcknowledged,
+          stepUpPin: stepUpPin,
+        ),
+      );
+      _handleSubmissionResult(result, recipient, amount, note, idempotencyKey);
+    } on AppException catch (e) {
+      state = TransferState.failed(
+        reason: e.userFriendlyMessage,
+        recipient: recipient,
+        amount: amount,
+        note: note,
+        idempotencyKey: idempotencyKey,
+      );
+    } catch (e) {
+      state = TransferState.failed(
+        reason: e.toString(),
+        recipient: recipient,
+        amount: amount,
+        note: note,
+        idempotencyKey: idempotencyKey,
+      );
+    }
+  }
+
+  void _handleSubmissionResult(
+    TransferSubmissionResult result,
+    AccountRecord recipient,
+    String amount,
+    String? note,
+    String idempotencyKey,
+  ) {
+    switch (result) {
+      case TransferSubmitted(:final transaction):
+        state = TransferState.processing(transaction: transaction, pollCount: 0);
+        _pollStatus(transaction.id);
+      case TransferRiskRequired(:final risk):
+        switch (risk.result) {
+          case 'RISK_WARNING_REQUIRED':
+            state = TransferState.riskWarningRequired(
+              recipient: recipient,
+              amount: amount,
+              note: note,
+              idempotencyKey: idempotencyKey,
+              risk: risk,
+            );
+          case 'RISK_STEP_UP_REQUIRED':
+            state = TransferState.stepUpRequired(
+              recipient: recipient,
+              amount: amount,
+              note: note,
+              idempotencyKey: idempotencyKey,
+              risk: risk,
+            );
+          case 'RISK_MANUAL_REVIEW_REQUIRED':
+            state = TransferState.manualReviewRequired(risk: risk);
+          case 'RISK_BLOCKED':
+            state = TransferState.riskBlocked(risk: risk);
+          default:
+            state = TransferState.failed(
+              reason: risk.message,
+              recipient: recipient,
+              amount: amount,
+              note: note,
+              idempotencyKey: idempotencyKey,
+            );
+        }
+    }
   }
 
   Future<void> _pollStatus(String txId) async {

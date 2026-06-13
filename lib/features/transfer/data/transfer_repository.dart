@@ -29,12 +29,18 @@ class TransferRepository {
     return AccountRecord.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<WalletTransaction> initiateTransfer(TransferRequest request) async {
+  Future<TransferSubmissionResult> initiateTransfer(
+    TransferRequest request,
+  ) async {
     final response = await _apiClient.post(
       '/api/transactions/transfer',
       data: request.toJson(),
       options: Options(headers: {'Idempotency-Key': request.idempotencyKey}),
     );
-    return WalletTransaction.fromJson(response.data as Map<String, dynamic>);
+    final data = response.data as Map<String, dynamic>;
+    if (data.containsKey('result') && data.containsKey('riskEvaluationId')) {
+      return TransferRiskRequired(TransferRiskResponse.fromJson(data));
+    }
+    return TransferSubmitted(WalletTransaction.fromJson(data));
   }
 }

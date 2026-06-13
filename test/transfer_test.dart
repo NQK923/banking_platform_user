@@ -70,6 +70,7 @@ class MockTransferRepository implements TransferRepository {
   AccountRecord? lookupResult;
   AppException? lookupError;
   WalletTransaction? transferResult;
+  TransferRiskResponse? riskResult;
   AppException? transferError;
 
   final List<TransferRequest> initiatedRequests = [];
@@ -86,13 +87,16 @@ class MockTransferRepository implements TransferRepository {
   }
 
   @override
-  Future<WalletTransaction> initiateTransfer(TransferRequest request) async {
+  Future<TransferSubmissionResult> initiateTransfer(TransferRequest request) async {
     initiatedRequests.add(request);
     if (transferError != null) {
       throw transferError!;
     }
+    if (riskResult != null) {
+      return TransferRiskRequired(riskResult!);
+    }
     if (transferResult != null) {
-      return transferResult!;
+      return TransferSubmitted(transferResult!);
     }
     throw const AppException(
       code: 'INTERNAL',
@@ -371,6 +375,75 @@ void main() {
 
         expect(mockWalletRepository.getBalanceCallCount, 2);
       });
+    });
+
+    test('risk warning acknowledgement reuses idempotency key and risk id', () async {
+      final container = createContainer();
+      const recipient = AccountRecord(
+        id: 'recipient-account-id',
+        userId: 'recipient-user-id',
+        code: 'recipient@email.com',
+        currency: 'VND',
+        kind: AccountKind.USER,
+        status: AccountStatus.ACTIVE,
+        version: 1,
+        createdAt: '2026-06-07T00:00:00Z',
+      );
+      const risk = TransferRiskResponse(
+        result: 'RISK_WARNING_REQUIRED',
+        riskEvaluationId: 'risk-123',
+        riskScore: 40,
+        riskLevel: 'MEDIUM',
+        recommendedAction: 'WARN_USER',
+        reasons: [
+          RiskReasonView(
+            code: 'NEW_RECIPIENT',
+            weight: 15,
+            message: 'Sender has never transferred to this recipient before',
+          ),
+        ],
+        modelVersion: 'rules-v1.0.0',
+        policyVersion: 'risk-policy-v1.0.0',
+        evaluatedAt: '2026-06-13T00:00:00Z',
+        traceId: 'trace-123',
+        message: 'Review this transfer carefully.',
+      );
+
+      mockTransferRepository.lookupResult = recipient;
+      mockTransferRepository.riskResult = risk;
+
+      final notifier = container.read(transferProvider.notifier);
+      await notifier.lookupRecipient('recipient@email.com');
+      notifier.setAmountAndNote('50000', 'Risk');
+      final reviewState = container.read(transferProvider) as TransferStateReview;
+
+      await notifier.submitTransfer('123456');
+      expect(container.read(transferProvider), isA<TransferStateRiskWarningRequired>());
+      expect(mockTransferRepository.initiatedRequests.single.idempotencyKey, reviewState.idempotencyKey);
+
+      mockTransferRepository.riskResult = null;
+      final tx = WalletTransaction(
+        id: 'tx-risk',
+        senderId: 'sender-account-id',
+        receiverId: 'recipient-account-id',
+        amount: Decimal.parse('50000'),
+        currency: 'VND',
+        status: TransactionStatus.PENDING,
+        idempotencyKey: reviewState.idempotencyKey,
+        createdAt: '2026-06-07T00:00:00Z',
+        updatedAt: '2026-06-07T00:00:00Z',
+        debitApplied: false,
+      );
+      mockTransferRepository.transferResult = tx;
+      mockHistoryRepository.transactions[tx.id] = tx;
+
+      await notifier.acknowledgeRiskWarning('123456');
+
+      expect(container.read(transferProvider), isA<TransferStateProcessing>());
+      expect(mockTransferRepository.initiatedRequests.length, 2);
+      expect(mockTransferRepository.initiatedRequests.last.idempotencyKey, reviewState.idempotencyKey);
+      expect(mockTransferRepository.initiatedRequests.last.riskEvaluationId, 'risk-123');
+      expect(mockTransferRepository.initiatedRequests.last.riskAcknowledged, isTrue);
     });
 
     test('submitTransfer and compensation failed path status polling', () {

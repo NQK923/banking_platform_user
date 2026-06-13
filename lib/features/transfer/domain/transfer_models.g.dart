@@ -50,6 +50,10 @@ _$TransferRequestImpl _$$TransferRequestImplFromJson(
   amount: json['amount'] as String,
   idempotencyKey: json['idempotencyKey'] as String,
   pin: json['pin'] as String,
+  note: json['note'] as String?,
+  riskEvaluationId: json['riskEvaluationId'] as String?,
+  riskAcknowledged: json['riskAcknowledged'] as bool?,
+  stepUpPin: json['stepUpPin'] as String?,
 );
 
 Map<String, dynamic> _$$TransferRequestImplToJson(
@@ -61,4 +65,67 @@ Map<String, dynamic> _$$TransferRequestImplToJson(
   'amount': instance.amount,
   'idempotencyKey': instance.idempotencyKey,
   'pin': instance.pin,
+  'note': instance.note,
+  'riskEvaluationId': instance.riskEvaluationId,
+  'riskAcknowledged': instance.riskAcknowledged,
+  'stepUpPin': instance.stepUpPin,
+};
+
+_$RiskReasonViewImpl _$$RiskReasonViewImplFromJson(Map<String, dynamic> json) =>
+    _$RiskReasonViewImpl(
+      code: json['code'] as String,
+      weight: (json['weight'] as num).toInt(),
+      message: json['message'] as String,
+      evidence:
+          (json['evidence'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, e as String),
+          ) ??
+          const <String, String>{},
+    );
+
+Map<String, dynamic> _$$RiskReasonViewImplToJson(
+  _$RiskReasonViewImpl instance,
+) => <String, dynamic>{
+  'code': instance.code,
+  'weight': instance.weight,
+  'message': instance.message,
+  'evidence': instance.evidence,
+};
+
+_$TransferRiskResponseImpl _$$TransferRiskResponseImplFromJson(
+  Map<String, dynamic> json,
+) => _$TransferRiskResponseImpl(
+  result: json['result'] as String,
+  riskEvaluationId: json['riskEvaluationId'] as String,
+  riskScore: (json['riskScore'] as num).toInt(),
+  riskLevel: json['riskLevel'] as String,
+  recommendedAction: json['recommendedAction'] as String,
+  reasons:
+      (json['reasons'] as List<dynamic>?)
+          ?.map((e) => RiskReasonView.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const <RiskReasonView>[],
+  modelVersion: json['modelVersion'] as String,
+  policyVersion: json['policyVersion'] as String,
+  evaluatedAt: json['evaluatedAt'] as String,
+  traceId: json['traceId'] as String,
+  transactionId: json['transactionId'] as String?,
+  message: json['message'] as String,
+);
+
+Map<String, dynamic> _$$TransferRiskResponseImplToJson(
+  _$TransferRiskResponseImpl instance,
+) => <String, dynamic>{
+  'result': instance.result,
+  'riskEvaluationId': instance.riskEvaluationId,
+  'riskScore': instance.riskScore,
+  'riskLevel': instance.riskLevel,
+  'recommendedAction': instance.recommendedAction,
+  'reasons': instance.reasons,
+  'modelVersion': instance.modelVersion,
+  'policyVersion': instance.policyVersion,
+  'evaluatedAt': instance.evaluatedAt,
+  'traceId': instance.traceId,
+  'transactionId': instance.transactionId,
+  'message': instance.message,
 };

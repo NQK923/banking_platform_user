@@ -30,6 +30,24 @@ mixin _$TransferState {
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -58,6 +76,24 @@ mixin _$TransferState {
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -85,6 +121,24 @@ mixin _$TransferState {
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -109,6 +163,12 @@ mixin _$TransferState {
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -121,6 +181,12 @@ mixin _$TransferState {
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -133,6 +199,12 @@ mixin _$TransferState {
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,
@@ -248,6 +320,24 @@ class _$TransferStateIdleImpl implements _TransferStateIdle {
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -280,6 +370,24 @@ class _$TransferStateIdleImpl implements _TransferStateIdle {
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -311,6 +419,24 @@ class _$TransferStateIdleImpl implements _TransferStateIdle {
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -342,6 +468,12 @@ class _$TransferStateIdleImpl implements _TransferStateIdle {
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -358,6 +490,12 @@ class _$TransferStateIdleImpl implements _TransferStateIdle {
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -374,6 +512,12 @@ class _$TransferStateIdleImpl implements _TransferStateIdle {
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,
@@ -457,6 +601,24 @@ class _$TransferStateRecipientCheckingImpl
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -489,6 +651,24 @@ class _$TransferStateRecipientCheckingImpl
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -520,6 +700,24 @@ class _$TransferStateRecipientCheckingImpl
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -551,6 +749,12 @@ class _$TransferStateRecipientCheckingImpl
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -567,6 +771,12 @@ class _$TransferStateRecipientCheckingImpl
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -583,6 +793,12 @@ class _$TransferStateRecipientCheckingImpl
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,
@@ -702,6 +918,24 @@ class _$TransferStateRecipientCheckedImpl
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -734,6 +968,24 @@ class _$TransferStateRecipientCheckedImpl
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -765,6 +1017,24 @@ class _$TransferStateRecipientCheckedImpl
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -796,6 +1066,12 @@ class _$TransferStateRecipientCheckedImpl
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -812,6 +1088,12 @@ class _$TransferStateRecipientCheckedImpl
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -828,6 +1110,12 @@ class _$TransferStateRecipientCheckedImpl
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,
@@ -992,6 +1280,24 @@ class _$TransferStateReviewImpl implements TransferStateReview {
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -1024,6 +1330,24 @@ class _$TransferStateReviewImpl implements TransferStateReview {
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -1055,6 +1379,24 @@ class _$TransferStateReviewImpl implements TransferStateReview {
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -1086,6 +1428,12 @@ class _$TransferStateReviewImpl implements TransferStateReview {
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -1102,6 +1450,12 @@ class _$TransferStateReviewImpl implements TransferStateReview {
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -1118,6 +1472,12 @@ class _$TransferStateReviewImpl implements TransferStateReview {
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,
@@ -1206,6 +1566,24 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -1238,6 +1616,24 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -1269,6 +1665,24 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -1300,6 +1714,12 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -1316,6 +1736,12 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -1332,6 +1758,12 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,
@@ -1347,6 +1779,1450 @@ class _$TransferStateSubmittingImpl implements TransferStateSubmitting {
 
 abstract class TransferStateSubmitting implements TransferState {
   const factory TransferStateSubmitting() = _$TransferStateSubmittingImpl;
+}
+
+/// @nodoc
+abstract class _$$TransferStateRiskWarningRequiredImplCopyWith<$Res> {
+  factory _$$TransferStateRiskWarningRequiredImplCopyWith(
+    _$TransferStateRiskWarningRequiredImpl value,
+    $Res Function(_$TransferStateRiskWarningRequiredImpl) then,
+  ) = __$$TransferStateRiskWarningRequiredImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({
+    AccountRecord recipient,
+    String amount,
+    String? note,
+    String idempotencyKey,
+    TransferRiskResponse risk,
+  });
+
+  $AccountRecordCopyWith<$Res> get recipient;
+  $TransferRiskResponseCopyWith<$Res> get risk;
+}
+
+/// @nodoc
+class __$$TransferStateRiskWarningRequiredImplCopyWithImpl<$Res>
+    extends
+        _$TransferStateCopyWithImpl<
+          $Res,
+          _$TransferStateRiskWarningRequiredImpl
+        >
+    implements _$$TransferStateRiskWarningRequiredImplCopyWith<$Res> {
+  __$$TransferStateRiskWarningRequiredImplCopyWithImpl(
+    _$TransferStateRiskWarningRequiredImpl _value,
+    $Res Function(_$TransferStateRiskWarningRequiredImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? recipient = null,
+    Object? amount = null,
+    Object? note = freezed,
+    Object? idempotencyKey = null,
+    Object? risk = null,
+  }) {
+    return _then(
+      _$TransferStateRiskWarningRequiredImpl(
+        recipient: null == recipient
+            ? _value.recipient
+            : recipient // ignore: cast_nullable_to_non_nullable
+                  as AccountRecord,
+        amount: null == amount
+            ? _value.amount
+            : amount // ignore: cast_nullable_to_non_nullable
+                  as String,
+        note: freezed == note
+            ? _value.note
+            : note // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        idempotencyKey: null == idempotencyKey
+            ? _value.idempotencyKey
+            : idempotencyKey // ignore: cast_nullable_to_non_nullable
+                  as String,
+        risk: null == risk
+            ? _value.risk
+            : risk // ignore: cast_nullable_to_non_nullable
+                  as TransferRiskResponse,
+      ),
+    );
+  }
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AccountRecordCopyWith<$Res> get recipient {
+    return $AccountRecordCopyWith<$Res>(_value.recipient, (value) {
+      return _then(_value.copyWith(recipient: value));
+    });
+  }
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TransferRiskResponseCopyWith<$Res> get risk {
+    return $TransferRiskResponseCopyWith<$Res>(_value.risk, (value) {
+      return _then(_value.copyWith(risk: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$TransferStateRiskWarningRequiredImpl
+    implements TransferStateRiskWarningRequired {
+  const _$TransferStateRiskWarningRequiredImpl({
+    required this.recipient,
+    required this.amount,
+    this.note,
+    required this.idempotencyKey,
+    required this.risk,
+  });
+
+  @override
+  final AccountRecord recipient;
+  @override
+  final String amount;
+  @override
+  final String? note;
+  @override
+  final String idempotencyKey;
+  @override
+  final TransferRiskResponse risk;
+
+  @override
+  String toString() {
+    return 'TransferState.riskWarningRequired(recipient: $recipient, amount: $amount, note: $note, idempotencyKey: $idempotencyKey, risk: $risk)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$TransferStateRiskWarningRequiredImpl &&
+            (identical(other.recipient, recipient) ||
+                other.recipient == recipient) &&
+            (identical(other.amount, amount) || other.amount == amount) &&
+            (identical(other.note, note) || other.note == note) &&
+            (identical(other.idempotencyKey, idempotencyKey) ||
+                other.idempotencyKey == idempotencyKey) &&
+            (identical(other.risk, risk) || other.risk == risk));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, recipient, amount, note, idempotencyKey, risk);
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$TransferStateRiskWarningRequiredImplCopyWith<
+    _$TransferStateRiskWarningRequiredImpl
+  >
+  get copyWith =>
+      __$$TransferStateRiskWarningRequiredImplCopyWithImpl<
+        _$TransferStateRiskWarningRequiredImpl
+      >(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String? errorMessage) idle,
+    required TResult Function() recipientChecking,
+    required TResult Function(AccountRecord recipient) recipientChecked,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )
+    review,
+    required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
+    required TResult Function(WalletTransaction transaction, int pollCount)
+    processing,
+    required TResult Function(WalletTransaction transaction) completed,
+    required TResult Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )
+    failed,
+    required TResult Function(WalletTransaction transaction) timeout,
+  }) {
+    return riskWarningRequired(recipient, amount, note, idempotencyKey, risk);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String? errorMessage)? idle,
+    TResult? Function()? recipientChecking,
+    TResult? Function(AccountRecord recipient)? recipientChecked,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )?
+    review,
+    TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
+    TResult? Function(WalletTransaction transaction, int pollCount)? processing,
+    TResult? Function(WalletTransaction transaction)? completed,
+    TResult? Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )?
+    failed,
+    TResult? Function(WalletTransaction transaction)? timeout,
+  }) {
+    return riskWarningRequired?.call(
+      recipient,
+      amount,
+      note,
+      idempotencyKey,
+      risk,
+    );
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String? errorMessage)? idle,
+    TResult Function()? recipientChecking,
+    TResult Function(AccountRecord recipient)? recipientChecked,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )?
+    review,
+    TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
+    TResult Function(WalletTransaction transaction, int pollCount)? processing,
+    TResult Function(WalletTransaction transaction)? completed,
+    TResult Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )?
+    failed,
+    TResult Function(WalletTransaction transaction)? timeout,
+    required TResult orElse(),
+  }) {
+    if (riskWarningRequired != null) {
+      return riskWarningRequired(recipient, amount, note, idempotencyKey, risk);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_TransferStateIdle value) idle,
+    required TResult Function(TransferStateRecipientChecking value)
+    recipientChecking,
+    required TResult Function(TransferStateRecipientChecked value)
+    recipientChecked,
+    required TResult Function(TransferStateReview value) review,
+    required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
+    required TResult Function(TransferStateProcessing value) processing,
+    required TResult Function(TransferStateCompleted value) completed,
+    required TResult Function(TransferStateFailed value) failed,
+    required TResult Function(TransferStateTimeout value) timeout,
+  }) {
+    return riskWarningRequired(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_TransferStateIdle value)? idle,
+    TResult? Function(TransferStateRecipientChecking value)? recipientChecking,
+    TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
+    TResult? Function(TransferStateReview value)? review,
+    TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
+    TResult? Function(TransferStateProcessing value)? processing,
+    TResult? Function(TransferStateCompleted value)? completed,
+    TResult? Function(TransferStateFailed value)? failed,
+    TResult? Function(TransferStateTimeout value)? timeout,
+  }) {
+    return riskWarningRequired?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_TransferStateIdle value)? idle,
+    TResult Function(TransferStateRecipientChecking value)? recipientChecking,
+    TResult Function(TransferStateRecipientChecked value)? recipientChecked,
+    TResult Function(TransferStateReview value)? review,
+    TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
+    TResult Function(TransferStateProcessing value)? processing,
+    TResult Function(TransferStateCompleted value)? completed,
+    TResult Function(TransferStateFailed value)? failed,
+    TResult Function(TransferStateTimeout value)? timeout,
+    required TResult orElse(),
+  }) {
+    if (riskWarningRequired != null) {
+      return riskWarningRequired(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class TransferStateRiskWarningRequired implements TransferState {
+  const factory TransferStateRiskWarningRequired({
+    required final AccountRecord recipient,
+    required final String amount,
+    final String? note,
+    required final String idempotencyKey,
+    required final TransferRiskResponse risk,
+  }) = _$TransferStateRiskWarningRequiredImpl;
+
+  AccountRecord get recipient;
+  String get amount;
+  String? get note;
+  String get idempotencyKey;
+  TransferRiskResponse get risk;
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$TransferStateRiskWarningRequiredImplCopyWith<
+    _$TransferStateRiskWarningRequiredImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$TransferStateStepUpRequiredImplCopyWith<$Res> {
+  factory _$$TransferStateStepUpRequiredImplCopyWith(
+    _$TransferStateStepUpRequiredImpl value,
+    $Res Function(_$TransferStateStepUpRequiredImpl) then,
+  ) = __$$TransferStateStepUpRequiredImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({
+    AccountRecord recipient,
+    String amount,
+    String? note,
+    String idempotencyKey,
+    TransferRiskResponse risk,
+  });
+
+  $AccountRecordCopyWith<$Res> get recipient;
+  $TransferRiskResponseCopyWith<$Res> get risk;
+}
+
+/// @nodoc
+class __$$TransferStateStepUpRequiredImplCopyWithImpl<$Res>
+    extends _$TransferStateCopyWithImpl<$Res, _$TransferStateStepUpRequiredImpl>
+    implements _$$TransferStateStepUpRequiredImplCopyWith<$Res> {
+  __$$TransferStateStepUpRequiredImplCopyWithImpl(
+    _$TransferStateStepUpRequiredImpl _value,
+    $Res Function(_$TransferStateStepUpRequiredImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? recipient = null,
+    Object? amount = null,
+    Object? note = freezed,
+    Object? idempotencyKey = null,
+    Object? risk = null,
+  }) {
+    return _then(
+      _$TransferStateStepUpRequiredImpl(
+        recipient: null == recipient
+            ? _value.recipient
+            : recipient // ignore: cast_nullable_to_non_nullable
+                  as AccountRecord,
+        amount: null == amount
+            ? _value.amount
+            : amount // ignore: cast_nullable_to_non_nullable
+                  as String,
+        note: freezed == note
+            ? _value.note
+            : note // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        idempotencyKey: null == idempotencyKey
+            ? _value.idempotencyKey
+            : idempotencyKey // ignore: cast_nullable_to_non_nullable
+                  as String,
+        risk: null == risk
+            ? _value.risk
+            : risk // ignore: cast_nullable_to_non_nullable
+                  as TransferRiskResponse,
+      ),
+    );
+  }
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AccountRecordCopyWith<$Res> get recipient {
+    return $AccountRecordCopyWith<$Res>(_value.recipient, (value) {
+      return _then(_value.copyWith(recipient: value));
+    });
+  }
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TransferRiskResponseCopyWith<$Res> get risk {
+    return $TransferRiskResponseCopyWith<$Res>(_value.risk, (value) {
+      return _then(_value.copyWith(risk: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$TransferStateStepUpRequiredImpl implements TransferStateStepUpRequired {
+  const _$TransferStateStepUpRequiredImpl({
+    required this.recipient,
+    required this.amount,
+    this.note,
+    required this.idempotencyKey,
+    required this.risk,
+  });
+
+  @override
+  final AccountRecord recipient;
+  @override
+  final String amount;
+  @override
+  final String? note;
+  @override
+  final String idempotencyKey;
+  @override
+  final TransferRiskResponse risk;
+
+  @override
+  String toString() {
+    return 'TransferState.stepUpRequired(recipient: $recipient, amount: $amount, note: $note, idempotencyKey: $idempotencyKey, risk: $risk)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$TransferStateStepUpRequiredImpl &&
+            (identical(other.recipient, recipient) ||
+                other.recipient == recipient) &&
+            (identical(other.amount, amount) || other.amount == amount) &&
+            (identical(other.note, note) || other.note == note) &&
+            (identical(other.idempotencyKey, idempotencyKey) ||
+                other.idempotencyKey == idempotencyKey) &&
+            (identical(other.risk, risk) || other.risk == risk));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, recipient, amount, note, idempotencyKey, risk);
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$TransferStateStepUpRequiredImplCopyWith<_$TransferStateStepUpRequiredImpl>
+  get copyWith =>
+      __$$TransferStateStepUpRequiredImplCopyWithImpl<
+        _$TransferStateStepUpRequiredImpl
+      >(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String? errorMessage) idle,
+    required TResult Function() recipientChecking,
+    required TResult Function(AccountRecord recipient) recipientChecked,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )
+    review,
+    required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
+    required TResult Function(WalletTransaction transaction, int pollCount)
+    processing,
+    required TResult Function(WalletTransaction transaction) completed,
+    required TResult Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )
+    failed,
+    required TResult Function(WalletTransaction transaction) timeout,
+  }) {
+    return stepUpRequired(recipient, amount, note, idempotencyKey, risk);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String? errorMessage)? idle,
+    TResult? Function()? recipientChecking,
+    TResult? Function(AccountRecord recipient)? recipientChecked,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )?
+    review,
+    TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
+    TResult? Function(WalletTransaction transaction, int pollCount)? processing,
+    TResult? Function(WalletTransaction transaction)? completed,
+    TResult? Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )?
+    failed,
+    TResult? Function(WalletTransaction transaction)? timeout,
+  }) {
+    return stepUpRequired?.call(recipient, amount, note, idempotencyKey, risk);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String? errorMessage)? idle,
+    TResult Function()? recipientChecking,
+    TResult Function(AccountRecord recipient)? recipientChecked,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )?
+    review,
+    TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
+    TResult Function(WalletTransaction transaction, int pollCount)? processing,
+    TResult Function(WalletTransaction transaction)? completed,
+    TResult Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )?
+    failed,
+    TResult Function(WalletTransaction transaction)? timeout,
+    required TResult orElse(),
+  }) {
+    if (stepUpRequired != null) {
+      return stepUpRequired(recipient, amount, note, idempotencyKey, risk);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_TransferStateIdle value) idle,
+    required TResult Function(TransferStateRecipientChecking value)
+    recipientChecking,
+    required TResult Function(TransferStateRecipientChecked value)
+    recipientChecked,
+    required TResult Function(TransferStateReview value) review,
+    required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
+    required TResult Function(TransferStateProcessing value) processing,
+    required TResult Function(TransferStateCompleted value) completed,
+    required TResult Function(TransferStateFailed value) failed,
+    required TResult Function(TransferStateTimeout value) timeout,
+  }) {
+    return stepUpRequired(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_TransferStateIdle value)? idle,
+    TResult? Function(TransferStateRecipientChecking value)? recipientChecking,
+    TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
+    TResult? Function(TransferStateReview value)? review,
+    TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
+    TResult? Function(TransferStateProcessing value)? processing,
+    TResult? Function(TransferStateCompleted value)? completed,
+    TResult? Function(TransferStateFailed value)? failed,
+    TResult? Function(TransferStateTimeout value)? timeout,
+  }) {
+    return stepUpRequired?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_TransferStateIdle value)? idle,
+    TResult Function(TransferStateRecipientChecking value)? recipientChecking,
+    TResult Function(TransferStateRecipientChecked value)? recipientChecked,
+    TResult Function(TransferStateReview value)? review,
+    TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
+    TResult Function(TransferStateProcessing value)? processing,
+    TResult Function(TransferStateCompleted value)? completed,
+    TResult Function(TransferStateFailed value)? failed,
+    TResult Function(TransferStateTimeout value)? timeout,
+    required TResult orElse(),
+  }) {
+    if (stepUpRequired != null) {
+      return stepUpRequired(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class TransferStateStepUpRequired implements TransferState {
+  const factory TransferStateStepUpRequired({
+    required final AccountRecord recipient,
+    required final String amount,
+    final String? note,
+    required final String idempotencyKey,
+    required final TransferRiskResponse risk,
+  }) = _$TransferStateStepUpRequiredImpl;
+
+  AccountRecord get recipient;
+  String get amount;
+  String? get note;
+  String get idempotencyKey;
+  TransferRiskResponse get risk;
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$TransferStateStepUpRequiredImplCopyWith<_$TransferStateStepUpRequiredImpl>
+  get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$TransferStateManualReviewRequiredImplCopyWith<$Res> {
+  factory _$$TransferStateManualReviewRequiredImplCopyWith(
+    _$TransferStateManualReviewRequiredImpl value,
+    $Res Function(_$TransferStateManualReviewRequiredImpl) then,
+  ) = __$$TransferStateManualReviewRequiredImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({TransferRiskResponse risk});
+
+  $TransferRiskResponseCopyWith<$Res> get risk;
+}
+
+/// @nodoc
+class __$$TransferStateManualReviewRequiredImplCopyWithImpl<$Res>
+    extends
+        _$TransferStateCopyWithImpl<
+          $Res,
+          _$TransferStateManualReviewRequiredImpl
+        >
+    implements _$$TransferStateManualReviewRequiredImplCopyWith<$Res> {
+  __$$TransferStateManualReviewRequiredImplCopyWithImpl(
+    _$TransferStateManualReviewRequiredImpl _value,
+    $Res Function(_$TransferStateManualReviewRequiredImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? risk = null}) {
+    return _then(
+      _$TransferStateManualReviewRequiredImpl(
+        risk: null == risk
+            ? _value.risk
+            : risk // ignore: cast_nullable_to_non_nullable
+                  as TransferRiskResponse,
+      ),
+    );
+  }
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TransferRiskResponseCopyWith<$Res> get risk {
+    return $TransferRiskResponseCopyWith<$Res>(_value.risk, (value) {
+      return _then(_value.copyWith(risk: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$TransferStateManualReviewRequiredImpl
+    implements TransferStateManualReviewRequired {
+  const _$TransferStateManualReviewRequiredImpl({required this.risk});
+
+  @override
+  final TransferRiskResponse risk;
+
+  @override
+  String toString() {
+    return 'TransferState.manualReviewRequired(risk: $risk)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$TransferStateManualReviewRequiredImpl &&
+            (identical(other.risk, risk) || other.risk == risk));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, risk);
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$TransferStateManualReviewRequiredImplCopyWith<
+    _$TransferStateManualReviewRequiredImpl
+  >
+  get copyWith =>
+      __$$TransferStateManualReviewRequiredImplCopyWithImpl<
+        _$TransferStateManualReviewRequiredImpl
+      >(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String? errorMessage) idle,
+    required TResult Function() recipientChecking,
+    required TResult Function(AccountRecord recipient) recipientChecked,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )
+    review,
+    required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
+    required TResult Function(WalletTransaction transaction, int pollCount)
+    processing,
+    required TResult Function(WalletTransaction transaction) completed,
+    required TResult Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )
+    failed,
+    required TResult Function(WalletTransaction transaction) timeout,
+  }) {
+    return manualReviewRequired(risk);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String? errorMessage)? idle,
+    TResult? Function()? recipientChecking,
+    TResult? Function(AccountRecord recipient)? recipientChecked,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )?
+    review,
+    TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
+    TResult? Function(WalletTransaction transaction, int pollCount)? processing,
+    TResult? Function(WalletTransaction transaction)? completed,
+    TResult? Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )?
+    failed,
+    TResult? Function(WalletTransaction transaction)? timeout,
+  }) {
+    return manualReviewRequired?.call(risk);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String? errorMessage)? idle,
+    TResult Function()? recipientChecking,
+    TResult Function(AccountRecord recipient)? recipientChecked,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )?
+    review,
+    TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
+    TResult Function(WalletTransaction transaction, int pollCount)? processing,
+    TResult Function(WalletTransaction transaction)? completed,
+    TResult Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )?
+    failed,
+    TResult Function(WalletTransaction transaction)? timeout,
+    required TResult orElse(),
+  }) {
+    if (manualReviewRequired != null) {
+      return manualReviewRequired(risk);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_TransferStateIdle value) idle,
+    required TResult Function(TransferStateRecipientChecking value)
+    recipientChecking,
+    required TResult Function(TransferStateRecipientChecked value)
+    recipientChecked,
+    required TResult Function(TransferStateReview value) review,
+    required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
+    required TResult Function(TransferStateProcessing value) processing,
+    required TResult Function(TransferStateCompleted value) completed,
+    required TResult Function(TransferStateFailed value) failed,
+    required TResult Function(TransferStateTimeout value) timeout,
+  }) {
+    return manualReviewRequired(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_TransferStateIdle value)? idle,
+    TResult? Function(TransferStateRecipientChecking value)? recipientChecking,
+    TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
+    TResult? Function(TransferStateReview value)? review,
+    TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
+    TResult? Function(TransferStateProcessing value)? processing,
+    TResult? Function(TransferStateCompleted value)? completed,
+    TResult? Function(TransferStateFailed value)? failed,
+    TResult? Function(TransferStateTimeout value)? timeout,
+  }) {
+    return manualReviewRequired?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_TransferStateIdle value)? idle,
+    TResult Function(TransferStateRecipientChecking value)? recipientChecking,
+    TResult Function(TransferStateRecipientChecked value)? recipientChecked,
+    TResult Function(TransferStateReview value)? review,
+    TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
+    TResult Function(TransferStateProcessing value)? processing,
+    TResult Function(TransferStateCompleted value)? completed,
+    TResult Function(TransferStateFailed value)? failed,
+    TResult Function(TransferStateTimeout value)? timeout,
+    required TResult orElse(),
+  }) {
+    if (manualReviewRequired != null) {
+      return manualReviewRequired(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class TransferStateManualReviewRequired implements TransferState {
+  const factory TransferStateManualReviewRequired({
+    required final TransferRiskResponse risk,
+  }) = _$TransferStateManualReviewRequiredImpl;
+
+  TransferRiskResponse get risk;
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$TransferStateManualReviewRequiredImplCopyWith<
+    _$TransferStateManualReviewRequiredImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$TransferStateRiskBlockedImplCopyWith<$Res> {
+  factory _$$TransferStateRiskBlockedImplCopyWith(
+    _$TransferStateRiskBlockedImpl value,
+    $Res Function(_$TransferStateRiskBlockedImpl) then,
+  ) = __$$TransferStateRiskBlockedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({TransferRiskResponse risk});
+
+  $TransferRiskResponseCopyWith<$Res> get risk;
+}
+
+/// @nodoc
+class __$$TransferStateRiskBlockedImplCopyWithImpl<$Res>
+    extends _$TransferStateCopyWithImpl<$Res, _$TransferStateRiskBlockedImpl>
+    implements _$$TransferStateRiskBlockedImplCopyWith<$Res> {
+  __$$TransferStateRiskBlockedImplCopyWithImpl(
+    _$TransferStateRiskBlockedImpl _value,
+    $Res Function(_$TransferStateRiskBlockedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? risk = null}) {
+    return _then(
+      _$TransferStateRiskBlockedImpl(
+        risk: null == risk
+            ? _value.risk
+            : risk // ignore: cast_nullable_to_non_nullable
+                  as TransferRiskResponse,
+      ),
+    );
+  }
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TransferRiskResponseCopyWith<$Res> get risk {
+    return $TransferRiskResponseCopyWith<$Res>(_value.risk, (value) {
+      return _then(_value.copyWith(risk: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$TransferStateRiskBlockedImpl implements TransferStateRiskBlocked {
+  const _$TransferStateRiskBlockedImpl({required this.risk});
+
+  @override
+  final TransferRiskResponse risk;
+
+  @override
+  String toString() {
+    return 'TransferState.riskBlocked(risk: $risk)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$TransferStateRiskBlockedImpl &&
+            (identical(other.risk, risk) || other.risk == risk));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, risk);
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$TransferStateRiskBlockedImplCopyWith<_$TransferStateRiskBlockedImpl>
+  get copyWith =>
+      __$$TransferStateRiskBlockedImplCopyWithImpl<
+        _$TransferStateRiskBlockedImpl
+      >(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String? errorMessage) idle,
+    required TResult Function() recipientChecking,
+    required TResult Function(AccountRecord recipient) recipientChecked,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )
+    review,
+    required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
+    required TResult Function(WalletTransaction transaction, int pollCount)
+    processing,
+    required TResult Function(WalletTransaction transaction) completed,
+    required TResult Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )
+    failed,
+    required TResult Function(WalletTransaction transaction) timeout,
+  }) {
+    return riskBlocked(risk);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String? errorMessage)? idle,
+    TResult? Function()? recipientChecking,
+    TResult? Function(AccountRecord recipient)? recipientChecked,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )?
+    review,
+    TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
+    TResult? Function(WalletTransaction transaction, int pollCount)? processing,
+    TResult? Function(WalletTransaction transaction)? completed,
+    TResult? Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )?
+    failed,
+    TResult? Function(WalletTransaction transaction)? timeout,
+  }) {
+    return riskBlocked?.call(risk);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String? errorMessage)? idle,
+    TResult Function()? recipientChecking,
+    TResult Function(AccountRecord recipient)? recipientChecked,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+    )?
+    review,
+    TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
+    TResult Function(WalletTransaction transaction, int pollCount)? processing,
+    TResult Function(WalletTransaction transaction)? completed,
+    TResult Function(
+      String reason,
+      bool wasRefunded,
+      WalletTransaction? transaction,
+      AccountRecord? recipient,
+      String? amount,
+      String? note,
+      String? idempotencyKey,
+    )?
+    failed,
+    TResult Function(WalletTransaction transaction)? timeout,
+    required TResult orElse(),
+  }) {
+    if (riskBlocked != null) {
+      return riskBlocked(risk);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_TransferStateIdle value) idle,
+    required TResult Function(TransferStateRecipientChecking value)
+    recipientChecking,
+    required TResult Function(TransferStateRecipientChecked value)
+    recipientChecked,
+    required TResult Function(TransferStateReview value) review,
+    required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
+    required TResult Function(TransferStateProcessing value) processing,
+    required TResult Function(TransferStateCompleted value) completed,
+    required TResult Function(TransferStateFailed value) failed,
+    required TResult Function(TransferStateTimeout value) timeout,
+  }) {
+    return riskBlocked(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_TransferStateIdle value)? idle,
+    TResult? Function(TransferStateRecipientChecking value)? recipientChecking,
+    TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
+    TResult? Function(TransferStateReview value)? review,
+    TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
+    TResult? Function(TransferStateProcessing value)? processing,
+    TResult? Function(TransferStateCompleted value)? completed,
+    TResult? Function(TransferStateFailed value)? failed,
+    TResult? Function(TransferStateTimeout value)? timeout,
+  }) {
+    return riskBlocked?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_TransferStateIdle value)? idle,
+    TResult Function(TransferStateRecipientChecking value)? recipientChecking,
+    TResult Function(TransferStateRecipientChecked value)? recipientChecked,
+    TResult Function(TransferStateReview value)? review,
+    TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
+    TResult Function(TransferStateProcessing value)? processing,
+    TResult Function(TransferStateCompleted value)? completed,
+    TResult Function(TransferStateFailed value)? failed,
+    TResult Function(TransferStateTimeout value)? timeout,
+    required TResult orElse(),
+  }) {
+    if (riskBlocked != null) {
+      return riskBlocked(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class TransferStateRiskBlocked implements TransferState {
+  const factory TransferStateRiskBlocked({
+    required final TransferRiskResponse risk,
+  }) = _$TransferStateRiskBlockedImpl;
+
+  TransferRiskResponse get risk;
+
+  /// Create a copy of TransferState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$TransferStateRiskBlockedImplCopyWith<_$TransferStateRiskBlockedImpl>
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -1458,6 +3334,24 @@ class _$TransferStateProcessingImpl implements TransferStateProcessing {
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -1490,6 +3384,24 @@ class _$TransferStateProcessingImpl implements TransferStateProcessing {
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -1521,6 +3433,24 @@ class _$TransferStateProcessingImpl implements TransferStateProcessing {
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -1552,6 +3482,12 @@ class _$TransferStateProcessingImpl implements TransferStateProcessing {
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -1568,6 +3504,12 @@ class _$TransferStateProcessingImpl implements TransferStateProcessing {
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -1584,6 +3526,12 @@ class _$TransferStateProcessingImpl implements TransferStateProcessing {
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,
@@ -1711,6 +3659,24 @@ class _$TransferStateCompletedImpl implements TransferStateCompleted {
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -1743,6 +3709,24 @@ class _$TransferStateCompletedImpl implements TransferStateCompleted {
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -1774,6 +3758,24 @@ class _$TransferStateCompletedImpl implements TransferStateCompleted {
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -1805,6 +3807,12 @@ class _$TransferStateCompletedImpl implements TransferStateCompleted {
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -1821,6 +3829,12 @@ class _$TransferStateCompletedImpl implements TransferStateCompleted {
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -1837,6 +3851,12 @@ class _$TransferStateCompletedImpl implements TransferStateCompleted {
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,
@@ -2059,6 +4079,24 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -2099,6 +4137,24 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -2138,6 +4194,24 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -2177,6 +4251,12 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -2193,6 +4273,12 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -2209,6 +4295,12 @@ class _$TransferStateFailedImpl implements TransferStateFailed {
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,
@@ -2346,6 +4438,24 @@ class _$TransferStateTimeoutImpl implements TransferStateTimeout {
     )
     review,
     required TResult Function() submitting,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    riskWarningRequired,
+    required TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )
+    stepUpRequired,
+    required TResult Function(TransferRiskResponse risk) manualReviewRequired,
+    required TResult Function(TransferRiskResponse risk) riskBlocked,
     required TResult Function(WalletTransaction transaction, int pollCount)
     processing,
     required TResult Function(WalletTransaction transaction) completed,
@@ -2378,6 +4488,24 @@ class _$TransferStateTimeoutImpl implements TransferStateTimeout {
     )?
     review,
     TResult? Function()? submitting,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult? Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult? Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult? Function(TransferRiskResponse risk)? riskBlocked,
     TResult? Function(WalletTransaction transaction, int pollCount)? processing,
     TResult? Function(WalletTransaction transaction)? completed,
     TResult? Function(
@@ -2409,6 +4537,24 @@ class _$TransferStateTimeoutImpl implements TransferStateTimeout {
     )?
     review,
     TResult Function()? submitting,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    riskWarningRequired,
+    TResult Function(
+      AccountRecord recipient,
+      String amount,
+      String? note,
+      String idempotencyKey,
+      TransferRiskResponse risk,
+    )?
+    stepUpRequired,
+    TResult Function(TransferRiskResponse risk)? manualReviewRequired,
+    TResult Function(TransferRiskResponse risk)? riskBlocked,
     TResult Function(WalletTransaction transaction, int pollCount)? processing,
     TResult Function(WalletTransaction transaction)? completed,
     TResult Function(
@@ -2440,6 +4586,12 @@ class _$TransferStateTimeoutImpl implements TransferStateTimeout {
     recipientChecked,
     required TResult Function(TransferStateReview value) review,
     required TResult Function(TransferStateSubmitting value) submitting,
+    required TResult Function(TransferStateRiskWarningRequired value)
+    riskWarningRequired,
+    required TResult Function(TransferStateStepUpRequired value) stepUpRequired,
+    required TResult Function(TransferStateManualReviewRequired value)
+    manualReviewRequired,
+    required TResult Function(TransferStateRiskBlocked value) riskBlocked,
     required TResult Function(TransferStateProcessing value) processing,
     required TResult Function(TransferStateCompleted value) completed,
     required TResult Function(TransferStateFailed value) failed,
@@ -2456,6 +4608,12 @@ class _$TransferStateTimeoutImpl implements TransferStateTimeout {
     TResult? Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult? Function(TransferStateReview value)? review,
     TResult? Function(TransferStateSubmitting value)? submitting,
+    TResult? Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult? Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult? Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult? Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult? Function(TransferStateProcessing value)? processing,
     TResult? Function(TransferStateCompleted value)? completed,
     TResult? Function(TransferStateFailed value)? failed,
@@ -2472,6 +4630,12 @@ class _$TransferStateTimeoutImpl implements TransferStateTimeout {
     TResult Function(TransferStateRecipientChecked value)? recipientChecked,
     TResult Function(TransferStateReview value)? review,
     TResult Function(TransferStateSubmitting value)? submitting,
+    TResult Function(TransferStateRiskWarningRequired value)?
+    riskWarningRequired,
+    TResult Function(TransferStateStepUpRequired value)? stepUpRequired,
+    TResult Function(TransferStateManualReviewRequired value)?
+    manualReviewRequired,
+    TResult Function(TransferStateRiskBlocked value)? riskBlocked,
     TResult Function(TransferStateProcessing value)? processing,
     TResult Function(TransferStateCompleted value)? completed,
     TResult Function(TransferStateFailed value)? failed,

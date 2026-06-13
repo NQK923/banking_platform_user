@@ -13,6 +13,7 @@ import '../../../shared/widgets/skeleton.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../history/domain/wallet_transaction.dart';
 import '../../wallet/domain/balance_provider.dart';
+import '../domain/transfer_models.dart';
 import '../domain/transfer_notifier.dart';
 
 class TransferWizardScreen extends ConsumerStatefulWidget {
@@ -113,6 +114,12 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               title: 'Authorizing transfer',
               message: 'Keeping your PIN and transfer request secure...',
             ),
+            riskWarningRequired: (recipient, amount, note, key, risk) =>
+                _buildRiskWarningState(risk),
+            stepUpRequired: (recipient, amount, note, key, risk) =>
+                _buildStepUpState(risk),
+            manualReviewRequired: (risk) => _buildManualReviewState(risk),
+            riskBlocked: (risk) => _buildRiskBlockedState(risk),
             processing: (tx, count) => _buildProcessingState(tx, count),
             completed: (tx) => _buildCompletedState(tx),
             failed:
@@ -351,6 +358,131 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             text: 'Confirm transfer',
             icon: Icons.lock_rounded,
             onPressed: _onPinSubmit,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRiskWarningState(TransferRiskResponse risk) {
+    return _ResultShell(
+      key: const ValueKey('risk-warning'),
+      icon: Icons.warning_amber_rounded,
+      color: AppTheme.warning,
+      title: 'Review this transfer carefully',
+      message: risk.message,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _RiskReasonList(reasons: risk.reasons),
+          const SizedBox(height: AppSpacing.xl),
+          PrimaryButton(
+            text: 'I understand and want to continue',
+            icon: Icons.verified_user_rounded,
+            onPressed: () => _showRiskPinDialog(
+              title: 'Confirm warning',
+              message:
+                  'Enter your transaction PIN to continue with the same transfer request.',
+              onSubmit: (pin) =>
+                  ref.read(transferProvider.notifier).acknowledgeRiskWarning(pin),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.m),
+          SecondaryButton(
+            text: 'Cancel transfer',
+            icon: Icons.close_rounded,
+            onPressed: () => ref.read(transferProvider.notifier).reset(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepUpState(TransferRiskResponse risk) {
+    return _ResultShell(
+      key: const ValueKey('risk-step-up'),
+      icon: Icons.lock_person_rounded,
+      color: AppTheme.info,
+      title: 'Additional verification required',
+      message: risk.message,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _RiskReasonList(reasons: risk.reasons),
+          const SizedBox(height: AppSpacing.xl),
+          PrimaryButton(
+            text: 'Verify and continue',
+            icon: Icons.lock_rounded,
+            onPressed: () => _showRiskPinDialog(
+              title: 'Verify transfer',
+              message: 'Re-enter your transaction PIN for additional verification.',
+              onSubmit: (pin) =>
+                  ref.read(transferProvider.notifier).submitStepUp(pin, pin),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.m),
+          SecondaryButton(
+            text: 'Cancel transfer',
+            icon: Icons.close_rounded,
+            onPressed: () => ref.read(transferProvider.notifier).reset(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildManualReviewState(TransferRiskResponse risk) {
+    return _ResultShell(
+      key: const ValueKey('risk-manual-review'),
+      icon: Icons.manage_search_rounded,
+      color: AppTheme.warning,
+      title: 'Transfer under review',
+      message: 'Your money has not been debited.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppCard(
+            child: Column(
+              children: [
+                _ReviewRow(label: 'Reference', value: _short(risk.traceId)),
+                if (risk.transactionId != null)
+                  _ReviewRow(label: 'Transaction', value: _short(risk.transactionId!)),
+                _ReviewRow(label: 'Risk level', value: risk.riskLevel),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.m),
+          _RiskReasonList(reasons: risk.reasons),
+          const SizedBox(height: AppSpacing.xl),
+          PrimaryButton(
+            text: 'Back to home',
+            icon: Icons.home_rounded,
+            onPressed: () {
+              ref.read(transferProvider.notifier).reset();
+              context.replace('/home');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRiskBlockedState(TransferRiskResponse risk) {
+    return _ResultShell(
+      key: const ValueKey('risk-blocked'),
+      icon: Icons.block_rounded,
+      color: Theme.of(context).colorScheme.error,
+      title: 'Transfer blocked',
+      message: risk.message,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _RiskReasonList(reasons: risk.reasons),
+          const SizedBox(height: AppSpacing.xl),
+          PrimaryButton(
+            text: 'New transfer',
+            icon: Icons.add_rounded,
+            onPressed: () => ref.read(transferProvider.notifier).reset(),
           ),
         ],
       ),
@@ -620,6 +752,57 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
     );
   }
 
+  void _showRiskPinDialog({
+    required String title,
+    required String message,
+    required ValueChanged<String> onSubmit,
+  }) {
+    final pinController = TextEditingController();
+    final pinFormKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        return AlertDialog(
+          icon: const Icon(Icons.verified_user_rounded),
+          title: Text(title),
+          content: Form(
+            key: pinFormKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(message, textAlign: TextAlign.center),
+                  const SizedBox(height: AppSpacing.l),
+                  PinEntryField(
+                    controller: pinController,
+                    validator: Validator.validatePin,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (pinFormKey.currentState?.validate() ?? false) {
+                  Navigator.of(ctx).pop();
+                  onSubmit(pinController.text);
+                }
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   String _short(String value) {
     if (value.length <= 14) return value;
     return '${value.substring(0, 10)}...';
@@ -720,6 +903,51 @@ class _InlineError extends StatelessWidget {
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.error,
                 fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RiskReasonList extends StatelessWidget {
+  final List<RiskReasonView> reasons;
+
+  const _RiskReasonList({required this.reasons});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (reasons.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Risk signals', style: theme.textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.s),
+          ...reasons.map(
+            (reason) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 18,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: AppSpacing.s),
+                  Expanded(
+                    child: Text(
+                      reason.message,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

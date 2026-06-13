@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -46,7 +47,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
       builder: (ctx) {
         return AlertDialog(
           icon: const Icon(Icons.lock_rounded),
-          title: const Text('Confirm with PIN'),
+          title: Text(context.l10n.confirmWithPin),
           content: Form(
             key: pinFormKey,
             child: SingleChildScrollView(
@@ -54,7 +55,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Enter your 6-digit transaction PIN to authorize this withdrawal.',
+                    context.l10n.withdrawPinMessage,
                     textAlign: TextAlign.center,
                     style: Theme.of(ctx).textTheme.bodyMedium,
                   ),
@@ -71,7 +72,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -85,7 +86,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                       );
                 }
               },
-              child: const Text('Confirm'),
+              child: Text(context.l10n.confirm),
             ),
           ],
         );
@@ -116,18 +117,21 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
             child: const Icon(Icons.check_circle_rounded, size: 58),
           ),
           iconColor: AppTheme.success,
-          title: const Text('Withdrawal completed'),
+          title: Text(context.l10n.withdrawalCompleted),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Funds were debited from your wallet and moved through the mock clearing flow.',
+                context.l10n.withdrawalCompletedMessage,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.l),
-              _ResultRow(label: 'Amount', value: money.formatDisplay()),
-              _ResultRow(label: 'Journal', value: _short(journalId)),
+              _ResultRow(
+                label: context.l10n.amount,
+                value: money.formatDisplay(),
+              ),
+              _ResultRow(label: context.l10n.journal, value: _short(journalId)),
             ],
           ),
           actions: [
@@ -137,7 +141,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                 Navigator.of(ctx).pop();
                 context.go('/home');
               },
-              child: const Text('Back to home'),
+              child: Text(context.l10n.backToHome),
             ),
           ],
         ),
@@ -150,6 +154,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
     final balanceState = ref.watch(balanceProvider);
     final withdrawState = ref.watch(withdrawNotifierProvider);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     Decimal currentBalance = Decimal.zero;
     String currency = 'VND';
@@ -173,7 +178,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
             content: Text(next.errorMessage!),
             backgroundColor: theme.colorScheme.error,
             action: SnackBarAction(
-              label: 'Retry',
+              label: l10n.retry,
               textColor: theme.colorScheme.onError,
               onPressed: () {
                 ref.read(withdrawNotifierProvider.notifier).retryWithdraw();
@@ -186,9 +191,9 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Withdraw'),
+        title: Text(l10n.withdraw),
         leading: IconButton(
-          tooltip: 'Back',
+          tooltip: l10n.back,
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
             ref.read(withdrawNotifierProvider.notifier).reset();
@@ -198,16 +203,16 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
       ),
       body: LoadingOverlay(
         isLoading: withdrawState.status == WithdrawStatus.submitting,
-        message: 'Submitting withdrawal...',
+        message: l10n.submittingWithdrawal,
         child: Form(
           key: _formKey,
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
-              const _StepHeader(
+              _StepHeader(
                 icon: Icons.south_west_rounded,
-                title: 'Withdraw funds',
-                subtitle: 'Move money out through the mock clearing account.',
+                title: l10n.withdrawFunds,
+                subtitle: l10n.withdrawFundsSubtitle,
               ),
               const SizedBox(height: AppSpacing.xl),
               _BalanceCard(balance: currentBalance, currency: currency),
@@ -217,7 +222,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Withdrawal amount',
+                      l10n.withdrawalAmount,
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.m),
@@ -226,14 +231,14 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                       currency: currency,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Enter an amount.';
+                          return l10n.enterAnAmount;
                         }
                         final amount = Decimal.tryParse(value.trim());
                         if (amount == null || amount <= Decimal.zero) {
-                          return 'Withdrawal amount must be greater than 0.';
+                          return l10n.withdrawalAmountGreaterThanZero;
                         }
                         if (amount > currentBalance) {
-                          return 'Available balance is not enough.';
+                          return l10n.availableBalanceNotEnough;
                         }
                         return null;
                       },
@@ -243,7 +248,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               ),
               const SizedBox(height: AppSpacing.xl),
               PrimaryButton(
-                text: 'Review withdrawal',
+                text: l10n.reviewWithdrawal,
                 icon: Icons.lock_rounded,
                 onPressed: () => _onWithdrawSubmit(currentBalance, currency),
               ),
@@ -256,10 +261,10 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
 
   String? _pinValidator(String? value) {
     if (value == null || value.trim().length != 6) {
-      return 'PIN must be exactly 6 digits.';
+      return context.l10n.validatorPin;
     }
     if (int.tryParse(value) == null) {
-      return 'PIN can contain digits only.';
+      return context.l10n.validatorPinDigitsOnly;
     }
     return null;
   }
@@ -296,7 +301,7 @@ class _BalanceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Available balance',
+                  context.l10n.availableBalance,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

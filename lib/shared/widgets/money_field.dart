@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../core/localization/locale_provider.dart';
 
 class MoneyField extends StatelessWidget {
   final TextEditingController controller;
   final String currency;
-  final String labelText;
+  final String? labelText;
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
 
@@ -12,7 +13,7 @@ class MoneyField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.currency,
-    this.labelText = 'Amount',
+    this.labelText,
     this.validator,
     this.onChanged,
   });
@@ -33,6 +34,7 @@ class MoneyField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scale = _currencyScale;
+    final label = labelText ?? context.l10n.amount;
     final formatters = <TextInputFormatter>[
       if (scale == 0)
         FilteringTextInputFormatter.digitsOnly
@@ -42,7 +44,7 @@ class MoneyField extends StatelessWidget {
     ];
 
     return Semantics(
-      label: '$labelText in ${currency.toUpperCase()}',
+      label: context.l10n.amountInCurrency(label, currency.toUpperCase()),
       textField: true,
       child: TextFormField(
         controller: controller,
@@ -53,7 +55,7 @@ class MoneyField extends StatelessWidget {
           fontFeatures: const [FontFeature.tabularFigures()],
         ),
         decoration: InputDecoration(
-          labelText: labelText,
+          labelText: label,
           hintText: scale > 0 ? '0.${'0' * scale}' : '0',
           prefixIcon: const Icon(Icons.payments_outlined),
           suffixText: currency.toUpperCase(),

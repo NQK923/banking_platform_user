@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/amount_text.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -22,7 +23,7 @@ class TransactionDetailScreen extends ConsumerWidget {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$label copied'),
+        content: Text(context.l10n.copiedLabel(label)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -31,6 +32,7 @@ class TransactionDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final authState = ref.watch(authNotifierProvider);
     final detailState = ref.watch(transactionDetailProvider(transactionId));
 
@@ -41,9 +43,9 @@ class TransactionDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transaction'),
+        title: Text(l10n.transactionTitle),
         leading: IconButton(
-          tooltip: 'Back',
+          tooltip: l10n.back,
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
@@ -82,7 +84,7 @@ class TransactionDetailScreen extends ConsumerWidget {
               ? theme.colorScheme.error
               : AppTheme.success;
           final failureText = tx.status == TransactionStatus.FAILED
-              ? (tx.failureReason ?? _getFailureMessage(tx.idempotencyKey))
+              ? (tx.failureReason ?? l10n.genericTransferFailureMessage)
               : null;
 
           return SingleChildScrollView(
@@ -100,7 +102,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.l),
                       Text(
-                        isDebit ? 'Money sent' : 'Money received',
+                        isDebit ? l10n.moneySent : l10n.moneyReceived,
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -135,7 +137,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Failure reason',
+                                l10n.failureReason,
                                 style: theme.textTheme.titleSmall?.copyWith(
                                   color: theme.colorScheme.error,
                                 ),
@@ -166,12 +168,12 @@ class TransactionDetailScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Ask about this transaction',
+                              l10n.askAboutTransaction,
                               style: theme.textTheme.titleSmall,
                             ),
                             const SizedBox(height: AppSpacing.xs),
                             Text(
-                              'Get a safe explanation of status, refund, failure reason, and traceId.',
+                              l10n.askAboutTransactionSubtitle,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -180,7 +182,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                         ),
                       ),
                       IconButton.filledTonal(
-                        tooltip: 'Ask support',
+                        tooltip: l10n.askSupport,
                         onPressed: () =>
                             context.push('/history/${tx.id}/support'),
                         icon: const Icon(Icons.arrow_forward_rounded),
@@ -193,70 +195,73 @@ class TransactionDetailScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Details', style: theme.textTheme.titleMedium),
+                      Text(l10n.details, style: theme.textTheme.titleMedium),
                       const SizedBox(height: AppSpacing.m),
                       _DetailRow(
-                        label: 'Transaction ID',
+                        label: l10n.transactionId,
                         value: tx.id,
                         copyable: true,
-                        onCopy: () =>
-                            _copyToClipboard(context, tx.id, 'Transaction ID'),
+                        onCopy: () => _copyToClipboard(
+                          context,
+                          tx.id,
+                          l10n.transactionId,
+                        ),
                       ),
                       _DetailRow(
-                        label: 'Sender',
+                        label: l10n.sender,
                         value: tx.senderId,
                         subValue: tx.senderId == currentUserAccountId
-                            ? 'Your wallet'
+                            ? l10n.yourWallet
                             : null,
                         copyable: true,
                         onCopy: () =>
-                            _copyToClipboard(context, tx.senderId, 'Sender'),
+                            _copyToClipboard(context, tx.senderId, l10n.sender),
                       ),
                       _DetailRow(
-                        label: 'Receiver',
+                        label: l10n.receiver,
                         value: tx.receiverId,
                         subValue: tx.receiverId == currentUserAccountId
-                            ? 'Your wallet'
+                            ? l10n.yourWallet
                             : null,
                         copyable: true,
                         onCopy: () => _copyToClipboard(
                           context,
                           tx.receiverId,
-                          'Receiver',
+                          l10n.receiver,
                         ),
                       ),
                       _DetailRow(
-                        label: 'Created',
+                        label: l10n.created,
                         value: _formatDateTime(tx.createdAt),
                       ),
                       _DetailRow(
-                        label: 'Updated',
+                        label: l10n.updated,
                         value: _formatDateTime(tx.updatedAt),
                       ),
                       _DetailRow(
-                        label: 'Idempotency key',
+                        label: l10n.idempotencyKey,
                         value: tx.idempotencyKey,
                         copyable: true,
                         onCopy: () => _copyToClipboard(
                           context,
                           tx.idempotencyKey,
-                          'Idempotency key',
+                          l10n.idempotencyKey,
                         ),
                       ),
                       if (tx.correlationId != null)
                         _DetailRow(
-                          label: 'Correlation ID',
+                          label: l10n.correlationId,
                           value: tx.correlationId!,
                           copyable: true,
                           onCopy: () => _copyToClipboard(
                             context,
                             tx.correlationId!,
-                            'Correlation ID',
+                            l10n.correlationId,
                           ),
                         ),
                       _DetailRow(
-                        label: 'Message',
-                        value: tx.note ?? 'E-Wallet transfer',
+                        label: l10n.message,
+                        value: tx.note ?? l10n.defaultTransferMessage,
                       ),
                     ],
                   ),
@@ -276,10 +281,6 @@ class TransactionDetailScreen extends ConsumerWidget {
     } catch (_) {
       return isoString;
     }
-  }
-
-  String _getFailureMessage(String key) {
-    return 'The transfer could not be completed. The recipient account may be inactive or the sender balance may no longer be sufficient.';
   }
 }
 
@@ -328,7 +329,7 @@ class _DetailRow extends StatelessWidget {
               ),
               if (copyable)
                 IconButton(
-                  tooltip: 'Copy $label',
+                  tooltip: context.l10n.copyLabel(label),
                   onPressed: onCopy,
                   icon: const Icon(Icons.copy_rounded, size: 18),
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -56,7 +57,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('History')),
+      appBar: AppBar(title: Text(context.l10n.history)),
       body: RefreshIndicator(
         onRefresh: onRefresh,
         child: _buildBody(historyState, currentUserAccountId),
@@ -87,16 +88,15 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         padding: const EdgeInsets.all(AppSpacing.l),
         child: EmptyState(
           icon: Icons.history_rounded,
-          title: 'No transaction history',
-          message:
-              'Transfers, deposits, and withdrawals will be grouped by date here.',
-          actionLabel: 'Refresh',
+          title: context.l10n.noTransactionHistory,
+          message: context.l10n.transactionHistoryEmptyMessage,
+          actionLabel: context.l10n.refresh,
           onAction: () => ref.read(historyProvider.notifier).refresh(),
         ),
       );
     }
 
-    final grouped = _groupByDate(historyState.transactions);
+    final grouped = _groupByDate(context, historyState.transactions);
     final entries = grouped.entries.toList();
 
     return ListView.builder(
@@ -160,24 +160,27 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
 
   Map<String, List<WalletTransaction>> _groupByDate(
+    BuildContext context,
     List<WalletTransaction> transactions,
   ) {
     final groups = <String, List<WalletTransaction>>{};
     for (final tx in transactions) {
-      final key = _formatDate(tx.createdAt);
+      final key = _formatDate(context, tx.createdAt);
       groups.putIfAbsent(key, () => []).add(tx);
     }
     return groups;
   }
 
-  String _formatDate(String isoString) {
+  String _formatDate(BuildContext context, String isoString) {
     try {
       final dateTime = DateTime.parse(isoString).toLocal();
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final txDay = DateTime(dateTime.year, dateTime.month, dateTime.day);
-      if (txDay == today) return 'Today';
-      if (txDay == today.subtract(const Duration(days: 1))) return 'Yesterday';
+      if (txDay == today) return context.l10n.today;
+      if (txDay == today.subtract(const Duration(days: 1))) {
+        return context.l10n.yesterday;
+      }
       return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}';
     } catch (_) {
       return isoString;

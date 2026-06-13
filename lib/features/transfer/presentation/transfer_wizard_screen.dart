@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validator.dart';
@@ -84,9 +85,9 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Send money'),
+        title: Text(context.l10n.sendMoney),
         leading: IconButton(
-          tooltip: 'Back',
+          tooltip: context.l10n.back,
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
             ref.read(transferProvider.notifier).reset();
@@ -99,9 +100,9 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           duration: const Duration(milliseconds: 180),
           child: transferState.when(
             idle: (error) => _buildRecipientStep(error),
-            recipientChecking: () => const _LoadingStep(
-              title: 'Finding recipient',
-              message: 'Checking the wallet directory...',
+            recipientChecking: () => _LoadingStep(
+              title: context.l10n.findingRecipient,
+              message: context.l10n.checkingWalletDirectory,
             ),
             recipientChecked: (recipient) => _buildAmountStep(
               recipient.code,
@@ -110,9 +111,9 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             ),
             review: (recipient, amount, note, key) =>
                 _buildReviewStep(recipient.code, amount, walletCurrency, note),
-            submitting: () => const _LoadingStep(
-              title: 'Authorizing transfer',
-              message: 'Keeping your PIN and transfer request secure...',
+            submitting: () => _LoadingStep(
+              title: context.l10n.authorizingTransfer,
+              message: context.l10n.authorizingTransferMessage,
             ),
             riskWarningRequired: (recipient, amount, note, key, risk) =>
                 _buildRiskWarningState(risk),
@@ -152,11 +153,10 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
         key: const ValueKey('recipient'),
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [
-          const _StepHeader(
-            step: 'Step 1 of 3',
-            title: 'Choose a recipient',
-            subtitle:
-                'Use an email address or phone number linked to a wallet.',
+          _StepHeader(
+            step: context.l10n.stepOneOfThree,
+            title: context.l10n.chooseRecipient,
+            subtitle: context.l10n.chooseRecipientSubtitle,
           ),
           const SizedBox(height: AppSpacing.xl),
           if (errorMessage != null) ...[
@@ -167,9 +167,9 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             child: TextFormField(
               controller: _recipientController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email or phone',
-                prefixIcon: Icon(Icons.person_search_rounded),
+              decoration: InputDecoration(
+                labelText: context.l10n.emailOrPhone,
+                prefixIcon: const Icon(Icons.person_search_rounded),
                 hintText: 'user@email.com or +84123456789',
               ),
               validator: Validator.validateIdentifier,
@@ -177,13 +177,13 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            text: 'Continue',
+            text: context.l10n.continueAction,
             icon: Icons.arrow_forward_rounded,
             onPressed: _onRecipientSubmit,
           ),
           const SizedBox(height: AppSpacing.s),
           Text(
-            'Transfers are sent only after PIN confirmation on the review step.',
+            context.l10n.transferPinReminder,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
@@ -207,10 +207,10 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
         key: const ValueKey('amount'),
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [
-          const _StepHeader(
-            step: 'Step 2 of 3',
-            title: 'Enter amount',
-            subtitle: 'Confirm the recipient and choose how much to send.',
+          _StepHeader(
+            step: context.l10n.stepTwoOfThree,
+            title: context.l10n.enterAmount,
+            subtitle: context.l10n.transferAmountSubtitle,
           ),
           const SizedBox(height: AppSpacing.xl),
           AppCard(
@@ -228,7 +228,10 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Recipient', style: theme.textTheme.bodySmall),
+                      Text(
+                        context.l10n.recipient,
+                        style: theme.textTheme.bodySmall,
+                      ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         recipientCode,
@@ -249,7 +252,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    'Available',
+                    context.l10n.available,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -268,14 +271,14 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
                   currency: currency,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Enter an amount.';
+                      return context.l10n.enterAnAmount;
                     }
                     final amountVal = Decimal.tryParse(value.trim());
                     if (amountVal == null || amountVal <= Decimal.zero) {
-                      return 'Amount must be greater than 0.';
+                      return context.l10n.amountGreaterThanZero;
                     }
                     if (amountVal > availableBalance) {
-                      return 'Available balance is not enough.';
+                      return context.l10n.availableBalanceNotEnough;
                     }
                     return null;
                   },
@@ -283,10 +286,10 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
                 const SizedBox(height: AppSpacing.m),
                 TextFormField(
                   controller: _noteController,
-                  decoration: const InputDecoration(
-                    labelText: 'Message (optional)',
-                    prefixIcon: Icon(Icons.notes_rounded),
-                    hintText: 'Add a short note',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.messageOptional,
+                    prefixIcon: const Icon(Icons.notes_rounded),
+                    hintText: context.l10n.addShortNote,
                   ),
                   maxLength: 50,
                 ),
@@ -295,7 +298,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            text: 'Review transfer',
+            text: context.l10n.reviewTransfer,
             icon: Icons.receipt_long_rounded,
             onPressed: () => _onAmountSubmit(availableBalance, currency),
           ),
@@ -317,30 +320,33 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
         key: const ValueKey('review'),
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [
-          const _StepHeader(
-            step: 'Step 3 of 3',
-            title: 'Review and authorize',
-            subtitle: 'Check details, then confirm with your transaction PIN.',
+          _StepHeader(
+            step: context.l10n.stepThreeOfThree,
+            title: context.l10n.reviewAndAuthorize,
+            subtitle: context.l10n.reviewAndAuthorizeSubtitle,
           ),
           const SizedBox(height: AppSpacing.xl),
           AppCard(
             child: Column(
               children: [
                 _ReviewRow(
-                  label: 'Recipient',
+                  label: context.l10n.recipient,
                   value: recipientCode,
                   emphatic: true,
                 ),
                 const Divider(),
                 _ReviewRow(
-                  label: 'Amount',
+                  label: context.l10n.amount,
                   value: money.formatDisplay(),
                   emphatic: true,
                 ),
-                const _ReviewRow(label: 'Fee', value: 'Free (0 VND)'),
+                _ReviewRow(
+                  label: context.l10n.fee,
+                  value: context.l10n.freeFee,
+                ),
                 if (note != null && note.isNotEmpty) ...[
                   const Divider(),
-                  _ReviewRow(label: 'Message', value: note),
+                  _ReviewRow(label: context.l10n.message, value: note),
                 ],
               ],
             ),
@@ -349,13 +355,13 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           AppCard(
             child: PinEntryField(
               controller: _pinController,
-              labelText: 'Transaction PIN',
+              labelText: context.l10n.transactionPin,
               validator: Validator.validatePin,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            text: 'Confirm transfer',
+            text: context.l10n.confirmTransfer,
             icon: Icons.lock_rounded,
             onPressed: _onPinSubmit,
           ),
@@ -369,7 +375,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       key: const ValueKey('risk-warning'),
       icon: Icons.warning_amber_rounded,
       color: AppTheme.warning,
-      title: 'Review this transfer carefully',
+      title: context.l10n.reviewTransferCarefully,
       message: risk.message,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -377,19 +383,19 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           _RiskReasonList(reasons: risk.reasons),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            text: 'I understand and want to continue',
+            text: context.l10n.understandContinue,
             icon: Icons.verified_user_rounded,
             onPressed: () => _showRiskPinDialog(
-              title: 'Confirm warning',
-              message:
-                  'Enter your transaction PIN to continue with the same transfer request.',
-              onSubmit: (pin) =>
-                  ref.read(transferProvider.notifier).acknowledgeRiskWarning(pin),
+              title: context.l10n.confirmWarning,
+              message: context.l10n.confirmWarningMessage,
+              onSubmit: (pin) => ref
+                  .read(transferProvider.notifier)
+                  .acknowledgeRiskWarning(pin),
             ),
           ),
           const SizedBox(height: AppSpacing.m),
           SecondaryButton(
-            text: 'Cancel transfer',
+            text: context.l10n.cancelTransfer,
             icon: Icons.close_rounded,
             onPressed: () => ref.read(transferProvider.notifier).reset(),
           ),
@@ -403,7 +409,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       key: const ValueKey('risk-step-up'),
       icon: Icons.lock_person_rounded,
       color: AppTheme.info,
-      title: 'Additional verification required',
+      title: context.l10n.additionalVerificationRequired,
       message: risk.message,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -411,18 +417,18 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           _RiskReasonList(reasons: risk.reasons),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            text: 'Verify and continue',
+            text: context.l10n.verifyAndContinue,
             icon: Icons.lock_rounded,
             onPressed: () => _showRiskPinDialog(
-              title: 'Verify transfer',
-              message: 'Re-enter your transaction PIN for additional verification.',
+              title: context.l10n.verifyTransfer,
+              message: context.l10n.verifyTransferMessage,
               onSubmit: (pin) =>
                   ref.read(transferProvider.notifier).submitStepUp(pin, pin),
             ),
           ),
           const SizedBox(height: AppSpacing.m),
           SecondaryButton(
-            text: 'Cancel transfer',
+            text: context.l10n.cancelTransfer,
             icon: Icons.close_rounded,
             onPressed: () => ref.read(transferProvider.notifier).reset(),
           ),
@@ -436,18 +442,27 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       key: const ValueKey('risk-manual-review'),
       icon: Icons.manage_search_rounded,
       color: AppTheme.warning,
-      title: 'Transfer under review',
-      message: 'Your money has not been debited.',
+      title: context.l10n.transferUnderReview,
+      message: context.l10n.moneyNotDebited,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppCard(
             child: Column(
               children: [
-                _ReviewRow(label: 'Reference', value: _short(risk.traceId)),
+                _ReviewRow(
+                  label: context.l10n.reference,
+                  value: _short(risk.traceId),
+                ),
                 if (risk.transactionId != null)
-                  _ReviewRow(label: 'Transaction', value: _short(risk.transactionId!)),
-                _ReviewRow(label: 'Risk level', value: risk.riskLevel),
+                  _ReviewRow(
+                    label: context.l10n.transaction,
+                    value: _short(risk.transactionId!),
+                  ),
+                _ReviewRow(
+                  label: context.l10n.riskLevel,
+                  value: risk.riskLevel,
+                ),
               ],
             ),
           ),
@@ -455,7 +470,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           _RiskReasonList(reasons: risk.reasons),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            text: 'Back to home',
+            text: context.l10n.backToHome,
             icon: Icons.home_rounded,
             onPressed: () {
               ref.read(transferProvider.notifier).reset();
@@ -472,7 +487,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       key: const ValueKey('risk-blocked'),
       icon: Icons.block_rounded,
       color: Theme.of(context).colorScheme.error,
-      title: 'Transfer blocked',
+      title: context.l10n.transferBlocked,
       message: risk.message,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -480,7 +495,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           _RiskReasonList(reasons: risk.reasons),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            text: 'New transfer',
+            text: context.l10n.newTransfer,
             icon: Icons.add_rounded,
             onPressed: () => ref.read(transferProvider.notifier).reset(),
           ),
@@ -496,9 +511,8 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       key: const ValueKey('processing'),
       icon: Icons.sync_rounded,
       color: AppTheme.info,
-      title: 'Transfer processing',
-      message:
-          'The saga is applying debit and credit entries. Keep this screen open if you want live status.',
+      title: context.l10n.transferProcessing,
+      message: context.l10n.transferProcessingMessage,
       child: Column(
         children: [
           ClipRRect(
@@ -509,9 +523,15 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           AppCard(
             child: Column(
               children: [
-                _ReviewRow(label: 'Transaction', value: _short(tx.id)),
-                _ReviewRow(label: 'Amount', value: money.formatDisplay()),
-                _ReviewRow(label: 'Status check', value: '$count/10'),
+                _ReviewRow(
+                  label: context.l10n.transaction,
+                  value: _short(tx.id),
+                ),
+                _ReviewRow(
+                  label: context.l10n.amount,
+                  value: money.formatDisplay(),
+                ),
+                _ReviewRow(label: context.l10n.statusCheck, value: '$count/10'),
                 const SizedBox(height: AppSpacing.s),
                 StatusChip(status: tx.status.name),
               ],
@@ -519,7 +539,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.s),
           Text(
-            'Polling continues on the existing cadence.',
+            context.l10n.pollingContinues,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -535,17 +555,20 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       key: const ValueKey('completed'),
       icon: Icons.check_circle_rounded,
       color: AppTheme.success,
-      title: 'Transfer completed',
-      message: 'The recipient wallet has been credited.',
+      title: context.l10n.transferCompleted,
+      message: context.l10n.transferCompletedMessage,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppCard(
             child: Column(
               children: [
-                _ReviewRow(label: 'Transaction', value: _short(tx.id)),
                 _ReviewRow(
-                  label: 'Total',
+                  label: context.l10n.transaction,
+                  value: _short(tx.id),
+                ),
+                _ReviewRow(
+                  label: context.l10n.total,
                   value: money.formatDisplay(),
                   emphatic: true,
                 ),
@@ -554,7 +577,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            text: 'View transaction',
+            text: context.l10n.viewTransaction,
             icon: Icons.receipt_long_rounded,
             onPressed: () {
               ref.read(transferProvider.notifier).reset();
@@ -563,7 +586,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.m),
           SecondaryButton(
-            text: 'Back to home',
+            text: context.l10n.backToHome,
             icon: Icons.home_rounded,
             onPressed: () {
               ref.read(transferProvider.notifier).reset();
@@ -587,7 +610,9 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       color: wasRefunded
           ? AppTheme.success
           : Theme.of(context).colorScheme.error,
-      title: wasRefunded ? 'Transfer failed, refunded' : 'Transfer failed',
+      title: wasRefunded
+          ? context.l10n.transferFailedRefunded
+          : context.l10n.transferFailed,
       message: reason,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -595,14 +620,17 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           if (wasRefunded)
             AppCard(
               color: AppTheme.success.withValues(alpha: 0.10),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.verified_user_rounded, color: AppTheme.success),
-                  SizedBox(width: AppSpacing.m),
+                  const Icon(
+                    Icons.verified_user_rounded,
+                    color: AppTheme.success,
+                  ),
+                  const SizedBox(width: AppSpacing.m),
                   Expanded(
                     child: Text(
-                      'Refunded: the sender balance was restored after compensation.',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                      context.l10n.refundedSenderBalanceRestored,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
                 ],
@@ -613,7 +641,10 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             AppCard(
               child: Column(
                 children: [
-                  _ReviewRow(label: 'Transaction', value: _short(tx.id)),
+                  _ReviewRow(
+                    label: context.l10n.transaction,
+                    value: _short(tx.id),
+                  ),
                   StatusChip(status: tx.status.name),
                 ],
               ),
@@ -622,14 +653,14 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           const SizedBox(height: AppSpacing.xl),
           if (canRetry) ...[
             PrimaryButton(
-              text: 'Retry transfer',
+              text: context.l10n.retryTransfer,
               icon: Icons.refresh_rounded,
               onPressed: _showRetryPinDialog,
             ),
             const SizedBox(height: AppSpacing.m),
           ],
           SecondaryButton(
-            text: 'New transfer',
+            text: context.l10n.newTransfer,
             icon: Icons.add_rounded,
             onPressed: () {
               ref.read(transferProvider.notifier).reset();
@@ -645,7 +676,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               ref.read(transferProvider.notifier).reset();
               context.replace('/home');
             },
-            child: const Text('Back to home'),
+            child: Text(context.l10n.backToHome),
           ),
         ],
       ),
@@ -657,30 +688,32 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       key: const ValueKey('timeout'),
       icon: Icons.schedule_rounded,
       color: AppTheme.warning,
-      title: 'Still processing',
-      message:
-          'No final saga result was returned yet. The transaction can still complete in the background.',
+      title: context.l10n.stillProcessing,
+      message: context.l10n.stillProcessingMessage,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppCard(
             child: Column(
               children: [
-                _ReviewRow(label: 'Transaction', value: _short(tx.id)),
+                _ReviewRow(
+                  label: context.l10n.transaction,
+                  value: _short(tx.id),
+                ),
                 StatusChip(status: tx.status.name),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            text: 'Check again',
+            text: context.l10n.checkAgain,
             icon: Icons.refresh_rounded,
             onPressed: () =>
                 ref.read(transferProvider.notifier).retryPolling(tx),
           ),
           const SizedBox(height: AppSpacing.m),
           SecondaryButton(
-            text: 'Go to history',
+            text: context.l10n.goToHistory,
             icon: Icons.receipt_long_rounded,
             onPressed: () {
               ref.read(transferProvider.notifier).reset();
@@ -693,7 +726,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
               ref.read(transferProvider.notifier).reset();
               context.replace('/home');
             },
-            child: const Text('Back to home'),
+            child: Text(context.l10n.backToHome),
           ),
         ],
       ),
@@ -710,15 +743,15 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       builder: (ctx) {
         return AlertDialog(
           icon: const Icon(Icons.lock_reset_rounded),
-          title: const Text('Retry with PIN'),
+          title: Text(context.l10n.retryWithPin),
           content: Form(
             key: pinFormKey,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Enter your transaction PIN to retry with the same idempotency key.',
+                  Text(
+                    context.l10n.retryWithPinMessage,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.l),
@@ -733,7 +766,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -744,7 +777,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
                       .retryTransfer(pinController.text);
                 }
               },
-              child: const Text('Confirm'),
+              child: Text(context.l10n.confirm),
             ),
           ],
         );
@@ -786,7 +819,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -795,7 +828,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
                   onSubmit(pinController.text);
                 }
               },
-              child: const Text('Confirm'),
+              child: Text(context.l10n.confirm),
             ),
           ],
         );
@@ -859,7 +892,11 @@ class _LoadingStep extends StatelessWidget {
       key: ValueKey(title),
       padding: const EdgeInsets.all(AppSpacing.l),
       children: [
-        _StepHeader(step: 'In progress', title: title, subtitle: message),
+        _StepHeader(
+          step: context.l10n.inProgress,
+          title: title,
+          subtitle: message,
+        ),
         const SizedBox(height: AppSpacing.xl),
         const AppCard(
           child: Column(
@@ -927,7 +964,7 @@ class _RiskReasonList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Risk signals', style: theme.textTheme.titleMedium),
+          Text(context.l10n.riskSignals, style: theme.textTheme.titleMedium),
           const SizedBox(height: AppSpacing.s),
           ...reasons.map(
             (reason) => Padding(

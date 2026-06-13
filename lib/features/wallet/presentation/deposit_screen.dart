@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -60,18 +61,21 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
             child: const Icon(Icons.check_circle_rounded, size: 58),
           ),
           iconColor: AppTheme.success,
-          title: const Text('Deposit completed'),
+          title: Text(context.l10n.depositCompleted),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Funds were added to your wallet from the mock CASH_CLEARING account.',
+                context.l10n.depositCompletedMessage,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.l),
-              _ResultRow(label: 'Amount', value: money.formatDisplay()),
-              _ResultRow(label: 'Journal', value: _short(journalId)),
+              _ResultRow(
+                label: context.l10n.amount,
+                value: money.formatDisplay(),
+              ),
+              _ResultRow(label: context.l10n.journal, value: _short(journalId)),
             ],
           ),
           actions: [
@@ -81,7 +85,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
                 Navigator.of(ctx).pop();
                 context.go('/home');
               },
-              child: const Text('Back to home'),
+              child: Text(context.l10n.backToHome),
             ),
           ],
         ),
@@ -94,6 +98,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
     final balanceState = ref.watch(balanceProvider);
     final depositState = ref.watch(depositNotifierProvider);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     Decimal currentBalance = Decimal.zero;
     String currency = 'VND';
@@ -117,7 +122,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
             content: Text(next.errorMessage!),
             backgroundColor: theme.colorScheme.error,
             action: SnackBarAction(
-              label: 'Retry',
+              label: l10n.retry,
               textColor: theme.colorScheme.onError,
               onPressed: () {
                 ref.read(depositNotifierProvider.notifier).retryDeposit();
@@ -130,9 +135,9 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Deposit'),
+        title: Text(l10n.deposit),
         leading: IconButton(
-          tooltip: 'Back',
+          tooltip: l10n.back,
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
             ref.read(depositNotifierProvider.notifier).reset();
@@ -142,16 +147,16 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
       ),
       body: LoadingOverlay(
         isLoading: depositState.status == DepositStatus.submitting,
-        message: 'Submitting deposit...',
+        message: l10n.submittingDeposit,
         child: Form(
           key: _formKey,
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
-              const _StepHeader(
+              _StepHeader(
                 icon: Icons.add_card_rounded,
-                title: 'Add funds',
-                subtitle: 'Mock deposit against the system clearing account.',
+                title: l10n.addFunds,
+                subtitle: l10n.addFundsSubtitle,
               ),
               const SizedBox(height: AppSpacing.xl),
               _BalanceCard(balance: currentBalance, currency: currency),
@@ -160,18 +165,21 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Deposit amount', style: theme.textTheme.titleMedium),
+                    Text(
+                      l10n.depositAmount,
+                      style: theme.textTheme.titleMedium,
+                    ),
                     const SizedBox(height: AppSpacing.m),
                     MoneyField(
                       controller: _amountController,
                       currency: currency,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Enter an amount.';
+                          return l10n.enterAnAmount;
                         }
                         final amount = Decimal.tryParse(value.trim());
                         if (amount == null || amount <= Decimal.zero) {
-                          return 'Deposit amount must be greater than 0.';
+                          return l10n.depositAmountGreaterThanZero;
                         }
                         return null;
                       },
@@ -181,7 +189,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
               ),
               const SizedBox(height: AppSpacing.xl),
               PrimaryButton(
-                text: 'Confirm deposit',
+                text: l10n.confirmDeposit,
                 icon: Icons.check_rounded,
                 onPressed: () => _onDepositSubmit(currentBalance, currency),
               ),
@@ -224,7 +232,7 @@ class _BalanceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Current balance',
+                  context.l10n.currentBalance,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

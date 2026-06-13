@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/validator.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/pin_entry_field.dart';
@@ -41,11 +41,46 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _showLanguageDialog(BuildContext context) {
+    final currentLocale = ref.read(localeProvider);
+    final l10n = context.l10n;
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(l10n.language),
+        children: [
+          ListTile(
+            title: Text(l10n.vietnamese),
+            trailing: currentLocale.languageCode == 'vi'
+                ? const Icon(Icons.check_rounded)
+                : null,
+            onTap: () {
+              ref.read(localeProvider.notifier).state = const Locale('vi');
+              Navigator.of(context).pop();
+            },
+          ),
+          ListTile(
+            title: Text(l10n.english),
+            trailing: currentLocale.languageCode == 'en'
+                ? const Icon(Icons.check_rounded)
+                : null,
+            onTap: () {
+              ref.read(localeProvider.notifier).state = const Locale('en');
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final accountState = ref.watch(accountDetailsProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
+    final l10n = context.l10n;
 
     String userId = '';
     if (authState is AuthStateAuthenticated) {
@@ -53,7 +88,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(title: Text(l10n.profile)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.l),
         child: Column(
@@ -64,6 +99,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 account: account,
                 userId: userId,
                 maskPhone: _maskPhone,
+                notAddedLabel: l10n.notAdded,
+                defaultDisplayName: l10n.ewalletUser,
               ),
               loading: () => const AppCard(
                 child: Column(
@@ -87,7 +124,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            const SectionHeader(title: 'Settings'),
+            SectionHeader(title: l10n.settings),
             const SizedBox(height: AppSpacing.s),
             AppCard(
               padding: EdgeInsets.zero,
@@ -95,8 +132,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 children: [
                   _SettingsTile(
                     icon: Icons.password_rounded,
-                    title: 'Change transaction PIN',
-                    subtitle: 'Update the 6-digit PIN used for transfers.',
+                    title: l10n.changeTransactionPin,
+                    subtitle: l10n.changePinSubtitle,
                     onTap: () => _showChangePinDialog(context),
                   ),
                   const Divider(height: 1),
@@ -110,7 +147,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             const Icon(Icons.contrast_rounded),
                             const SizedBox(width: AppSpacing.m),
                             Text(
-                              'Appearance',
+                              l10n.appearance,
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                           ],
@@ -119,21 +156,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: SegmentedButton<ThemeMode>(
-                            segments: const [
+                            segments: [
                               ButtonSegment(
                                 value: ThemeMode.system,
-                                icon: Icon(Icons.settings_suggest_rounded),
-                                label: Text('System'),
+                                icon: const Icon(Icons.settings_suggest_rounded),
+                                label: Text(l10n.system),
                               ),
                               ButtonSegment(
                                 value: ThemeMode.light,
-                                icon: Icon(Icons.light_mode_rounded),
-                                label: Text('Light'),
+                                icon: const Icon(Icons.light_mode_rounded),
+                                label: Text(l10n.light),
                               ),
                               ButtonSegment(
                                 value: ThemeMode.dark,
-                                icon: Icon(Icons.dark_mode_rounded),
-                                label: Text('Dark'),
+                                icon: const Icon(Icons.dark_mode_rounded),
+                                label: Text(l10n.dark),
                               ),
                             ],
                             selected: {themeMode},
@@ -149,23 +186,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const Divider(height: 1),
                   _SettingsTile(
                     icon: Icons.language_rounded,
-                    title: 'Language',
-                    subtitle: 'English',
-                    onTap: () {},
+                    title: l10n.language,
+                    subtitle: locale.languageCode == 'vi'
+                        ? l10n.vietnamese
+                        : l10n.english,
+                    onTap: () => _showLanguageDialog(context),
                   ),
                   const Divider(height: 1),
                   _SettingsTile(
                     icon: Icons.support_agent_rounded,
-                    title: 'Contact support',
-                    subtitle:
-                        'Ask about transfers, refunds, PIN safety, and account help.',
+                    title: l10n.contactSupport,
+                    subtitle: l10n.contactSupportSubtitle,
                     onTap: () => context.go('/support'),
                   ),
                   const Divider(height: 1),
                   _SettingsTile(
                     icon: Icons.logout_rounded,
-                    title: 'Sign out',
-                    subtitle: 'End this secure session.',
+                    title: l10n.signOut,
+                    subtitle: l10n.signOutSubtitle,
                     danger: true,
                     onTap: () {
                       ref.read(authNotifierProvider.notifier).logout();
@@ -185,11 +223,15 @@ class _ProfileHeader extends StatelessWidget {
   final AccountRecord account;
   final String userId;
   final String Function(String phone) maskPhone;
+  final String notAddedLabel;
+  final String defaultDisplayName;
 
   const _ProfileHeader({
     required this.account,
     required this.userId,
     required this.maskPhone,
+    required this.notAddedLabel,
+    required this.defaultDisplayName,
   });
 
   @override
@@ -197,9 +239,9 @@ class _ProfileHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final email = account.email?.trim() ?? '';
     final phone = account.phone?.trim() ?? '';
-    final emailDisplay = email.isNotEmpty ? email : 'Not added';
-    final phoneDisplay = phone.isNotEmpty ? maskPhone(phone) : 'Not added';
-    final displayName = email.isNotEmpty ? email.split('@')[0] : 'E-Wallet user';
+    final emailDisplay = email.isNotEmpty ? email : notAddedLabel;
+    final phoneDisplay = phone.isNotEmpty ? maskPhone(phone) : notAddedLabel;
+    final displayName = email.isNotEmpty ? email.split('@')[0] : defaultDisplayName;
 
     return AppCard(
       child: Column(
@@ -365,7 +407,7 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transaction PIN changed.')),
+          SnackBar(content: Text(context.l10n.pinChanged)),
         );
         Navigator.of(context).pop();
       } catch (e) {
@@ -380,13 +422,21 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
     }
   }
 
+  String? _validatePin(String? value) {
+    final pinRegex = RegExp(r'^[0-9]{6}$');
+    return value != null && pinRegex.hasMatch(value)
+        ? null
+        : context.l10n.validatorPin;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return AlertDialog(
       icon: const Icon(Icons.password_rounded),
-      title: const Text('Change transaction PIN'),
+      title: Text(l10n.changeTransactionPin),
       content: _isLoading
           ? SizedBox(
               height: 112,
@@ -398,7 +448,7 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   const SizedBox(height: AppSpacing.l),
-                  const Text('Updating PIN...'),
+                  Text(l10n.updatingPin),
                 ],
               ),
             )
@@ -422,24 +472,24 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
                     ],
                     PinEntryField(
                       controller: _currentPinController,
-                      labelText: 'Current PIN',
-                      validator: Validator.validatePin,
+                      labelText: l10n.currentPin,
+                      validator: _validatePin,
                     ),
                     const SizedBox(height: AppSpacing.m),
                     PinEntryField(
                       controller: _newPinController,
-                      labelText: 'New PIN',
-                      validator: Validator.validatePin,
+                      labelText: l10n.newPin,
+                      validator: _validatePin,
                     ),
                     const SizedBox(height: AppSpacing.m),
                     PinEntryField(
                       controller: _confirmPinController,
-                      labelText: 'Confirm new PIN',
+                      labelText: l10n.confirmNewPin,
                       validator: (value) {
-                        final valErr = Validator.validatePin(value);
+                        final valErr = _validatePin(value);
                         if (valErr != null) return valErr;
                         if (value != _newPinController.text) {
-                          return 'PIN confirmation does not match.';
+                          return l10n.pinConfirmationMismatch;
                         }
                         return null;
                       },
@@ -453,9 +503,9 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
           : [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
-              FilledButton(onPressed: _onSubmit, child: const Text('Save')),
+              FilledButton(onPressed: _onSubmit, child: Text(l10n.save)),
             ],
     );
   }

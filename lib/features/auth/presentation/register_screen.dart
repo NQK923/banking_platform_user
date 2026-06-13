@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/validator.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/loading_overlay.dart';
 import '../../../shared/widgets/pin_entry_field.dart';
@@ -52,10 +52,43 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
+  String? _validateEmail(String? value) {
+    final l10n = context.l10n;
+    if (value == null || value.trim().isEmpty) {
+      return l10n.validatorRequired;
+    }
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(value.trim()) ? null : l10n.validatorEmail;
+  }
+
+  String? _validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final phoneRegex = RegExp(r'^\+?[0-9]{9,15}$');
+    return phoneRegex.hasMatch(value.trim())
+        ? null
+        : context.l10n.validatorPhone;
+  }
+
+  String? _validatePassword(String? value) {
+    final l10n = context.l10n;
+    if (value == null || value.isEmpty) {
+      return l10n.validatorRequired;
+    }
+    return value.length >= 6 ? null : l10n.validatorPassword;
+  }
+
+  String? _validatePin(String? value) {
+    final pinRegex = RegExp(r'^[0-9]{6}$');
+    return value != null && pinRegex.hasMatch(value)
+        ? null
+        : context.l10n.validatorPin;
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final isLoading = authState is AuthStateAuthenticating;
     final errorMessage = authState is AuthStateUnauthenticated
         ? authState.errorMessage
@@ -63,16 +96,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create account'),
+        title: Text(l10n.createAccount),
         leading: IconButton(
-          tooltip: 'Back',
+          tooltip: l10n.back,
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
       ),
       body: LoadingOverlay(
         isLoading: isLoading,
-        message: 'Creating wallet...',
+        message: l10n.creatingWallet,
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.l),
@@ -84,13 +117,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Start with a secure wallet',
+                      l10n.startSecureWallet,
                       style: theme.textTheme.headlineMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.s),
                     Text(
-                      'Your login password and transaction PIN stay separate.',
+                      l10n.registerSubtitle,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -107,22 +140,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              prefixIcon: Icon(Icons.email_outlined),
+                            decoration: InputDecoration(
+                              labelText: l10n.email,
+                              prefixIcon: const Icon(Icons.email_outlined),
                             ),
-                            validator: Validator.validateEmail,
+                            validator: (_) =>
+                                _validateEmail(_emailController.text),
                             enabled: !isLoading,
                           ),
                           const SizedBox(height: AppSpacing.m),
                           TextFormField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
-                            decoration: const InputDecoration(
-                              labelText: 'Phone (optional)',
-                              prefixIcon: Icon(Icons.phone_outlined),
+                            decoration: InputDecoration(
+                              labelText: l10n.phoneOptional,
+                              prefixIcon: const Icon(Icons.phone_outlined),
                             ),
-                            validator: Validator.validatePhone,
+                            validator: (_) =>
+                                _validatePhone(_phoneController.text),
                             enabled: !isLoading,
                           ),
                           const SizedBox(height: AppSpacing.m),
@@ -130,14 +165,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             controller: _passwordController,
                             obscureText: _obscurePassword,
                             decoration: InputDecoration(
-                              labelText: 'Password',
+                              labelText: l10n.password,
                               prefixIcon: const Icon(
                                 Icons.lock_outline_rounded,
                               ),
                               suffixIcon: IconButton(
                                 tooltip: _obscurePassword
-                                    ? 'Show password'
-                                    : 'Hide password',
+                                    ? l10n.showPassword
+                                    : l10n.hidePassword,
                                 icon: Icon(
                                   _obscurePassword
                                       ? Icons.visibility_off_outlined
@@ -150,21 +185,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 },
                               ),
                             ),
-                            validator: Validator.validatePassword,
+                            validator: (_) =>
+                                _validatePassword(_passwordController.text),
                             enabled: !isLoading,
                           ),
                           const SizedBox(height: AppSpacing.m),
                           PinEntryField(
                             controller: _pinController,
-                            labelText: 'Transaction PIN',
-                            validator: Validator.validatePin,
+                            labelText: l10n.transactionPin,
+                            validator: (_) => _validatePin(_pinController.text),
                           ),
                           const SizedBox(height: AppSpacing.m),
                           DropdownButtonFormField<String>(
                             initialValue: _selectedCurrency,
-                            decoration: const InputDecoration(
-                              labelText: 'Default currency',
-                              prefixIcon: Icon(Icons.payments_outlined),
+                            decoration: InputDecoration(
+                              labelText: l10n.defaultCurrency,
+                              prefixIcon: const Icon(Icons.payments_outlined),
                             ),
                             items: const [
                               DropdownMenuItem(
@@ -186,7 +222,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                           const SizedBox(height: AppSpacing.xl),
                           PrimaryButton(
-                            text: 'Create wallet',
+                            text: l10n.createWallet,
                             icon: Icons.person_add_alt_1_rounded,
                             onPressed: _submit,
                             isLoading: isLoading,
@@ -200,14 +236,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
-                          'Already registered? ',
+                          l10n.alreadyRegistered,
                           style: TextStyle(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
                         TextButton(
                           onPressed: () => context.pop(),
-                          child: const Text('Sign in'),
+                          child: Text(l10n.signIn),
                         ),
                       ],
                     ),

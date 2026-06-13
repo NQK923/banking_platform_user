@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -22,6 +23,7 @@ class HomeScreen extends ConsumerWidget {
     final authState = ref.watch(authNotifierProvider);
     final balanceState = ref.watch(balanceProvider);
     final historyState = ref.watch(historyProvider);
+    final l10n = context.l10n;
 
     String currentUserAccountId = '';
     if (authState is AuthStateAuthenticated) {
@@ -37,10 +39,10 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wallet'),
+        title: Text(l10n.wallet),
         actions: [
           IconButton(
-            tooltip: 'Refresh',
+            tooltip: l10n.refresh,
             icon: const Icon(Icons.refresh_rounded),
             onPressed: onRefresh,
           ),
@@ -80,30 +82,30 @@ class HomeScreen extends ConsumerWidget {
                 actions: [
                   _QuickActionData(
                     icon: Icons.send_rounded,
-                    label: 'Send',
+                    label: l10n.send,
                     onTap: () => context.push('/transfer'),
                   ),
                   _QuickActionData(
                     icon: Icons.add_card_rounded,
-                    label: 'Deposit',
+                    label: l10n.deposit,
                     onTap: () => context.push('/deposit'),
                   ),
                   _QuickActionData(
                     icon: Icons.south_west_rounded,
-                    label: 'Withdraw',
+                    label: l10n.withdraw,
                     onTap: () => context.push('/withdraw'),
                   ),
                   _QuickActionData(
                     icon: Icons.support_agent_rounded,
-                    label: 'Support',
+                    label: l10n.support,
                     onTap: () => context.go('/support'),
                   ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xl),
               SectionHeader(
-                title: 'Recent activity',
-                actionLabel: 'View all',
+                title: l10n.recentActivity,
+                actionLabel: l10n.viewAll,
                 onAction: () => GoRouter.of(context).go('/history'),
               ),
               const SizedBox(height: AppSpacing.s),
@@ -119,10 +121,9 @@ class HomeScreen extends ConsumerWidget {
               else if (historyState.transactions.isEmpty)
                 EmptyState(
                   icon: Icons.receipt_long_outlined,
-                  title: 'No transactions yet',
-                  message:
-                      'Your deposits, withdrawals, and transfers will appear here.',
-                  actionLabel: 'Make a deposit',
+                  title: l10n.noTransactionsYet,
+                  message: l10n.emptyTransactionsMessage,
+                  actionLabel: l10n.makeDeposit,
                   onAction: () => context.push('/deposit'),
                 )
               else
@@ -224,6 +225,7 @@ class _BalanceHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = context.l10n;
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.xl),
       gradient: LinearGradient(
@@ -274,7 +276,7 @@ class _BalanceHero extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
           Text(
-            'Available balance',
+            l10n.availableBalance,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colors.onPrimary.withValues(alpha: 0.78),
               fontWeight: FontWeight.w600,
@@ -291,7 +293,7 @@ class _BalanceHero extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
           Text(
-            'Wallet ID',
+            l10n.walletId,
             style: theme.textTheme.labelSmall?.copyWith(
               color: colors.onPrimary.withValues(alpha: 0.72),
             ),

@@ -14,6 +14,7 @@ import '../../features/transfer/presentation/transfer_wizard_screen.dart';
 import '../../features/wallet/presentation/deposit_screen.dart';
 import '../../features/wallet/presentation/home_screen.dart';
 import '../../features/wallet/presentation/withdraw_screen.dart';
+import '../localization/locale_provider.dart';
 import '../theme/app_theme.dart';
 
 class RouterNotifier extends ChangeNotifier {
@@ -202,6 +203,7 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
+    final l10n = context.l10n;
 
     return Scaffold(
       body: AnimatedSwitcher(
@@ -211,26 +213,26 @@ class MainShell extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) => _onItemTapped(index, context),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            selectedIcon: const Icon(Icons.home_rounded),
+            label: l10n.home,
           ),
           NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long_rounded),
-            label: 'History',
+            icon: const Icon(Icons.receipt_long_outlined),
+            selectedIcon: const Icon(Icons.receipt_long_rounded),
+            label: l10n.history,
           ),
           NavigationDestination(
-            icon: Icon(Icons.support_agent_outlined),
-            selectedIcon: Icon(Icons.support_agent_rounded),
-            label: 'Support',
+            icon: const Icon(Icons.support_agent_outlined),
+            selectedIcon: const Icon(Icons.support_agent_rounded),
+            label: l10n.support,
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            selectedIcon: const Icon(Icons.person_rounded),
+            label: l10n.profile,
           ),
         ],
       ),

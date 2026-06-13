@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_view.dart';
@@ -97,9 +98,10 @@ class SupportChatView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final canSend = !state.isSending && !state.isLoading;
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Support chat'),
+        title: Text(l10n.supportChat),
         actions: [
           TextButton.icon(
             onPressed: state.hasSession && !state.isHandingOff
@@ -112,7 +114,7 @@ class SupportChatView extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.support_agent_rounded),
-            label: const Text('Human'),
+            label: Text(l10n.human),
           ),
         ],
       ),
@@ -205,10 +207,13 @@ class _SupportEmptyState extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.m),
-                Text('How can we help?', style: theme.textTheme.titleLarge),
+                Text(
+                  context.l10n.howCanWeHelp,
+                  style: theme.textTheme.titleLarge,
+                ),
                 const SizedBox(height: AppSpacing.s),
                 Text(
-                  'Ask about transfer status, refunds, failed transfers, traceId, PIN safety, recipient lookup, or balance display.',
+                  context.l10n.supportEmptyMessage,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
@@ -249,7 +254,7 @@ class _SafetyReminder extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
           Text(
-            'Never share PIN, password, OTP, or tokens.',
+            context.l10n.safetyReminder,
             style: theme.textTheme.labelMedium?.copyWith(
               color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w800,
@@ -258,7 +263,7 @@ class _SafetyReminder extends StatelessWidget {
           if (transactionId != null)
             Chip(
               visualDensity: VisualDensity.compact,
-              label: Text('Transaction ${_short(transactionId!)}'),
+              label: Text(context.l10n.transactionShort(_short(transactionId!))),
             ),
         ],
       ),
@@ -349,7 +354,7 @@ class SupportChatMessageBubble extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                   child: Text(
-                    _senderLabel(message.senderType),
+                    _senderLabel(context, message.senderType),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: textColor.withValues(alpha: 0.72),
                       fontWeight: FontWeight.w900,
@@ -368,12 +373,13 @@ class SupportChatMessageBubble extends StatelessWidget {
     );
   }
 
-  String _senderLabel(SupportSenderType senderType) {
+  String _senderLabel(BuildContext context, SupportSenderType senderType) {
+    final l10n = context.l10n;
     return switch (senderType) {
-      SupportSenderType.AI => 'Assistant',
-      SupportSenderType.ADMIN => 'Support',
-      SupportSenderType.SYSTEM => 'System',
-      SupportSenderType.USER => 'You',
+      SupportSenderType.AI => l10n.assistant,
+      SupportSenderType.ADMIN => l10n.support,
+      SupportSenderType.SYSTEM => l10n.systemSender,
+      SupportSenderType.USER => l10n.you,
     };
   }
 }
@@ -459,6 +465,7 @@ class _MessageComposer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Container(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.l,
@@ -482,9 +489,9 @@ class _MessageComposer extends StatelessWidget {
               minLines: 1,
               maxLines: 4,
               textInputAction: TextInputAction.send,
-              decoration: const InputDecoration(
-                hintText: 'Ask support...',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: l10n.askSupport,
+                border: const OutlineInputBorder(),
                 isDense: true,
               ),
               onSubmitted: enabled ? onSend : null,
@@ -492,7 +499,7 @@ class _MessageComposer extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.s),
           IconButton.filled(
-            tooltip: 'Send',
+            tooltip: l10n.sendMessage,
             onPressed: enabled ? () => onSend(controller.text) : null,
             icon: isSending
                 ? const SizedBox(

@@ -1,7 +1,9 @@
 import 'package:banking_platform_user/features/support/domain/support_chat_provider.dart';
 import 'package:banking_platform_user/features/support/domain/support_models.dart';
 import 'package:banking_platform_user/features/support/presentation/support_chat_screen.dart';
+import 'package:banking_platform_user/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -12,8 +14,8 @@ void main() {
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: SupportChatView(
+      _localizedApp(
+        SupportChatView(
           controller: controller,
           state: SupportChatState(
             sessionId: 'session-1',
@@ -65,8 +67,8 @@ void main() {
     String sent = '';
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: SupportChatView(
+      _localizedApp(
+        SupportChatView(
           controller: controller,
           state: const SupportChatState(),
           onSend: (value) => sent = value,
@@ -86,4 +88,18 @@ void main() {
 
     expect(sent, 'Why is my transfer pending?');
   });
+}
+
+Widget _localizedApp(Widget child) {
+  return MaterialApp(
+    locale: const Locale('en'),
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: child,
+  );
 }

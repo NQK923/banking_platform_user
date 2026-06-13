@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/validator.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/loading_overlay.dart';
 import '../../../shared/widgets/primary_button.dart';
@@ -37,10 +37,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  String? _validateIdentifier(String? value) {
+    final l10n = context.l10n;
+    if (value == null || value.trim().isEmpty) {
+      return l10n.validatorIdentifier;
+    }
+    final input = value.trim();
+    if (input.contains('@')) {
+      return _validateEmail(input);
+    }
+    final phoneRegex = RegExp(r'^\+?[0-9]{9,15}$');
+    return phoneRegex.hasMatch(input) ? null : l10n.validatorIdentifier;
+  }
+
+  String? _validateEmail(String? value) {
+    final l10n = context.l10n;
+    if (value == null || value.trim().isEmpty) {
+      return l10n.validatorRequired;
+    }
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(value.trim()) ? null : l10n.validatorEmail;
+  }
+
+  String? _validatePassword(String? value) {
+    final l10n = context.l10n;
+    if (value == null || value.isEmpty) {
+      return l10n.validatorRequired;
+    }
+    return value.length >= 6 ? null : l10n.validatorPassword;
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final isLoading = authState is AuthStateAuthenticating;
     final errorMessage = authState is AuthStateUnauthenticated
         ? authState.errorMessage
@@ -49,7 +80,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       body: LoadingOverlay(
         isLoading: isLoading,
-        message: 'Signing in...',
+        message: l10n.signingIn,
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -61,9 +92,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const _AuthHeader(
-                        title: 'Welcome back',
-                        subtitle: 'Sign in to your secure E-Wallet.',
+                      _AuthHeader(
+                        title: l10n.welcomeBack,
+                        subtitle: l10n.loginSubtitle,
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       AppCard(
@@ -76,11 +107,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             TextFormField(
                               controller: _identifierController,
                               keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                labelText: 'Email or phone',
-                                prefixIcon: Icon(Icons.person_outline_rounded),
+                              decoration: InputDecoration(
+                                labelText: l10n.emailOrPhone,
+                                prefixIcon: const Icon(Icons.person_outline_rounded),
                               ),
-                              validator: Validator.validateIdentifier,
+                              validator: (_) =>
+                                  _validateIdentifier(_identifierController.text),
                               enabled: !isLoading,
                             ),
                             const SizedBox(height: AppSpacing.m),
@@ -88,14 +120,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               controller: _passwordController,
                               obscureText: _obscurePassword,
                               decoration: InputDecoration(
-                                labelText: 'Password',
+                                labelText: l10n.password,
                                 prefixIcon: const Icon(
                                   Icons.lock_outline_rounded,
                                 ),
                                 suffixIcon: IconButton(
                                   tooltip: _obscurePassword
-                                      ? 'Show password'
-                                      : 'Hide password',
+                                      ? l10n.showPassword
+                                      : l10n.hidePassword,
                                   icon: Icon(
                                     _obscurePassword
                                         ? Icons.visibility_off_outlined
@@ -108,12 +140,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   },
                                 ),
                               ),
-                              validator: Validator.validatePassword,
+                              validator: (_) =>
+                                  _validatePassword(_passwordController.text),
                               enabled: !isLoading,
                             ),
                             const SizedBox(height: AppSpacing.xl),
                             PrimaryButton(
-                              text: 'Sign in',
+                              text: l10n.signIn,
                               icon: Icons.login_rounded,
                               onPressed: _submit,
                               isLoading: isLoading,
@@ -127,14 +160,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(
-                            'No account yet? ',
+                            l10n.noAccountYet,
                             style: TextStyle(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
                           TextButton(
                             onPressed: () => context.push('/register'),
-                            child: const Text('Create one'),
+                            child: Text(l10n.createOne),
                           ),
                         ],
                       ),

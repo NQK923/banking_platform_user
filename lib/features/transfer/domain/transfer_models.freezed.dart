@@ -23,6 +23,8 @@ AccountRecord _$AccountRecordFromJson(Map<String, dynamic> json) {
 mixin _$AccountRecord {
   String get id => throw _privateConstructorUsedError;
   String get userId => throw _privateConstructorUsedError;
+  String? get email => throw _privateConstructorUsedError;
+  String? get phone => throw _privateConstructorUsedError;
   String get code => throw _privateConstructorUsedError;
   String get currency => throw _privateConstructorUsedError;
   AccountKind get kind => throw _privateConstructorUsedError;
@@ -50,6 +52,8 @@ abstract class $AccountRecordCopyWith<$Res> {
   $Res call({
     String id,
     String userId,
+    String? email,
+    String? phone,
     String code,
     String currency,
     AccountKind kind,
@@ -76,6 +80,8 @@ class _$AccountRecordCopyWithImpl<$Res, $Val extends AccountRecord>
   $Res call({
     Object? id = null,
     Object? userId = null,
+    Object? email = freezed,
+    Object? phone = freezed,
     Object? code = null,
     Object? currency = null,
     Object? kind = null,
@@ -93,6 +99,14 @@ class _$AccountRecordCopyWithImpl<$Res, $Val extends AccountRecord>
                 ? _value.userId
                 : userId // ignore: cast_nullable_to_non_nullable
                       as String,
+            email: freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            phone: freezed == phone
+                ? _value.phone
+                : phone // ignore: cast_nullable_to_non_nullable
+                      as String?,
             code: null == code
                 ? _value.code
                 : code // ignore: cast_nullable_to_non_nullable
@@ -135,6 +149,8 @@ abstract class _$$AccountRecordImplCopyWith<$Res>
   $Res call({
     String id,
     String userId,
+    String? email,
+    String? phone,
     String code,
     String currency,
     AccountKind kind,
@@ -160,6 +176,8 @@ class __$$AccountRecordImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? userId = null,
+    Object? email = freezed,
+    Object? phone = freezed,
     Object? code = null,
     Object? currency = null,
     Object? kind = null,
@@ -177,6 +195,14 @@ class __$$AccountRecordImplCopyWithImpl<$Res>
             ? _value.userId
             : userId // ignore: cast_nullable_to_non_nullable
                   as String,
+        email: freezed == email
+            ? _value.email
+            : email // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        phone: freezed == phone
+            ? _value.phone
+            : phone // ignore: cast_nullable_to_non_nullable
+                  as String?,
         code: null == code
             ? _value.code
             : code // ignore: cast_nullable_to_non_nullable
@@ -212,6 +238,8 @@ class _$AccountRecordImpl implements _AccountRecord {
   const _$AccountRecordImpl({
     required this.id,
     required this.userId,
+    this.email,
+    this.phone,
     this.code = '',
     required this.currency,
     required this.kind,
@@ -228,6 +256,10 @@ class _$AccountRecordImpl implements _AccountRecord {
   @override
   final String userId;
   @override
+  final String? email;
+  @override
+  final String? phone;
+  @override
   @JsonKey()
   final String code;
   @override
@@ -243,7 +275,7 @@ class _$AccountRecordImpl implements _AccountRecord {
 
   @override
   String toString() {
-    return 'AccountRecord(id: $id, userId: $userId, code: $code, currency: $currency, kind: $kind, status: $status, version: $version, createdAt: $createdAt)';
+    return 'AccountRecord(id: $id, userId: $userId, email: $email, phone: $phone, code: $code, currency: $currency, kind: $kind, status: $status, version: $version, createdAt: $createdAt)';
   }
 
   @override
@@ -253,6 +285,8 @@ class _$AccountRecordImpl implements _AccountRecord {
             other is _$AccountRecordImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.email, email) || other.email == email) &&
+            (identical(other.phone, phone) || other.phone == phone) &&
             (identical(other.code, code) || other.code == code) &&
             (identical(other.currency, currency) ||
                 other.currency == currency) &&
@@ -269,6 +303,8 @@ class _$AccountRecordImpl implements _AccountRecord {
     runtimeType,
     id,
     userId,
+    email,
+    phone,
     code,
     currency,
     kind,
@@ -295,6 +331,8 @@ abstract class _AccountRecord implements AccountRecord {
   const factory _AccountRecord({
     required final String id,
     required final String userId,
+    final String? email,
+    final String? phone,
     final String code,
     required final String currency,
     required final AccountKind kind,
@@ -310,6 +348,10 @@ abstract class _AccountRecord implements AccountRecord {
   String get id;
   @override
   String get userId;
+  @override
+  String? get email;
+  @override
+  String? get phone;
   @override
   String get code;
   @override

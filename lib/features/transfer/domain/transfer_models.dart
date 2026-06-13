@@ -15,6 +15,8 @@ class AccountRecord with _$AccountRecord {
   const factory AccountRecord({
     required String id,
     required String userId,
+    String? email,
+    String? phone,
     @Default('') String code,
     required String currency,
     required AccountKind kind,

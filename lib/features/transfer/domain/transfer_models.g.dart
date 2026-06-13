@@ -10,6 +10,8 @@ _$AccountRecordImpl _$$AccountRecordImplFromJson(Map<String, dynamic> json) =>
     _$AccountRecordImpl(
       id: json['id'] as String,
       userId: json['userId'] as String,
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
       code: json['code'] as String? ?? '',
       currency: json['currency'] as String,
       kind: $enumDecode(_$AccountKindEnumMap, json['kind']),
@@ -22,6 +24,8 @@ Map<String, dynamic> _$$AccountRecordImplToJson(_$AccountRecordImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'userId': instance.userId,
+      'email': instance.email,
+      'phone': instance.phone,
       'code': instance.code,
       'currency': instance.currency,
       'kind': _$AccountKindEnumMap[instance.kind]!,

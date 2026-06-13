@@ -12,6 +12,7 @@ class MockAuthRepository implements AuthRepository {
   String userId = 'user-123';
   String accountId = 'account-456';
   String? errorMessage;
+  Completer<bool>? hasSessionCompleter;
 
   @override
   Future<AuthResponse> login(String identifier, String password) async {
@@ -53,7 +54,13 @@ class MockAuthRepository implements AuthRepository {
   Future<bool> verifyPin(String pin) async => pin == '123456';
 
   @override
-  Future<bool> hasSession() async => sessionExists;
+  Future<bool> hasSession() async {
+    final completer = hasSessionCompleter;
+    if (completer != null) {
+      return completer.future;
+    }
+    return sessionExists;
+  }
 
   @override
   Future<String?> getUserId() async => userId;
@@ -189,6 +196,42 @@ void main() {
       await future;
 
       // Transitions back to unauthenticated with error
+      expect(
+        container.read(authNotifierProvider),
+        const AuthState.unauthenticated(
+          errorMessage: 'Exception: Wrong credentials',
+        ),
+      );
+    });
+
+    test('Login error is not cleared by late session initialization', () async {
+      mockRepository.shouldSucceed = false;
+      mockRepository.errorMessage = 'Wrong credentials';
+      mockRepository.hasSessionCompleter = Completer<bool>();
+      final container = createContainer();
+      final sub = container.listen<AuthState>(
+        authNotifierProvider,
+        (previous, next) {},
+        fireImmediately: true,
+      );
+      addTearDown(sub.close);
+
+      final future = container
+          .read(authNotifierProvider.notifier)
+          .login('test@email.com', 'wrong_pass');
+
+      await future;
+
+      expect(
+        container.read(authNotifierProvider),
+        const AuthState.unauthenticated(
+          errorMessage: 'Exception: Wrong credentials',
+        ),
+      );
+
+      mockRepository.hasSessionCompleter!.complete(false);
+      await Future<void>.delayed(Duration.zero);
+
       expect(
         container.read(authNotifierProvider),
         const AuthState.unauthenticated(

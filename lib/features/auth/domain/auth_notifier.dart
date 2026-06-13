@@ -30,9 +30,13 @@ class AuthNotifier extends _$AuthNotifier {
   Future<void> _initSession() async {
     try {
       final hasSession = await _authRepository.hasSession();
+      if (state is! AuthStateInitializing) return;
+
       if (hasSession) {
         final userId = await _authRepository.getUserId();
         final accountId = await _authRepository.getAccountId();
+        if (state is! AuthStateInitializing) return;
+
         state = AuthState.authenticated(
           userId: userId ?? '',
           accountId: accountId,
@@ -41,7 +45,9 @@ class AuthNotifier extends _$AuthNotifier {
         state = const AuthState.unauthenticated();
       }
     } catch (e) {
-      state = const AuthState.unauthenticated();
+      if (state is AuthStateInitializing) {
+        state = const AuthState.unauthenticated();
+      }
     }
   }
 

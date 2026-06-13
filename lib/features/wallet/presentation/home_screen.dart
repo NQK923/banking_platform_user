@@ -93,6 +93,11 @@ class HomeScreen extends ConsumerWidget {
                     label: 'Withdraw',
                     onTap: () => context.push('/withdraw'),
                   ),
+                  _QuickActionData(
+                    icon: Icons.support_agent_rounded,
+                    label: 'Support',
+                    onTap: () => context.go('/support'),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xl),

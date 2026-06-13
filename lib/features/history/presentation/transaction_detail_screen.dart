@@ -151,6 +151,45 @@ class TransactionDetailScreen extends ConsumerWidget {
                 ],
                 const SizedBox(height: AppSpacing.l),
                 AppCard(
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: theme.colorScheme.primaryContainer,
+                        child: Icon(
+                          Icons.support_agent_rounded,
+                          color: theme.colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.m),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ask about this transaction',
+                              style: theme.textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Get a safe explanation of status, refund, failure reason, and traceId.',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton.filledTonal(
+                        tooltip: 'Ask support',
+                        onPressed: () =>
+                            context.push('/history/${tx.id}/support'),
+                        icon: const Icon(Icons.arrow_forward_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.l),
+                AppCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

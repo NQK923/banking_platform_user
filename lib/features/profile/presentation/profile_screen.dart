@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validator.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -151,6 +152,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     title: 'Language',
                     subtitle: 'English',
                     onTap: () {},
+                  ),
+                  const Divider(height: 1),
+                  _SettingsTile(
+                    icon: Icons.support_agent_rounded,
+                    title: 'Contact support',
+                    subtitle:
+                        'Ask about transfers, refunds, PIN safety, and account help.',
+                    onTap: () => context.go('/support'),
                   ),
                   const Divider(height: 1),
                   _SettingsTile(

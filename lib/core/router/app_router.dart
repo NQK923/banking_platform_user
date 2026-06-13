@@ -9,6 +9,7 @@ import '../../features/auth/presentation/register_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/transaction_detail_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/support/presentation/support_chat_screen.dart';
 import '../../features/transfer/presentation/transfer_wizard_screen.dart';
 import '../../features/wallet/presentation/deposit_screen.dart';
 import '../../features/wallet/presentation/home_screen.dart';
@@ -87,6 +88,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/withdraw',
         builder: (context, state) => const WithdrawScreen(),
       ),
+      GoRoute(
+        path: '/support/session/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return SupportChatScreen(sessionId: id);
+        },
+      ),
+      GoRoute(
+        path: '/history/:id/support',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return SupportChatScreen(transactionId: id);
+        },
+      ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
@@ -104,6 +119,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/profile',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: ProfileScreen()),
+          ),
+          GoRoute(
+            path: '/support',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: SupportChatScreen()),
           ),
         ],
       ),
@@ -161,7 +181,8 @@ class MainShell extends StatelessWidget {
     final location = GoRouterState.of(context).uri.path;
     if (location.startsWith('/home')) return 0;
     if (location.startsWith('/history')) return 1;
-    if (location.startsWith('/profile')) return 2;
+    if (location.startsWith('/support')) return 2;
+    if (location.startsWith('/profile')) return 3;
     return 0;
   }
 
@@ -172,6 +193,8 @@ class MainShell extends StatelessWidget {
       case 1:
         GoRouter.of(context).go('/history');
       case 2:
+        GoRouter.of(context).go('/support');
+      case 3:
         GoRouter.of(context).go('/profile');
     }
   }
@@ -198,6 +221,11 @@ class MainShell extends StatelessWidget {
             icon: Icon(Icons.receipt_long_outlined),
             selectedIcon: Icon(Icons.receipt_long_rounded),
             label: 'History',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.support_agent_outlined),
+            selectedIcon: Icon(Icons.support_agent_rounded),
+            label: 'Support',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

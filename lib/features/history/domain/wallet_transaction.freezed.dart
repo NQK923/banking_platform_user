@@ -32,9 +32,7 @@ mixin _$WalletTransaction {
   String? get correlationId => throw _privateConstructorUsedError;
   String get createdAt => throw _privateConstructorUsedError;
   String get updatedAt => throw _privateConstructorUsedError;
-  bool get debitApplied =>
-      throw _privateConstructorUsedError; // TODO: The backend WalletTransaction record does not currently expose 'note' or 'failureReason'.
-  // We declare these fields as optional in our DTO for M2 compliance and will fallback/mock them.
+  bool get debitApplied => throw _privateConstructorUsedError;
   String? get note => throw _privateConstructorUsedError;
   String? get failureReason => throw _privateConstructorUsedError;
   bool? get compensated => throw _privateConstructorUsedError;
@@ -333,8 +331,6 @@ class _$WalletTransactionImpl implements _WalletTransaction {
   final String updatedAt;
   @override
   final bool debitApplied;
-  // TODO: The backend WalletTransaction record does not currently expose 'note' or 'failureReason'.
-  // We declare these fields as optional in our DTO for M2 compliance and will fallback/mock them.
   @override
   final String? note;
   @override
@@ -458,8 +454,7 @@ abstract class _WalletTransaction implements WalletTransaction {
   @override
   String get updatedAt;
   @override
-  bool get debitApplied; // TODO: The backend WalletTransaction record does not currently expose 'note' or 'failureReason'.
-  // We declare these fields as optional in our DTO for M2 compliance and will fallback/mock them.
+  bool get debitApplied;
   @override
   String? get note;
   @override

@@ -35,8 +35,6 @@ class WalletTransaction with _$WalletTransaction {
     required String createdAt,
     required String updatedAt,
     required bool debitApplied,
-    // TODO: The backend WalletTransaction record does not currently expose 'note' or 'failureReason'.
-    // We declare these fields as optional in our DTO for M2 compliance and will fallback/mock them.
     String? note,
     String? failureReason,
     bool? compensated,

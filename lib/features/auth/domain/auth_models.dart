@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'auth_models.freezed.dart';
 part 'auth_models.g.dart';
 
-@freezed
+@Freezed(toStringOverride: false)
 class RegisterRequest with _$RegisterRequest {
   const factory RegisterRequest({
     required String email,
@@ -17,7 +17,7 @@ class RegisterRequest with _$RegisterRequest {
       _$RegisterRequestFromJson(json);
 }
 
-@freezed
+@Freezed(toStringOverride: false)
 class LoginRequest with _$LoginRequest {
   const factory LoginRequest({
     required String identifier,
@@ -28,7 +28,7 @@ class LoginRequest with _$LoginRequest {
       _$LoginRequestFromJson(json);
 }
 
-@freezed
+@Freezed(toStringOverride: false)
 class RefreshRequest with _$RefreshRequest {
   const factory RefreshRequest({
     required String userId,
@@ -39,7 +39,7 @@ class RefreshRequest with _$RefreshRequest {
       _$RefreshRequestFromJson(json);
 }
 
-@freezed
+@Freezed(toStringOverride: false)
 class AuthResponse with _$AuthResponse {
   const factory AuthResponse({
     required String accessToken,
@@ -53,7 +53,7 @@ class AuthResponse with _$AuthResponse {
       _$AuthResponseFromJson(json);
 }
 
-@freezed
+@Freezed(toStringOverride: false)
 class PinVerifyRequest with _$PinVerifyRequest {
   const factory PinVerifyRequest({
     required String userId,

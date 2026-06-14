@@ -193,11 +193,6 @@ class _$RegisterRequestImpl implements _RegisterRequest {
   final String? currency;
 
   @override
-  String toString() {
-    return 'RegisterRequest(email: $email, phone: $phone, password: $password, pin: $pin, currency: $currency)';
-  }
-
-  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
@@ -379,11 +374,6 @@ class _$LoginRequestImpl implements _LoginRequest {
   final String password;
 
   @override
-  String toString() {
-    return 'LoginRequest(identifier: $identifier, password: $password)';
-  }
-
-  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
@@ -550,11 +540,6 @@ class _$RefreshRequestImpl implements _RefreshRequest {
   final String userId;
   @override
   final String refreshToken;
-
-  @override
-  String toString() {
-    return 'RefreshRequest(userId: $userId, refreshToken: $refreshToken)';
-  }
 
   @override
   bool operator ==(Object other) {
@@ -792,11 +777,6 @@ class _$AuthResponseImpl implements _AuthResponse {
   }
 
   @override
-  String toString() {
-    return 'AuthResponse(accessToken: $accessToken, refreshToken: $refreshToken, userId: $userId, accountId: $accountId, roles: $roles)';
-  }
-
-  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
@@ -980,11 +960,6 @@ class _$PinVerifyRequestImpl implements _PinVerifyRequest {
   final String userId;
   @override
   final String pin;
-
-  @override
-  String toString() {
-    return 'PinVerifyRequest(userId: $userId, pin: $pin)';
-  }
 
   @override
   bool operator ==(Object other) {

@@ -11,7 +11,7 @@ class AppException implements Exception {
   String toString() =>
       'AppException(code: $code, message: $message, traceId: $traceId)';
 
-  // Friendly localized or user-facing message mappings
+  // Stable Vietnamese fallback. Screen-level copy should still use l10n.
   String get userFriendlyMessage {
     switch (code) {
       case 'AUTH_EXPIRED':
@@ -81,7 +81,8 @@ class AppException implements Exception {
 
     return const AppException(
       code: 'INTERNAL',
-      message: 'Đã xảy ra lỗi hệ thống không xác định. Vui lòng thử lại sau.',
+      message:
+          'Đã xảy ra lỗi hệ thống không xác định. Vui lòng thử lại sau.',
     );
   }
 }

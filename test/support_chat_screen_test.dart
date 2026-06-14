@@ -88,6 +88,34 @@ void main() {
 
     expect(sent, 'Why is my transfer pending?');
   });
+
+  testWidgets('support chat composer preserves Vietnamese input', (
+    tester,
+  ) async {
+    final controller = TextEditingController();
+    addTearDown(controller.dispose);
+    String sent = '';
+
+    await tester.pumpWidget(
+      _localizedApp(
+        SupportChatView(
+          controller: controller,
+          state: const SupportChatState(),
+          onSend: (value) => sent = value,
+          onRetry: () {},
+          onHandoff: () {},
+          onSuggestedAction: (_) {},
+        ),
+      ),
+    );
+
+    const vietnameseMessage = 'Tôi muốn hỏi vì sao chuyển tiền bị treo?';
+    await tester.enterText(find.byType(TextField), vietnameseMessage);
+    await tester.tap(find.byTooltip('Send'));
+    await tester.pump();
+
+    expect(sent, vietnameseMessage);
+  });
 }
 
 Widget _localizedApp(Widget child) {

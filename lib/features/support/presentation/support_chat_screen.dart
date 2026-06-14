@@ -263,7 +263,9 @@ class _SafetyReminder extends StatelessWidget {
           if (transactionId != null)
             Chip(
               visualDensity: VisualDensity.compact,
-              label: Text(context.l10n.transactionShort(_short(transactionId!))),
+              label: Text(
+                context.l10n.transactionShort(_short(transactionId!)),
+              ),
             ),
         ],
       ),
@@ -462,6 +464,17 @@ class _MessageComposer extends StatelessWidget {
     required this.onSend,
   });
 
+  void _submit(BuildContext context) {
+    final value = controller.value;
+    if (value.composing.isValid && !value.composing.isCollapsed) {
+      FocusScope.of(context).unfocus();
+      return;
+    }
+    final text = value.text.trim();
+    if (text.isEmpty) return;
+    onSend(text);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -488,19 +501,21 @@ class _MessageComposer extends StatelessWidget {
               enabled: enabled,
               minLines: 1,
               maxLines: 4,
-              textInputAction: TextInputAction.send,
+              keyboardType: TextInputType.multiline,
+              textInputAction: TextInputAction.newline,
+              autocorrect: true,
+              enableSuggestions: true,
               decoration: InputDecoration(
                 hintText: l10n.askSupport,
                 border: const OutlineInputBorder(),
                 isDense: true,
               ),
-              onSubmitted: enabled ? onSend : null,
             ),
           ),
           const SizedBox(width: AppSpacing.s),
           IconButton.filled(
             tooltip: l10n.sendMessage,
-            onPressed: enabled ? () => onSend(controller.text) : null,
+            onPressed: enabled ? () => _submit(context) : null,
             icon: isSending
                 ? const SizedBox(
                     width: 18,

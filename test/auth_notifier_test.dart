@@ -51,6 +51,13 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> resetPassword({
+    required String identifier,
+    required String pin,
+    required String newPassword,
+  }) async {}
+
+  @override
   Future<bool> verifyPin(String pin) async => pin == '123456';
 
   @override

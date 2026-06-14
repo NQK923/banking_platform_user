@@ -230,6 +230,72 @@ abstract class AppLocalizations {
   /// **'Password'**
   String get password;
 
+  /// No description provided for @forgotPasswordQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPasswordQuestion;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password'**
+  String get forgotPassword;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset your password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your email or phone and transaction PIN to set a new login password.'**
+  String get resetPasswordSubtitle;
+
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get resetPassword;
+
+  /// No description provided for @resettingPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Resetting password...'**
+  String get resettingPassword;
+
+  /// No description provided for @passwordResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset. Sign in with your new password.'**
+  String get passwordResetSuccess;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPassword;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get confirmPassword;
+
+  /// No description provided for @passwordResetPinHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'For local v1 recovery, your transaction PIN verifies this password reset.'**
+  String get passwordResetPinHelp;
+
+  /// No description provided for @passwordConfirmationMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Password confirmation does not match.'**
+  String get passwordConfirmationMismatch;
+
   /// No description provided for @showPassword.
   ///
   /// In en, this message translates to:

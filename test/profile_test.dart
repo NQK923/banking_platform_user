@@ -86,6 +86,13 @@ class MockAuthApi implements AuthApi {
   }
 
   @override
+  Future<void> resetPassword({
+    required String identifier,
+    required String pin,
+    required String newPassword,
+  }) async {}
+
+  @override
   Future<bool> verifyPin(PinVerifyRequest request) async {
     if (request.pin == '123456') {
       return true;

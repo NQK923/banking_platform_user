@@ -76,6 +76,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get password => 'Password';
 
   @override
+  String get forgotPasswordQuestion => 'Forgot password?';
+
+  @override
+  String get forgotPassword => 'Forgot password';
+
+  @override
+  String get resetPasswordTitle => 'Reset your password';
+
+  @override
+  String get resetPasswordSubtitle =>
+      'Use your email or phone and transaction PIN to set a new login password.';
+
+  @override
+  String get resetPassword => 'Reset password';
+
+  @override
+  String get resettingPassword => 'Resetting password...';
+
+  @override
+  String get passwordResetSuccess =>
+      'Password reset. Sign in with your new password.';
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get confirmPassword => 'Confirm password';
+
+  @override
+  String get passwordResetPinHelp =>
+      'For local v1 recovery, your transaction PIN verifies this password reset.';
+
+  @override
+  String get passwordConfirmationMismatch =>
+      'Password confirmation does not match.';
+
+  @override
   String get showPassword => 'Show password';
 
   @override

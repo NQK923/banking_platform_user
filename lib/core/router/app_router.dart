@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/auth_notifier.dart';
 import '../../features/auth/domain/auth_state.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/pin_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
@@ -47,7 +48,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       final isLoggedIn = currentAuthState is AuthStateAuthenticated;
-      final isAuthRoute = location == '/login' || location == '/register';
+      final isAuthRoute =
+          location == '/login' ||
+          location == '/register' ||
+          location == '/forgot-password';
 
       if (!isLoggedIn && !isAuthRoute) {
         return '/login';
@@ -65,6 +69,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),

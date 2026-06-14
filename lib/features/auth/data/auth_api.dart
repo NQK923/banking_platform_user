@@ -30,6 +30,17 @@ class AuthApi {
     return AuthResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<void> resetPassword({
+    required String identifier,
+    required String pin,
+    required String newPassword,
+  }) async {
+    await _apiClient.post(
+      '/api/auth/password/reset',
+      data: {'identifier': identifier, 'pin': pin, 'newPassword': newPassword},
+    );
+  }
+
   Future<bool> verifyPin(PinVerifyRequest request) async {
     final response = await _apiClient.post(
       '/api/auth/pin/verify',

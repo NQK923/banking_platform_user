@@ -1,39 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/error/app_exception.dart';
 import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/loading_overlay.dart';
+import '../../../shared/widgets/pin_entry_field.dart';
 import '../../../shared/widgets/primary_button.dart';
-import '../domain/auth_notifier.dart';
-import '../domain/auth_state.dart';
+import '../data/auth_repository.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identifierController = TextEditingController();
+  final _pinController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
     _identifierController.dispose();
+    _pinController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      ref
-          .read(authNotifierProvider.notifier)
-          .login(_identifierController.text.trim(), _passwordController.text);
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .resetPassword(
+            identifier: _identifierController.text.trim(),
+            pin: _pinController.text,
+            newPassword: _passwordController.text,
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.passwordResetSuccess)),
+      );
+      context.go('/login');
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is AppException
+          ? error.userFriendlyMessage
+          : error.toString();
+      setState(() {
+        _errorMessage = message;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -44,19 +80,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
     final input = value.trim();
     if (input.contains('@')) {
-      return _validateEmail(input);
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      return emailRegex.hasMatch(input) ? null : l10n.validatorEmail;
     }
     final phoneRegex = RegExp(r'^\+?[0-9]{9,15}$');
     return phoneRegex.hasMatch(input) ? null : l10n.validatorIdentifier;
-  }
-
-  String? _validateEmail(String? value) {
-    final l10n = context.l10n;
-    if (value == null || value.trim().isEmpty) {
-      return l10n.validatorRequired;
-    }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return emailRegex.hasMatch(value.trim()) ? null : l10n.validatorEmail;
   }
 
   String? _validatePassword(String? value) {
@@ -67,20 +95,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return value.length >= 6 ? null : l10n.validatorPassword;
   }
 
+  String? _validateConfirmPassword(String? value) {
+    final baseValidation = _validatePassword(value);
+    if (baseValidation != null) return baseValidation;
+    return value == _passwordController.text
+        ? null
+        : context.l10n.passwordConfirmationMismatch;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authNotifierProvider);
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final isLoading = authState is AuthStateAuthenticating;
-    final errorMessage = authState is AuthStateUnauthenticated
-        ? authState.errorMessage
-        : null;
-
     return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.forgotPassword),
+        leading: IconButton(
+          tooltip: l10n.back,
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: _isLoading
+              ? null
+              : () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/login');
+                  }
+                },
+        ),
+      ),
       body: LoadingOverlay(
-        isLoading: isLoading,
-        message: l10n.signingIn,
+        isLoading: _isLoading,
+        message: l10n.resettingPassword,
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -92,20 +138,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _AuthHeader(
-                        title: l10n.welcomeBack,
-                        subtitle: l10n.loginSubtitle,
+                      _Header(
+                        title: l10n.resetPasswordTitle,
+                        subtitle: l10n.resetPasswordSubtitle,
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       AppCard(
                         child: Column(
                           children: [
-                            if (errorMessage != null) ...[
-                              _AuthError(message: errorMessage),
+                            if (_errorMessage != null) ...[
+                              _InlineError(message: _errorMessage!),
                               const SizedBox(height: AppSpacing.m),
                             ],
                             TextFormField(
                               controller: _identifierController,
+                              enabled: !_isLoading,
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
                                 labelText: l10n.emailOrPhone,
@@ -116,14 +163,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               validator: (_) => _validateIdentifier(
                                 _identifierController.text,
                               ),
-                              enabled: !isLoading,
+                            ),
+                            const SizedBox(height: AppSpacing.m),
+                            PinEntryField(
+                              controller: _pinController,
+                              labelText: l10n.transactionPin,
+                              validator: (value) =>
+                                  value == null || value.length != 6
+                                  ? l10n.validatorPin
+                                  : null,
+                            ),
+                            const SizedBox(height: AppSpacing.s),
+                            Text(
+                              l10n.passwordResetPinHelp,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                             const SizedBox(height: AppSpacing.m),
                             TextFormField(
                               controller: _passwordController,
+                              enabled: !_isLoading,
                               obscureText: _obscurePassword,
                               decoration: InputDecoration(
-                                labelText: l10n.password,
+                                labelText: l10n.newPassword,
                                 prefixIcon: const Icon(
                                   Icons.lock_outline_rounded,
                                 ),
@@ -131,57 +194,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   tooltip: _obscurePassword
                                       ? l10n.showPassword
                                       : l10n.hidePassword,
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined,
-                                  ),
                                   onPressed: () {
                                     setState(() {
                                       _obscurePassword = !_obscurePassword;
                                     });
                                   },
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                  ),
                                 ),
                               ),
                               validator: (_) =>
                                   _validatePassword(_passwordController.text),
-                              enabled: !isLoading,
                             ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: isLoading
-                                    ? null
-                                    : () => context.push('/forgot-password'),
-                                child: Text(l10n.forgotPasswordQuestion),
+                            const SizedBox(height: AppSpacing.m),
+                            TextFormField(
+                              controller: _confirmPasswordController,
+                              enabled: !_isLoading,
+                              obscureText: _obscurePassword,
+                              decoration: InputDecoration(
+                                labelText: l10n.confirmPassword,
+                                prefixIcon: const Icon(
+                                  Icons.lock_reset_rounded,
+                                ),
+                              ),
+                              validator: (_) => _validateConfirmPassword(
+                                _confirmPasswordController.text,
                               ),
                             ),
                             const SizedBox(height: AppSpacing.xl),
                             PrimaryButton(
-                              text: l10n.signIn,
-                              icon: Icons.login_rounded,
+                              text: l10n.resetPassword,
+                              icon: Icons.lock_reset_rounded,
+                              isLoading: _isLoading,
                               onPressed: _submit,
-                              isLoading: isLoading,
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.l),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            l10n.noAccountYet,
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => context.push('/register'),
-                            child: Text(l10n.createOne),
-                          ),
-                        ],
                       ),
                     ],
                   ),
@@ -195,11 +246,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-class _AuthHeader extends StatelessWidget {
+class _Header extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _AuthHeader({required this.title, required this.subtitle});
+  const _Header({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -210,9 +261,9 @@ class _AuthHeader extends StatelessWidget {
           radius: 42,
           backgroundColor: theme.colorScheme.primaryContainer,
           child: Icon(
-            Icons.account_balance_wallet_rounded,
-            size: 42,
+            Icons.lock_reset_rounded,
             color: theme.colorScheme.onPrimaryContainer,
+            size: 42,
           ),
         ),
         const SizedBox(height: AppSpacing.l),
@@ -234,10 +285,10 @@ class _AuthHeader extends StatelessWidget {
   }
 }
 
-class _AuthError extends StatelessWidget {
+class _InlineError extends StatelessWidget {
   final String message;
 
-  const _AuthError({required this.message});
+  const _InlineError({required this.message});
 
   @override
   Widget build(BuildContext context) {

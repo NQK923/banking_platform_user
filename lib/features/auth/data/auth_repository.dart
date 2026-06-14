@@ -59,6 +59,18 @@ class AuthRepository {
     return response;
   }
 
+  Future<void> resetPassword({
+    required String identifier,
+    required String pin,
+    required String newPassword,
+  }) {
+    return _authApi.resetPassword(
+      identifier: identifier,
+      pin: pin,
+      newPassword: newPassword,
+    );
+  }
+
   Future<bool> verifyPin(String pin) async {
     final userId = await _tokenStorage.getUserId();
     if (userId == null) return false;

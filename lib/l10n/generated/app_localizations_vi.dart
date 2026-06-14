@@ -76,6 +76,42 @@ class AppLocalizationsVi extends AppLocalizations {
   String get password => 'Mật khẩu';
 
   @override
+  String get forgotPasswordQuestion => 'Quên mật khẩu?';
+
+  @override
+  String get forgotPassword => 'Quên mật khẩu';
+
+  @override
+  String get resetPasswordTitle => 'Đặt lại mật khẩu';
+
+  @override
+  String get resetPasswordSubtitle =>
+      'Dùng email hoặc số điện thoại và PIN giao dịch để đặt mật khẩu đăng nhập mới.';
+
+  @override
+  String get resetPassword => 'Đặt lại mật khẩu';
+
+  @override
+  String get resettingPassword => 'Đang đặt lại mật khẩu...';
+
+  @override
+  String get passwordResetSuccess =>
+      'Đã đặt lại mật khẩu. Hãy đăng nhập bằng mật khẩu mới.';
+
+  @override
+  String get newPassword => 'Mật khẩu mới';
+
+  @override
+  String get confirmPassword => 'Xác nhận mật khẩu';
+
+  @override
+  String get passwordResetPinHelp =>
+      'Trong bản v1 local, PIN giao dịch được dùng để xác minh yêu cầu đặt lại mật khẩu.';
+
+  @override
+  String get passwordConfirmationMismatch => 'Mật khẩu xác nhận không khớp.';
+
+  @override
   String get showPassword => 'Hiện mật khẩu';
 
   @override

@@ -59,14 +59,18 @@ class AuthRepository {
     return response;
   }
 
+  Future<void> requestPasswordResetOtp({required String identifier}) {
+    return _authApi.requestPasswordResetOtp(identifier: identifier);
+  }
+
   Future<void> resetPassword({
     required String identifier,
-    required String pin,
+    required String otp,
     required String newPassword,
   }) {
     return _authApi.resetPassword(
       identifier: identifier,
-      pin: pin,
+      otp: otp,
       newPassword: newPassword,
     );
   }

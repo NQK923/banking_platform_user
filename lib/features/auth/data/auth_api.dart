@@ -30,14 +30,21 @@ class AuthApi {
     return AuthResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<void> requestPasswordResetOtp({required String identifier}) async {
+    await _apiClient.post(
+      '/api/auth/password/otp',
+      data: {'identifier': identifier},
+    );
+  }
+
   Future<void> resetPassword({
     required String identifier,
-    required String pin,
+    required String otp,
     required String newPassword,
   }) async {
     await _apiClient.post(
       '/api/auth/password/reset',
-      data: {'identifier': identifier, 'pin': pin, 'newPassword': newPassword},
+      data: {'identifier': identifier, 'otp': otp, 'newPassword': newPassword},
     );
   }
 

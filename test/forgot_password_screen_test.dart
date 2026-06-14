@@ -49,8 +49,12 @@ void main() {
       find.widgetWithText(TextFormField, 'Email or phone'),
       'reset-user@example.test',
     );
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Send email OTP'));
+    await tester.pumpAndSettle();
+
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Transaction PIN'),
+      find.widgetWithText(TextFormField, 'Email OTP'),
       '123456',
     );
     await tester.enterText(
@@ -68,28 +72,35 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Reset password'));
     await tester.pumpAndSettle();
 
+    expect(repository.requestedIdentifier, 'reset-user@example.test');
     expect(repository.identifier, 'reset-user@example.test');
-    expect(repository.pin, '123456');
+    expect(repository.otp, '123456');
     expect(repository.newPassword, 'NewPassword123!');
     expect(find.text('Login route'), findsOneWidget);
   });
 }
 
 class RecordingAuthRepository extends AuthRepository {
+  String? requestedIdentifier;
   String? identifier;
-  String? pin;
+  String? otp;
   String? newPassword;
 
   RecordingAuthRepository() : super(_NoopAuthApi(), _NoopAuthTokenStorage());
 
   @override
+  Future<void> requestPasswordResetOtp({required String identifier}) async {
+    requestedIdentifier = identifier;
+  }
+
+  @override
   Future<void> resetPassword({
     required String identifier,
-    required String pin,
+    required String otp,
     required String newPassword,
   }) async {
     this.identifier = identifier;
-    this.pin = pin;
+    this.otp = otp;
     this.newPassword = newPassword;
   }
 }
@@ -111,9 +122,14 @@ class _NoopAuthApi implements AuthApi {
   }
 
   @override
+  Future<void> requestPasswordResetOtp({required String identifier}) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<void> resetPassword({
     required String identifier,
-    required String pin,
+    required String otp,
     required String newPassword,
   }) {
     throw UnimplementedError();

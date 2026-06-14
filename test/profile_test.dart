@@ -86,9 +86,12 @@ class MockAuthApi implements AuthApi {
   }
 
   @override
+  Future<void> requestPasswordResetOtp({required String identifier}) async {}
+
+  @override
   Future<void> resetPassword({
     required String identifier,
-    required String pin,
+    required String otp,
     required String newPassword,
   }) async {}
 

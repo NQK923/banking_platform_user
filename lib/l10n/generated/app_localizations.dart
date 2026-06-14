@@ -251,7 +251,7 @@ abstract class AppLocalizations {
   /// No description provided for @resetPasswordSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Use your email or phone and transaction PIN to set a new login password.'**
+  /// **'Request an OTP by email, then set a new login password.'**
   String get resetPasswordSubtitle;
 
   /// No description provided for @resetPassword.
@@ -265,6 +265,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Resetting password...'**
   String get resettingPassword;
+
+  /// No description provided for @sendPasswordResetOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Send email OTP'**
+  String get sendPasswordResetOtp;
+
+  /// No description provided for @sendingPasswordResetOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending OTP...'**
+  String get sendingPasswordResetOtp;
+
+  /// No description provided for @resendPasswordResetOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP'**
+  String get resendPasswordResetOtp;
+
+  /// No description provided for @passwordResetOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Email OTP'**
+  String get passwordResetOtp;
+
+  /// No description provided for @passwordResetOtpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'If the account exists, an OTP has been sent to its registered email.'**
+  String get passwordResetOtpSent;
 
   /// No description provided for @passwordResetSuccess.
   ///
@@ -284,11 +314,17 @@ abstract class AppLocalizations {
   /// **'Confirm password'**
   String get confirmPassword;
 
-  /// No description provided for @passwordResetPinHelp.
+  /// No description provided for @passwordResetEmailHelp.
   ///
   /// In en, this message translates to:
-  /// **'For local v1 recovery, your transaction PIN verifies this password reset.'**
-  String get passwordResetPinHelp;
+  /// **'Enter the email or phone linked to your wallet. We will send a 6-digit OTP to the registered email.'**
+  String get passwordResetEmailHelp;
+
+  /// No description provided for @passwordResetOtpHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit OTP from your email. It expires soon and can be used once.'**
+  String get passwordResetOtpHelp;
 
   /// No description provided for @passwordConfirmationMismatch.
   ///
@@ -637,6 +673,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'PIN must be exactly 6 digits.'**
   String get validatorPin;
+
+  /// No description provided for @validatorOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'OTP must be exactly 6 digits.'**
+  String get validatorOtp;
 
   /// No description provided for @continueAction.
   ///

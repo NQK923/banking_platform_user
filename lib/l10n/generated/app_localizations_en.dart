@@ -86,13 +86,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resetPasswordSubtitle =>
-      'Use your email or phone and transaction PIN to set a new login password.';
+      'Request an OTP by email, then set a new login password.';
 
   @override
   String get resetPassword => 'Reset password';
 
   @override
   String get resettingPassword => 'Resetting password...';
+
+  @override
+  String get sendPasswordResetOtp => 'Send email OTP';
+
+  @override
+  String get sendingPasswordResetOtp => 'Sending OTP...';
+
+  @override
+  String get resendPasswordResetOtp => 'Resend OTP';
+
+  @override
+  String get passwordResetOtp => 'Email OTP';
+
+  @override
+  String get passwordResetOtpSent =>
+      'If the account exists, an OTP has been sent to its registered email.';
 
   @override
   String get passwordResetSuccess =>
@@ -105,8 +121,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmPassword => 'Confirm password';
 
   @override
-  String get passwordResetPinHelp =>
-      'For local v1 recovery, your transaction PIN verifies this password reset.';
+  String get passwordResetEmailHelp =>
+      'Enter the email or phone linked to your wallet. We will send a 6-digit OTP to the registered email.';
+
+  @override
+  String get passwordResetOtpHelp =>
+      'Enter the 6-digit OTP from your email. It expires soon and can be used once.';
 
   @override
   String get passwordConfirmationMismatch =>
@@ -287,6 +307,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validatorPin => 'PIN must be exactly 6 digits.';
+
+  @override
+  String get validatorOtp => 'OTP must be exactly 6 digits.';
 
   @override
   String get continueAction => 'Continue';

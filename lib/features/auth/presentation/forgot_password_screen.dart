@@ -6,7 +6,6 @@ import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/loading_overlay.dart';
-import '../../../shared/widgets/pin_entry_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../data/auth_repository.dart';
 
@@ -21,20 +20,60 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identifierController = TextEditingController();
-  final _pinController = TextEditingController();
+  final _otpController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _otpSent = false;
   String? _errorMessage;
 
   @override
   void dispose() {
     _identifierController.dispose();
-    _pinController.dispose();
+    _otpController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _requestOtp() async {
+    if (_validateIdentifier(_identifierController.text) != null) {
+      _formKey.currentState?.validate();
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .requestPasswordResetOtp(
+            identifier: _identifierController.text.trim(),
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.passwordResetOtpSent)),
+      );
+      setState(() {
+        _otpSent = true;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is AppException
+          ? error.userFriendlyMessage
+          : error.toString();
+      setState(() {
+        _errorMessage = message;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -48,7 +87,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           .read(authRepositoryProvider)
           .resetPassword(
             identifier: _identifierController.text.trim(),
-            pin: _pinController.text,
+            otp: _otpController.text.trim(),
             newPassword: _passwordController.text,
           );
       if (!mounted) return;
@@ -126,7 +165,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       ),
       body: LoadingOverlay(
         isLoading: _isLoading,
-        message: l10n.resettingPassword,
+        message: _otpSent
+            ? l10n.resettingPassword
+            : l10n.sendingPasswordResetOtp,
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -152,7 +193,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                             ],
                             TextFormField(
                               controller: _identifierController,
-                              enabled: !_isLoading,
+                              enabled: !_isLoading && !_otpSent,
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
                                 labelText: l10n.emailOrPhone,
@@ -165,72 +206,103 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                               ),
                             ),
                             const SizedBox(height: AppSpacing.m),
-                            PinEntryField(
-                              controller: _pinController,
-                              labelText: l10n.transactionPin,
-                              validator: (value) =>
-                                  value == null || value.length != 6
-                                  ? l10n.validatorPin
-                                  : null,
-                            ),
-                            const SizedBox(height: AppSpacing.s),
-                            Text(
-                              l10n.passwordResetPinHelp,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.m),
-                            TextFormField(
-                              controller: _passwordController,
-                              enabled: !_isLoading,
-                              obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                labelText: l10n.newPassword,
-                                prefixIcon: const Icon(
-                                  Icons.lock_outline_rounded,
+                            if (!_otpSent) ...[
+                              Text(
+                                l10n.passwordResetEmailHelp,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
-                                suffixIcon: IconButton(
-                                  tooltip: _obscurePassword
-                                      ? l10n.showPassword
-                                      : l10n.hidePassword,
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined,
+                              ),
+                              const SizedBox(height: AppSpacing.xl),
+                              PrimaryButton(
+                                text: l10n.sendPasswordResetOtp,
+                                icon: Icons.mark_email_read_outlined,
+                                isLoading: _isLoading,
+                                onPressed: _requestOtp,
+                              ),
+                            ] else ...[
+                              TextFormField(
+                                controller: _otpController,
+                                enabled: !_isLoading,
+                                keyboardType: TextInputType.number,
+                                maxLength: 6,
+                                textAlign: TextAlign.center,
+                                decoration: InputDecoration(
+                                  labelText: l10n.passwordResetOtp,
+                                  counterText: '',
+                                  prefixIcon: const Icon(
+                                    Icons.mark_email_read_outlined,
                                   ),
                                 ),
+                                validator: (value) =>
+                                    value == null ||
+                                        !RegExp(r'^\d{6}$').hasMatch(value)
+                                    ? l10n.validatorOtp
+                                    : null,
                               ),
-                              validator: (_) =>
-                                  _validatePassword(_passwordController.text),
-                            ),
-                            const SizedBox(height: AppSpacing.m),
-                            TextFormField(
-                              controller: _confirmPasswordController,
-                              enabled: !_isLoading,
-                              obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                labelText: l10n.confirmPassword,
-                                prefixIcon: const Icon(
-                                  Icons.lock_reset_rounded,
+                              const SizedBox(height: AppSpacing.s),
+                              Text(
+                                l10n.passwordResetOtpHelp,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              validator: (_) => _validateConfirmPassword(
-                                _confirmPasswordController.text,
+                              const SizedBox(height: AppSpacing.m),
+                              TextFormField(
+                                controller: _passwordController,
+                                enabled: !_isLoading,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  labelText: l10n.newPassword,
+                                  prefixIcon: const Icon(
+                                    Icons.lock_outline_rounded,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    tooltip: _obscurePassword
+                                        ? l10n.showPassword
+                                        : l10n.hidePassword,
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                    ),
+                                  ),
+                                ),
+                                validator: (_) =>
+                                    _validatePassword(_passwordController.text),
                               ),
-                            ),
-                            const SizedBox(height: AppSpacing.xl),
-                            PrimaryButton(
-                              text: l10n.resetPassword,
-                              icon: Icons.lock_reset_rounded,
-                              isLoading: _isLoading,
-                              onPressed: _submit,
-                            ),
+                              const SizedBox(height: AppSpacing.m),
+                              TextFormField(
+                                controller: _confirmPasswordController,
+                                enabled: !_isLoading,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  labelText: l10n.confirmPassword,
+                                  prefixIcon: const Icon(
+                                    Icons.lock_reset_rounded,
+                                  ),
+                                ),
+                                validator: (_) => _validateConfirmPassword(
+                                  _confirmPasswordController.text,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xl),
+                              PrimaryButton(
+                                text: l10n.resetPassword,
+                                icon: Icons.lock_reset_rounded,
+                                isLoading: _isLoading,
+                                onPressed: _submit,
+                              ),
+                              TextButton(
+                                onPressed: _isLoading ? null : _requestOtp,
+                                child: Text(l10n.resendPasswordResetOtp),
+                              ),
+                            ],
                           ],
                         ),
                       ),

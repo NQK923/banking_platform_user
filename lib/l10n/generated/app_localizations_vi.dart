@@ -86,13 +86,29 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get resetPasswordSubtitle =>
-      'Dùng email hoặc số điện thoại và PIN giao dịch để đặt mật khẩu đăng nhập mới.';
+      'Yêu cầu OTP qua email, sau đó đặt mật khẩu đăng nhập mới.';
 
   @override
   String get resetPassword => 'Đặt lại mật khẩu';
 
   @override
   String get resettingPassword => 'Đang đặt lại mật khẩu...';
+
+  @override
+  String get sendPasswordResetOtp => 'Gửi OTP qua email';
+
+  @override
+  String get sendingPasswordResetOtp => 'Đang gửi OTP...';
+
+  @override
+  String get resendPasswordResetOtp => 'Gửi lại OTP';
+
+  @override
+  String get passwordResetOtp => 'OTP email';
+
+  @override
+  String get passwordResetOtpSent =>
+      'Nếu tài khoản tồn tại, OTP đã được gửi tới email đã đăng ký.';
 
   @override
   String get passwordResetSuccess =>
@@ -105,8 +121,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get confirmPassword => 'Xác nhận mật khẩu';
 
   @override
-  String get passwordResetPinHelp =>
-      'Trong bản v1 local, PIN giao dịch được dùng để xác minh yêu cầu đặt lại mật khẩu.';
+  String get passwordResetEmailHelp =>
+      'Nhập email hoặc số điện thoại liên kết với ví. Chúng tôi sẽ gửi OTP 6 chữ số tới email đã đăng ký.';
+
+  @override
+  String get passwordResetOtpHelp =>
+      'Nhập OTP 6 chữ số trong email. OTP sẽ sớm hết hạn và chỉ dùng được một lần.';
 
   @override
   String get passwordConfirmationMismatch => 'Mật khẩu xác nhận không khớp.';
@@ -287,6 +307,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get validatorPin => 'PIN phải gồm đúng 6 chữ số.';
+
+  @override
+  String get validatorOtp => 'OTP phải gồm đúng 6 chữ số.';
 
   @override
   String get continueAction => 'Tiếp tục';

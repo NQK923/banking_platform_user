@@ -21,32 +21,39 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final radius = BorderRadius.circular(AppRadius.l);
-    final decorated = DecoratedBox(
-      decoration: BoxDecoration(
-        color: gradient == null ? color ?? theme.colorScheme.surface : null,
-        gradient: gradient,
-        borderRadius: radius,
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withValues(
-              alpha: theme.brightness == Brightness.dark ? 0.18 : 0.06,
-            ),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+    final decoration = BoxDecoration(
+      color: gradient == null ? color ?? theme.colorScheme.surface : null,
+      gradient: gradient,
+      borderRadius: radius,
+      border: Border.all(color: theme.colorScheme.outlineVariant),
+      boxShadow: [
+        BoxShadow(
+          color: theme.shadowColor.withValues(
+            alpha: theme.brightness == Brightness.dark ? 0.18 : 0.06,
           ),
-        ],
-      ),
-      child: Padding(padding: padding, child: child),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
     );
 
     if (onTap == null) {
-      return decorated;
+      return DecoratedBox(
+        decoration: decoration,
+        child: Padding(padding: padding, child: child),
+      );
     }
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(onTap: onTap, borderRadius: radius, child: decorated),
+      child: Ink(
+        decoration: decoration,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          child: Padding(padding: padding, child: child),
+        ),
+      ),
     );
   }
 }

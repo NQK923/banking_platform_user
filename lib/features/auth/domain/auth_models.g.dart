@@ -39,17 +39,11 @@ Map<String, dynamic> _$$LoginRequestImplToJson(_$LoginRequestImpl instance) =>
     };
 
 _$RefreshRequestImpl _$$RefreshRequestImplFromJson(Map<String, dynamic> json) =>
-    _$RefreshRequestImpl(
-      userId: json['userId'] as String,
-      refreshToken: json['refreshToken'] as String,
-    );
+    _$RefreshRequestImpl(refreshToken: json['refreshToken'] as String);
 
 Map<String, dynamic> _$$RefreshRequestImplToJson(
   _$RefreshRequestImpl instance,
-) => <String, dynamic>{
-  'userId': instance.userId,
-  'refreshToken': instance.refreshToken,
-};
+) => <String, dynamic>{'refreshToken': instance.refreshToken};
 
 _$AuthResponseImpl _$$AuthResponseImplFromJson(Map<String, dynamic> json) =>
     _$AuthResponseImpl(
@@ -71,11 +65,8 @@ Map<String, dynamic> _$$AuthResponseImplToJson(_$AuthResponseImpl instance) =>
 
 _$PinVerifyRequestImpl _$$PinVerifyRequestImplFromJson(
   Map<String, dynamic> json,
-) => _$PinVerifyRequestImpl(
-  userId: json['userId'] as String,
-  pin: json['pin'] as String,
-);
+) => _$PinVerifyRequestImpl(pin: json['pin'] as String);
 
 Map<String, dynamic> _$$PinVerifyRequestImplToJson(
   _$PinVerifyRequestImpl instance,
-) => <String, dynamic>{'userId': instance.userId, 'pin': instance.pin};
+) => <String, dynamic>{'pin': instance.pin};

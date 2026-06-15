@@ -30,10 +30,8 @@ class LoginRequest with _$LoginRequest {
 
 @Freezed(toStringOverride: false)
 class RefreshRequest with _$RefreshRequest {
-  const factory RefreshRequest({
-    required String userId,
-    required String refreshToken,
-  }) = _RefreshRequest;
+  const factory RefreshRequest({required String refreshToken}) =
+      _RefreshRequest;
 
   factory RefreshRequest.fromJson(Map<String, dynamic> json) =>
       _$RefreshRequestFromJson(json);
@@ -55,10 +53,7 @@ class AuthResponse with _$AuthResponse {
 
 @Freezed(toStringOverride: false)
 class PinVerifyRequest with _$PinVerifyRequest {
-  const factory PinVerifyRequest({
-    required String userId,
-    required String pin,
-  }) = _PinVerifyRequest;
+  const factory PinVerifyRequest({required String pin}) = _PinVerifyRequest;
 
   factory PinVerifyRequest.fromJson(Map<String, dynamic> json) =>
       _$PinVerifyRequestFromJson(json);

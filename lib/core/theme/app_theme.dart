@@ -31,7 +31,7 @@ class AppTypography {
 }
 
 class AppTheme {
-  static const Color brandSeed = Color(0xFF145C54);
+  static const Color brandSeed = Color(0xFF6C5DD3);
   static const Color success = Color(0xFF16794C);
   static const Color warning = Color(0xFF9A5B00);
   static const Color info = Color(0xFF1664A3);
@@ -43,12 +43,12 @@ class AppTheme {
           seedColor: brandSeed,
           brightness: Brightness.light,
         ).copyWith(
-          primary: const Color(0xFF145C54),
-          secondary: const Color(0xFF2F7D66),
+          primary: const Color(0xFF6C5DD3),
+          secondary: const Color(0xFF8E7CFD),
           surface: const Color(0xFFFFFFFF),
           surfaceContainerLowest: const Color(0xFFFFFFFF),
-          surfaceContainerLow: const Color(0xFFF5F8F7),
-          surfaceContainer: const Color(0xFFEFF4F2),
+          surfaceContainerLow: const Color(0xFFF7F6FF),
+          surfaceContainer: const Color(0xFFEFF0FA),
           error: const Color(0xFFB3261E),
         );
     return _theme(scheme);
@@ -60,12 +60,12 @@ class AppTheme {
           seedColor: brandSeed,
           brightness: Brightness.dark,
         ).copyWith(
-          primary: const Color(0xFF7FD1C2),
-          secondary: const Color(0xFF8FCAB2),
-          surface: const Color(0xFF111615),
-          surfaceContainerLowest: const Color(0xFF0B0F0E),
-          surfaceContainerLow: const Color(0xFF171D1B),
-          surfaceContainer: const Color(0xFF1D2522),
+          primary: const Color(0xFFB5A7FF),
+          secondary: const Color(0xFFC7BDFF),
+          surface: const Color(0xFF13111C),
+          surfaceContainerLowest: const Color(0xFF0C0A12),
+          surfaceContainerLow: const Color(0xFF181524),
+          surfaceContainer: const Color(0xFF1E1B2D),
           error: const Color(0xFFFFB4AB),
         );
     return _theme(scheme);

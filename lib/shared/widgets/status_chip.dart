@@ -17,12 +17,13 @@ class StatusChip extends StatelessWidget {
       case 'PENDING':
         return const _StatusStyle('Pending', Icons.schedule, AppTheme.warning);
       case 'PROCESSING':
-        return const _StatusStyle('Processing', Icons.sync, AppTheme.info);
+        return const _StatusStyle('Processing', Icons.sync, AppTheme.info, isSpinning: true);
       case 'COMPENSATING':
         return const _StatusStyle(
           'Refunding',
           Icons.replay_circle_filled,
           AppTheme.violet,
+          isSpinning: true,
         );
       case 'FAILED':
         return _StatusStyle('Failed', Icons.error, colors.error);
@@ -53,7 +54,10 @@ class StatusChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(style.icon, size: 14, color: style.color),
+            if (style.isSpinning)
+              SpinningIcon(icon: style.icon, color: style.color)
+            else
+              Icon(style.icon, size: 14, color: style.color),
             const SizedBox(width: 5),
             Text(
               style.label,
@@ -73,6 +77,50 @@ class _StatusStyle {
   final String label;
   final IconData icon;
   final Color color;
+  final bool isSpinning;
 
-  const _StatusStyle(this.label, this.icon, this.color);
+  const _StatusStyle(this.label, this.icon, this.color, {this.isSpinning = false});
+}
+
+class SpinningIcon extends StatefulWidget {
+  final IconData icon;
+  final Color color;
+  final double size;
+
+  const SpinningIcon({
+    super.key,
+    required this.icon,
+    required this.color,
+    this.size = 14,
+  });
+
+  @override
+  State<SpinningIcon> createState() => _SpinningIconState();
+}
+
+class _SpinningIconState extends State<SpinningIcon> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: _controller,
+      child: Icon(widget.icon, size: widget.size, color: widget.color),
+    );
+  }
 }

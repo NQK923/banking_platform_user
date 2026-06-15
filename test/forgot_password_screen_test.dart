@@ -45,31 +45,32 @@ void main() {
       ),
     );
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email or phone'),
-      'reset-user@example.test',
-    );
-
-    await tester.tap(find.widgetWithText(FilledButton, 'Send email OTP'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email OTP'),
-      '123456',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'New password'),
-      'NewPassword123!',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Confirm password'),
-      'NewPassword123!',
-    );
+    final idField = find.widgetWithText(TextFormField, 'Email or phone');
+    await tester.ensureVisible(idField);
+    await tester.enterText(idField, 'reset-user@example.test');
 
-    await tester.ensureVisible(
-      find.widgetWithText(FilledButton, 'Reset password'),
-    );
-    await tester.tap(find.widgetWithText(FilledButton, 'Reset password'));
+    final sendBtn = find.widgetWithText(FilledButton, 'Send email OTP');
+    await tester.ensureVisible(sendBtn);
+    await tester.tap(sendBtn);
+    await tester.pumpAndSettle();
+
+    final otpField = find.widgetWithText(TextFormField, 'Email OTP');
+    await tester.ensureVisible(otpField);
+    await tester.enterText(otpField, '123456');
+
+    final passField = find.widgetWithText(TextFormField, 'New password');
+    await tester.ensureVisible(passField);
+    await tester.enterText(passField, 'NewPassword123!');
+
+    final confirmField = find.widgetWithText(TextFormField, 'Confirm password');
+    await tester.ensureVisible(confirmField);
+    await tester.enterText(confirmField, 'NewPassword123!');
+
+    final resetBtn = find.widgetWithText(FilledButton, 'Reset password');
+    await tester.ensureVisible(resetBtn);
+    await tester.tap(resetBtn);
     await tester.pumpAndSettle();
 
     expect(repository.requestedIdentifier, 'reset-user@example.test');

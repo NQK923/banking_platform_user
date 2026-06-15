@@ -44,6 +44,18 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
     super.dispose();
   }
 
+  String _recipientLabel(AccountRecord recipient) {
+    final email = recipient.email?.trim();
+    if (email != null && email.isNotEmpty) {
+      return email;
+    }
+    final phone = recipient.phone?.trim();
+    if (phone != null && phone.isNotEmpty) {
+      return phone;
+    }
+    return recipient.code;
+  }
+
   void _onRecipientSubmit() {
     if (_recipientFormKey.currentState?.validate() ?? false) {
       ref
@@ -75,6 +87,8 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
   Widget build(BuildContext context) {
     final transferState = ref.watch(transferProvider);
     final balanceState = ref.watch(balanceProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     Decimal availableBalance = Decimal.zero;
     String walletCurrency = 'VND';
@@ -95,50 +109,65 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           },
         ),
       ),
-      body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 180),
-          child: transferState.when(
-            idle: (error) => _buildRecipientStep(error),
-            recipientChecking: () => _LoadingStep(
-              title: context.l10n.findingRecipient,
-              message: context.l10n.checkingWalletDirectory,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDark
+                ? [theme.colorScheme.surfaceContainerLowest, theme.colorScheme.surfaceContainerLow]
+                : [const Color(0xFFFFF9F7), const Color(0xFFF7F6FF)],
+          ),
+        ),
+        child: SafeArea(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            child: transferState.when(
+              idle: (error) => _buildRecipientStep(error),
+              recipientChecking: () => _LoadingStep(
+                title: context.l10n.findingRecipient,
+                message: context.l10n.checkingWalletDirectory,
+              ),
+              recipientChecked: (recipient) => _buildAmountStep(
+                _recipientLabel(recipient),
+                availableBalance,
+                walletCurrency,
+              ),
+              review: (recipient, amount, note, key) => _buildReviewStep(
+                _recipientLabel(recipient),
+                amount,
+                walletCurrency,
+                note,
+              ),
+              submitting: () => _LoadingStep(
+                title: context.l10n.authorizingTransfer,
+                message: context.l10n.authorizingTransferMessage,
+              ),
+              riskWarningRequired: (recipient, amount, note, key, risk) =>
+                  _buildRiskWarningState(risk),
+              stepUpRequired: (recipient, amount, note, key, risk) =>
+                  _buildStepUpState(risk),
+              manualReviewRequired: (risk) => _buildManualReviewState(risk),
+              riskBlocked: (risk) => _buildRiskBlockedState(risk),
+              processing: (tx, count) => _buildProcessingState(tx, count),
+              completed: (tx) => _buildCompletedState(tx),
+              failed:
+                  (
+                    reason,
+                    wasRefunded,
+                    tx,
+                    recipient,
+                    amount,
+                    note,
+                    idempotencyKey,
+                  ) => _buildFailedState(
+                    reason,
+                    wasRefunded,
+                    tx,
+                    recipient != null,
+                  ),
+              timeout: (tx) => _buildTimeoutState(tx),
             ),
-            recipientChecked: (recipient) => _buildAmountStep(
-              recipient.code,
-              availableBalance,
-              walletCurrency,
-            ),
-            review: (recipient, amount, note, key) =>
-                _buildReviewStep(recipient.code, amount, walletCurrency, note),
-            submitting: () => _LoadingStep(
-              title: context.l10n.authorizingTransfer,
-              message: context.l10n.authorizingTransferMessage,
-            ),
-            riskWarningRequired: (recipient, amount, note, key, risk) =>
-                _buildRiskWarningState(risk),
-            stepUpRequired: (recipient, amount, note, key, risk) =>
-                _buildStepUpState(risk),
-            manualReviewRequired: (risk) => _buildManualReviewState(risk),
-            riskBlocked: (risk) => _buildRiskBlockedState(risk),
-            processing: (tx, count) => _buildProcessingState(tx, count),
-            completed: (tx) => _buildCompletedState(tx),
-            failed:
-                (
-                  reason,
-                  wasRefunded,
-                  tx,
-                  recipient,
-                  amount,
-                  note,
-                  idempotencyKey,
-                ) => _buildFailedState(
-                  reason,
-                  wasRefunded,
-                  tx,
-                  recipient != null,
-                ),
-            timeout: (tx) => _buildTimeoutState(tx),
           ),
         ),
       ),
@@ -164,29 +193,63 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             const SizedBox(height: AppSpacing.l),
           ],
           AppCard(
-            child: TextFormField(
-              controller: _recipientController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                labelText: context.l10n.emailOrPhone,
-                prefixIcon: const Icon(Icons.person_search_rounded),
-                hintText: 'user@email.com or +84123456789',
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Theme(
+              data: theme.copyWith(
+                inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                ),
               ),
-              validator: Validator.validateIdentifier,
+              child: TextFormField(
+                controller: _recipientController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: context.l10n.emailOrPhone,
+                  prefixIcon: const Icon(Icons.person_search_rounded),
+                  hintText: 'user@email.com or +84123456789',
+                ),
+                validator: Validator.validateIdentifier,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: context.l10n.continueAction,
-            icon: Icons.arrow_forward_rounded,
-            onPressed: _onRecipientSubmit,
+          Theme(
+            data: theme.copyWith(
+              filledButtonTheme: FilledButtonThemeData(
+                style: theme.filledButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: PrimaryButton(
+              text: context.l10n.continueAction,
+              icon: Icons.arrow_forward_rounded,
+              onPressed: _onRecipientSubmit,
+            ),
           ),
-          const SizedBox(height: AppSpacing.s),
+          const SizedBox(height: AppSpacing.l),
           Text(
             context.l10n.transferPinReminder,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -200,6 +263,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
     String currency,
   ) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final money = Money(amount: availableBalance, currency: currency);
     return Form(
       key: _amountFormKey,
@@ -214,10 +278,16 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.xl),
           AppCard(
+            padding: const EdgeInsets.all(AppSpacing.l),
             child: Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: theme.colorScheme.primaryContainer,
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+                  ),
                   child: Icon(
                     Icons.person_rounded,
                     color: theme.colorScheme.onPrimaryContainer,
@@ -230,14 +300,19 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
                     children: [
                       Text(
                         context.l10n.recipient,
-                        style: theme.textTheme.bodySmall,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         recipientCode,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleMedium,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ],
                   ),
@@ -246,61 +321,130 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.m),
-          AppCard(
-            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.42),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    context.l10n.available,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+          Container(
+            decoration: BoxDecoration(
+              color: isDark
+                  ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15)
+                  : theme.colorScheme.primaryContainer.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(
+                color: theme.colorScheme.primary.withValues(alpha: 0.15),
+              ),
+            ),
+            child: AppCard(
+              color: Colors.transparent,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      context.l10n.available,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
-                Text(money.formatDisplay(), style: theme.textTheme.titleMedium),
-              ],
+                  Text(
+                    money.formatDisplay(),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.l),
           AppCard(
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               children: [
-                MoneyField(
-                  controller: _amountController,
-                  currency: currency,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return context.l10n.enterAnAmount;
-                    }
-                    final amountVal = Decimal.tryParse(value.trim());
-                    if (amountVal == null || amountVal <= Decimal.zero) {
-                      return context.l10n.amountGreaterThanZero;
-                    }
-                    if (amountVal > availableBalance) {
-                      return context.l10n.availableBalanceNotEnough;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.m),
-                TextFormField(
-                  controller: _noteController,
-                  decoration: InputDecoration(
-                    labelText: context.l10n.messageOptional,
-                    prefixIcon: const Icon(Icons.notes_rounded),
-                    hintText: context.l10n.addShortNote,
+                Theme(
+                  data: theme.copyWith(
+                    inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                    ),
                   ),
-                  maxLength: 50,
+                  child: MoneyField(
+                    controller: _amountController,
+                    currency: currency,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return context.l10n.enterAnAmount;
+                      }
+                      final amountVal = Decimal.tryParse(value.trim());
+                      if (amountVal == null || amountVal <= Decimal.zero) {
+                        return context.l10n.amountGreaterThanZero;
+                      }
+                      if (amountVal > availableBalance) {
+                        return context.l10n.availableBalanceNotEnough;
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.l),
+                Theme(
+                  data: theme.copyWith(
+                    inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: TextFormField(
+                    controller: _noteController,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.messageOptional,
+                      prefixIcon: const Icon(Icons.notes_rounded),
+                      hintText: context.l10n.addShortNote,
+                    ),
+                    maxLength: 50,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: context.l10n.reviewTransfer,
-            icon: Icons.receipt_long_rounded,
-            onPressed: () => _onAmountSubmit(availableBalance, currency),
+          Theme(
+            data: theme.copyWith(
+              filledButtonTheme: FilledButtonThemeData(
+                style: theme.filledButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: PrimaryButton(
+              text: context.l10n.reviewTransfer,
+              icon: Icons.receipt_long_rounded,
+              onPressed: () => _onAmountSubmit(availableBalance, currency),
+            ),
           ),
         ],
       ),
@@ -313,6 +457,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
     String currency,
     String? note,
   ) {
+    final theme = Theme.of(context);
     final money = Money.parse(amountStr, currency);
     return Form(
       key: _pinFormKey,
@@ -327,6 +472,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.xl),
           AppCard(
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               children: [
                 _ReviewRow(
@@ -353,6 +499,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.l),
           AppCard(
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: PinEntryField(
               controller: _pinController,
               labelText: context.l10n.transactionPin,
@@ -360,10 +507,23 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: context.l10n.confirmTransfer,
-            icon: Icons.lock_rounded,
-            onPressed: _onPinSubmit,
+          Theme(
+            data: theme.copyWith(
+              filledButtonTheme: FilledButtonThemeData(
+                style: theme.filledButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: PrimaryButton(
+              text: context.l10n.confirmTransfer,
+              icon: Icons.lock_rounded,
+              onPressed: _onPinSubmit,
+            ),
           ),
         ],
       ),
@@ -371,6 +531,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
   }
 
   Widget _buildRiskWarningState(TransferRiskResponse risk) {
+    final theme = Theme.of(context);
     return _ResultShell(
       key: const ValueKey('risk-warning'),
       icon: Icons.warning_amber_rounded,
@@ -382,22 +543,48 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
         children: [
           _RiskReasonList(reasons: risk.reasons),
           const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: context.l10n.understandContinue,
-            icon: Icons.verified_user_rounded,
-            onPressed: () => _showRiskPinDialog(
-              title: context.l10n.confirmWarning,
-              message: context.l10n.confirmWarningMessage,
-              onSubmit: (pin) => ref
-                  .read(transferProvider.notifier)
-                  .acknowledgeRiskWarning(pin),
+          Theme(
+            data: theme.copyWith(
+              filledButtonTheme: FilledButtonThemeData(
+                style: theme.filledButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: PrimaryButton(
+              text: context.l10n.understandContinue,
+              icon: Icons.verified_user_rounded,
+              onPressed: () => _showRiskPinDialog(
+                title: context.l10n.confirmWarning,
+                message: context.l10n.confirmWarningMessage,
+                onSubmit: (pin) => ref
+                    .read(transferProvider.notifier)
+                    .acknowledgeRiskWarning(pin),
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.m),
-          SecondaryButton(
-            text: context.l10n.cancelTransfer,
-            icon: Icons.close_rounded,
-            onPressed: () => ref.read(transferProvider.notifier).reset(),
+          Theme(
+            data: theme.copyWith(
+              outlinedButtonTheme: OutlinedButtonThemeData(
+                style: theme.outlinedButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: SecondaryButton(
+              text: context.l10n.cancelTransfer,
+              icon: Icons.close_rounded,
+              onPressed: () => ref.read(transferProvider.notifier).reset(),
+            ),
           ),
         ],
       ),
@@ -405,6 +592,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
   }
 
   Widget _buildStepUpState(TransferRiskResponse risk) {
+    final theme = Theme.of(context);
     return _ResultShell(
       key: const ValueKey('risk-step-up'),
       icon: Icons.lock_person_rounded,
@@ -416,21 +604,47 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
         children: [
           _RiskReasonList(reasons: risk.reasons),
           const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: context.l10n.verifyAndContinue,
-            icon: Icons.lock_rounded,
-            onPressed: () => _showRiskPinDialog(
-              title: context.l10n.verifyTransfer,
-              message: context.l10n.verifyTransferMessage,
-              onSubmit: (pin) =>
-                  ref.read(transferProvider.notifier).submitStepUp(pin, pin),
+          Theme(
+            data: theme.copyWith(
+              filledButtonTheme: FilledButtonThemeData(
+                style: theme.filledButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: PrimaryButton(
+              text: context.l10n.verifyAndContinue,
+              icon: Icons.lock_rounded,
+              onPressed: () => _showRiskPinDialog(
+                title: context.l10n.verifyTransfer,
+                message: context.l10n.verifyTransferMessage,
+                onSubmit: (pin) =>
+                    ref.read(transferProvider.notifier).submitStepUp(pin, pin),
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.m),
-          SecondaryButton(
-            text: context.l10n.cancelTransfer,
-            icon: Icons.close_rounded,
-            onPressed: () => ref.read(transferProvider.notifier).reset(),
+          Theme(
+            data: theme.copyWith(
+              outlinedButtonTheme: OutlinedButtonThemeData(
+                style: theme.outlinedButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: SecondaryButton(
+              text: context.l10n.cancelTransfer,
+              icon: Icons.close_rounded,
+              onPressed: () => ref.read(transferProvider.notifier).reset(),
+            ),
           ),
         ],
       ),
@@ -438,6 +652,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
   }
 
   Widget _buildManualReviewState(TransferRiskResponse risk) {
+    final theme = Theme.of(context);
     return _ResultShell(
       key: const ValueKey('risk-manual-review'),
       icon: Icons.manage_search_rounded,
@@ -448,6 +663,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppCard(
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               children: [
                 _ReviewRow(
@@ -469,13 +685,26 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           const SizedBox(height: AppSpacing.m),
           _RiskReasonList(reasons: risk.reasons),
           const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: context.l10n.backToHome,
-            icon: Icons.home_rounded,
-            onPressed: () {
-              ref.read(transferProvider.notifier).reset();
-              context.replace('/home');
-            },
+          Theme(
+            data: theme.copyWith(
+              filledButtonTheme: FilledButtonThemeData(
+                style: theme.filledButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: PrimaryButton(
+              text: context.l10n.backToHome,
+              icon: Icons.home_rounded,
+              onPressed: () {
+                ref.read(transferProvider.notifier).reset();
+                context.replace('/home');
+              },
+            ),
           ),
         ],
       ),
@@ -483,6 +712,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
   }
 
   Widget _buildRiskBlockedState(TransferRiskResponse risk) {
+    final theme = Theme.of(context);
     return _ResultShell(
       key: const ValueKey('risk-blocked'),
       icon: Icons.block_rounded,
@@ -494,10 +724,23 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
         children: [
           _RiskReasonList(reasons: risk.reasons),
           const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: context.l10n.newTransfer,
-            icon: Icons.add_rounded,
-            onPressed: () => ref.read(transferProvider.notifier).reset(),
+          Theme(
+            data: theme.copyWith(
+              filledButtonTheme: FilledButtonThemeData(
+                style: theme.filledButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: PrimaryButton(
+              text: context.l10n.newTransfer,
+              icon: Icons.add_rounded,
+              onPressed: () => ref.read(transferProvider.notifier).reset(),
+            ),
           ),
         ],
       ),
@@ -521,6 +764,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ),
           const SizedBox(height: AppSpacing.l),
           AppCard(
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               children: [
                 _ReviewRow(
@@ -550,6 +794,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
   }
 
   Widget _buildCompletedState(WalletTransaction tx) {
+    final theme = Theme.of(context);
     final money = Money(amount: tx.amount, currency: tx.currency);
     return _ResultShell(
       key: const ValueKey('completed'),
@@ -561,6 +806,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppCard(
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               children: [
                 _ReviewRow(
@@ -576,22 +822,48 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: context.l10n.viewTransaction,
-            icon: Icons.receipt_long_rounded,
-            onPressed: () {
-              ref.read(transferProvider.notifier).reset();
-              context.replace('/transactions/${tx.id}');
-            },
+          Theme(
+            data: theme.copyWith(
+              filledButtonTheme: FilledButtonThemeData(
+                style: theme.filledButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: PrimaryButton(
+              text: context.l10n.viewTransaction,
+              icon: Icons.receipt_long_rounded,
+              onPressed: () {
+                ref.read(transferProvider.notifier).reset();
+                context.replace('/transactions/${tx.id}');
+              },
+            ),
           ),
           const SizedBox(height: AppSpacing.m),
-          SecondaryButton(
-            text: context.l10n.backToHome,
-            icon: Icons.home_rounded,
-            onPressed: () {
-              ref.read(transferProvider.notifier).reset();
-              context.replace('/home');
-            },
+          Theme(
+            data: theme.copyWith(
+              outlinedButtonTheme: OutlinedButtonThemeData(
+                style: theme.outlinedButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: SecondaryButton(
+              text: context.l10n.backToHome,
+              icon: Icons.home_rounded,
+              onPressed: () {
+                ref.read(transferProvider.notifier).reset();
+                context.replace('/home');
+              },
+            ),
           ),
         ],
       ),
@@ -604,12 +876,13 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
     WalletTransaction? tx,
     bool canRetry,
   ) {
+    final theme = Theme.of(context);
     return _ResultShell(
       key: const ValueKey('failed'),
       icon: wasRefunded ? Icons.assignment_return_rounded : Icons.error_rounded,
       color: wasRefunded
           ? AppTheme.success
-          : Theme.of(context).colorScheme.error,
+          : theme.colorScheme.error,
       title: wasRefunded
           ? context.l10n.transferFailedRefunded
           : context.l10n.transferFailed,
@@ -620,6 +893,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           if (wasRefunded)
             AppCard(
               color: AppTheme.success.withValues(alpha: 0.10),
+              padding: const EdgeInsets.all(AppSpacing.l),
               child: Row(
                 children: [
                   const Icon(
@@ -639,6 +913,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           if (tx != null) ...[
             if (wasRefunded) const SizedBox(height: AppSpacing.m),
             AppCard(
+              padding: const EdgeInsets.all(AppSpacing.l),
               child: Column(
                 children: [
                   _ReviewRow(
@@ -652,23 +927,49 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
           ],
           const SizedBox(height: AppSpacing.xl),
           if (canRetry) ...[
-            PrimaryButton(
-              text: context.l10n.retryTransfer,
-              icon: Icons.refresh_rounded,
-              onPressed: _showRetryPinDialog,
+            Theme(
+              data: theme.copyWith(
+                filledButtonTheme: FilledButtonThemeData(
+                  style: theme.filledButtonTheme.style?.copyWith(
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              child: PrimaryButton(
+                text: context.l10n.retryTransfer,
+                icon: Icons.refresh_rounded,
+                onPressed: _showRetryPinDialog,
+              ),
             ),
             const SizedBox(height: AppSpacing.m),
           ],
-          SecondaryButton(
-            text: context.l10n.newTransfer,
-            icon: Icons.add_rounded,
-            onPressed: () {
-              ref.read(transferProvider.notifier).reset();
-              _recipientController.clear();
-              _amountController.clear();
-              _noteController.clear();
-              _pinController.clear();
-            },
+          Theme(
+            data: theme.copyWith(
+              outlinedButtonTheme: OutlinedButtonThemeData(
+                style: theme.outlinedButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: SecondaryButton(
+              text: context.l10n.newTransfer,
+              icon: Icons.add_rounded,
+              onPressed: () {
+                ref.read(transferProvider.notifier).reset();
+                _recipientController.clear();
+                _amountController.clear();
+                _noteController.clear();
+                _pinController.clear();
+              },
+            ),
           ),
           const SizedBox(height: AppSpacing.m),
           TextButton(
@@ -684,6 +985,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
   }
 
   Widget _buildTimeoutState(WalletTransaction tx) {
+    final theme = Theme.of(context);
     return _ResultShell(
       key: const ValueKey('timeout'),
       icon: Icons.schedule_rounded,
@@ -694,6 +996,7 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppCard(
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               children: [
                 _ReviewRow(
@@ -705,20 +1008,46 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          PrimaryButton(
-            text: context.l10n.checkAgain,
-            icon: Icons.refresh_rounded,
-            onPressed: () =>
-                ref.read(transferProvider.notifier).retryPolling(tx),
+          Theme(
+            data: theme.copyWith(
+              filledButtonTheme: FilledButtonThemeData(
+                style: theme.filledButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: PrimaryButton(
+              text: context.l10n.checkAgain,
+              icon: Icons.refresh_rounded,
+              onPressed: () =>
+                  ref.read(transferProvider.notifier).retryPolling(tx),
+            ),
           ),
           const SizedBox(height: AppSpacing.m),
-          SecondaryButton(
-            text: context.l10n.goToHistory,
-            icon: Icons.receipt_long_rounded,
-            onPressed: () {
-              ref.read(transferProvider.notifier).reset();
-              context.replace('/history');
-            },
+          Theme(
+            data: theme.copyWith(
+              outlinedButtonTheme: OutlinedButtonThemeData(
+                style: theme.outlinedButtonTheme.style?.copyWith(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child: SecondaryButton(
+              text: context.l10n.goToHistory,
+              icon: Icons.receipt_long_rounded,
+              onPressed: () {
+                ref.read(transferProvider.notifier).reset();
+                context.replace('/history');
+              },
+            ),
           ),
           const SizedBox(height: AppSpacing.m),
           TextButton(
@@ -742,6 +1071,9 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       barrierDismissible: true,
       builder: (ctx) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+          ),
           icon: const Icon(Icons.lock_reset_rounded),
           title: Text(context.l10n.retryWithPin),
           content: Form(
@@ -798,6 +1130,9 @@ class _TransferWizardScreenState extends ConsumerState<TransferWizardScreen> {
       barrierDismissible: true,
       builder: (ctx) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+          ),
           icon: const Icon(Icons.verified_user_rounded),
           title: Text(title),
           content: Form(
@@ -859,19 +1194,33 @@ class _StepHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          step,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: theme.colorScheme.primary,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.xs),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            step,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
-        const SizedBox(height: AppSpacing.s),
-        Text(title, style: theme.textTheme.headlineSmall),
+        const SizedBox(height: AppSpacing.m),
+        Text(
+          title,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
         const SizedBox(height: AppSpacing.s),
         Text(
           subtitle,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
+            height: 1.3,
           ),
         ),
       ],
@@ -929,7 +1278,8 @@ class _InlineError extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return AppCard(
-      color: theme.colorScheme.errorContainer.withValues(alpha: 0.32),
+      color: theme.colorScheme.errorContainer.withValues(alpha: 0.12),
+      padding: const EdgeInsets.all(AppSpacing.m),
       child: Row(
         children: [
           Icon(Icons.error_outline_rounded, color: theme.colorScheme.error),
@@ -938,7 +1288,7 @@ class _InlineError extends StatelessWidget {
             child: Text(
               message,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.error,
+                color: theme.colorScheme.onErrorContainer,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -961,10 +1311,16 @@ class _RiskReasonList extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.l10n.riskSignals, style: theme.textTheme.titleMedium),
+          Text(
+            context.l10n.riskSignals,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: AppSpacing.s),
           ...reasons.map(
             (reason) => Padding(
@@ -981,7 +1337,9 @@ class _RiskReasonList extends StatelessWidget {
                   Expanded(
                     child: Text(
                       reason.message,
-                      style: theme.textTheme.bodyMedium,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        height: 1.3,
+                      ),
                     ),
                   ),
                 ],
@@ -1018,6 +1376,7 @@ class _ReviewRow extends StatelessWidget {
             label,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
             ),
           );
           final valueText = Text(
@@ -1029,7 +1388,9 @@ class _ReviewRow extends StatelessWidget {
                 (emphatic
                         ? theme.textTheme.titleMedium
                         : theme.textTheme.bodyMedium)
-                    ?.copyWith(fontWeight: emphatic ? FontWeight.w900 : null),
+                    ?.copyWith(
+                  fontWeight: emphatic ? FontWeight.w900 : FontWeight.w600,
+                ),
           );
 
           if (stacked) {
@@ -1083,17 +1444,31 @@ class _ResultShell extends StatelessWidget {
           duration: const Duration(milliseconds: 220),
           builder: (context, scale, animatedChild) =>
               Transform.scale(scale: scale, child: animatedChild),
-          child: CircleAvatar(
-            radius: 42,
-            backgroundColor: color.withValues(alpha: 0.14),
-            child: Icon(icon, color: color, size: 46),
+          child: Container(
+            width: 84,
+            height: 84,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.12),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: color, size: 40),
           ),
         ),
         const SizedBox(height: AppSpacing.l),
         Text(
           title,
           textAlign: TextAlign.center,
-          style: theme.textTheme.headlineSmall?.copyWith(color: color),
+          style: theme.textTheme.headlineSmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w900,
+          ),
         ),
         const SizedBox(height: AppSpacing.s),
         Semantics(
@@ -1103,6 +1478,7 @@ class _ResultShell extends StatelessWidget {
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
+              height: 1.3,
             ),
           ),
         ),

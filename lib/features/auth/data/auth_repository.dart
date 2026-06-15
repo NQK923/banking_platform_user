@@ -76,10 +76,7 @@ class AuthRepository {
   }
 
   Future<bool> verifyPin(String pin) async {
-    final userId = await _tokenStorage.getUserId();
-    if (userId == null) return false;
-
-    return await _authApi.verifyPin(PinVerifyRequest(userId: userId, pin: pin));
+    return await _authApi.verifyPin(PinVerifyRequest(pin: pin));
   }
 
   Future<void> changePin(String currentPin, String newPin) async {

@@ -1,0 +1,11 @@
+- [x] Update brand color to warm indigo/violet in `app_theme.dart`
+- [x] Redesign `login_screen.dart` with warm pastel background and custom secure vector illustration
+- [x] Redesign `register_screen.dart` with warm pastel background and rounded inputs
+- [x] Redesign `forgot_password_screen.dart` with mesh background, custom lock-reset illustration, glass form card, and rounded inputs
+- [x] Redesign `pin_screen.dart` with mesh background, custom pin illustration, and translucent glass keypad buttons
+- [x] Redesign `home_screen.dart` with soft colors, rounded buttons, and updated balance hero card gradient
+- [x] Redesign `deposit_screen.dart` and `withdraw_screen.dart` with rounded styles, soft color accents, and customized popups
+- [x] Redesign `transfer_wizard_screen.dart` with rounded wizard layouts and soft pastel tinted risk warning indicators
+- [x] Redesign `support_chat_screen.dart` with floating robot support illustration, bubble gradients, and rounded layouts
+- [x] Redesign `profile_screen.dart` with glassmorphic avatar headers and rounded Settings Tiles
+- [x] Compile, build APK, install on emulator, and visually verify all screens

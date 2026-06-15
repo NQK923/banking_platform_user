@@ -430,7 +430,6 @@ RefreshRequest _$RefreshRequestFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$RefreshRequest {
-  String get userId => throw _privateConstructorUsedError;
   String get refreshToken => throw _privateConstructorUsedError;
 
   /// Serializes this RefreshRequest to a JSON map.
@@ -450,7 +449,7 @@ abstract class $RefreshRequestCopyWith<$Res> {
     $Res Function(RefreshRequest) then,
   ) = _$RefreshRequestCopyWithImpl<$Res, RefreshRequest>;
   @useResult
-  $Res call({String userId, String refreshToken});
+  $Res call({String refreshToken});
 }
 
 /// @nodoc
@@ -467,13 +466,9 @@ class _$RefreshRequestCopyWithImpl<$Res, $Val extends RefreshRequest>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? userId = null, Object? refreshToken = null}) {
+  $Res call({Object? refreshToken = null}) {
     return _then(
       _value.copyWith(
-            userId: null == userId
-                ? _value.userId
-                : userId // ignore: cast_nullable_to_non_nullable
-                      as String,
             refreshToken: null == refreshToken
                 ? _value.refreshToken
                 : refreshToken // ignore: cast_nullable_to_non_nullable
@@ -493,7 +488,7 @@ abstract class _$$RefreshRequestImplCopyWith<$Res>
   ) = __$$RefreshRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String userId, String refreshToken});
+  $Res call({String refreshToken});
 }
 
 /// @nodoc
@@ -509,13 +504,9 @@ class __$$RefreshRequestImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? userId = null, Object? refreshToken = null}) {
+  $Res call({Object? refreshToken = null}) {
     return _then(
       _$RefreshRequestImpl(
-        userId: null == userId
-            ? _value.userId
-            : userId // ignore: cast_nullable_to_non_nullable
-                  as String,
         refreshToken: null == refreshToken
             ? _value.refreshToken
             : refreshToken // ignore: cast_nullable_to_non_nullable
@@ -528,16 +519,11 @@ class __$$RefreshRequestImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$RefreshRequestImpl implements _RefreshRequest {
-  const _$RefreshRequestImpl({
-    required this.userId,
-    required this.refreshToken,
-  });
+  const _$RefreshRequestImpl({required this.refreshToken});
 
   factory _$RefreshRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$RefreshRequestImplFromJson(json);
 
-  @override
-  final String userId;
   @override
   final String refreshToken;
 
@@ -546,14 +532,13 @@ class _$RefreshRequestImpl implements _RefreshRequest {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$RefreshRequestImpl &&
-            (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.refreshToken, refreshToken) ||
                 other.refreshToken == refreshToken));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, userId, refreshToken);
+  int get hashCode => Object.hash(runtimeType, refreshToken);
 
   /// Create a copy of RefreshRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -573,16 +558,12 @@ class _$RefreshRequestImpl implements _RefreshRequest {
 }
 
 abstract class _RefreshRequest implements RefreshRequest {
-  const factory _RefreshRequest({
-    required final String userId,
-    required final String refreshToken,
-  }) = _$RefreshRequestImpl;
+  const factory _RefreshRequest({required final String refreshToken}) =
+      _$RefreshRequestImpl;
 
   factory _RefreshRequest.fromJson(Map<String, dynamic> json) =
       _$RefreshRequestImpl.fromJson;
 
-  @override
-  String get userId;
   @override
   String get refreshToken;
 
@@ -853,7 +834,6 @@ PinVerifyRequest _$PinVerifyRequestFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PinVerifyRequest {
-  String get userId => throw _privateConstructorUsedError;
   String get pin => throw _privateConstructorUsedError;
 
   /// Serializes this PinVerifyRequest to a JSON map.
@@ -873,7 +853,7 @@ abstract class $PinVerifyRequestCopyWith<$Res> {
     $Res Function(PinVerifyRequest) then,
   ) = _$PinVerifyRequestCopyWithImpl<$Res, PinVerifyRequest>;
   @useResult
-  $Res call({String userId, String pin});
+  $Res call({String pin});
 }
 
 /// @nodoc
@@ -890,13 +870,9 @@ class _$PinVerifyRequestCopyWithImpl<$Res, $Val extends PinVerifyRequest>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? userId = null, Object? pin = null}) {
+  $Res call({Object? pin = null}) {
     return _then(
       _value.copyWith(
-            userId: null == userId
-                ? _value.userId
-                : userId // ignore: cast_nullable_to_non_nullable
-                      as String,
             pin: null == pin
                 ? _value.pin
                 : pin // ignore: cast_nullable_to_non_nullable
@@ -916,7 +892,7 @@ abstract class _$$PinVerifyRequestImplCopyWith<$Res>
   ) = __$$PinVerifyRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String userId, String pin});
+  $Res call({String pin});
 }
 
 /// @nodoc
@@ -932,13 +908,9 @@ class __$$PinVerifyRequestImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? userId = null, Object? pin = null}) {
+  $Res call({Object? pin = null}) {
     return _then(
       _$PinVerifyRequestImpl(
-        userId: null == userId
-            ? _value.userId
-            : userId // ignore: cast_nullable_to_non_nullable
-                  as String,
         pin: null == pin
             ? _value.pin
             : pin // ignore: cast_nullable_to_non_nullable
@@ -951,13 +923,11 @@ class __$$PinVerifyRequestImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$PinVerifyRequestImpl implements _PinVerifyRequest {
-  const _$PinVerifyRequestImpl({required this.userId, required this.pin});
+  const _$PinVerifyRequestImpl({required this.pin});
 
   factory _$PinVerifyRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$PinVerifyRequestImplFromJson(json);
 
-  @override
-  final String userId;
   @override
   final String pin;
 
@@ -966,13 +936,12 @@ class _$PinVerifyRequestImpl implements _PinVerifyRequest {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PinVerifyRequestImpl &&
-            (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.pin, pin) || other.pin == pin));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, userId, pin);
+  int get hashCode => Object.hash(runtimeType, pin);
 
   /// Create a copy of PinVerifyRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -992,16 +961,12 @@ class _$PinVerifyRequestImpl implements _PinVerifyRequest {
 }
 
 abstract class _PinVerifyRequest implements PinVerifyRequest {
-  const factory _PinVerifyRequest({
-    required final String userId,
-    required final String pin,
-  }) = _$PinVerifyRequestImpl;
+  const factory _PinVerifyRequest({required final String pin}) =
+      _$PinVerifyRequestImpl;
 
   factory _PinVerifyRequest.fromJson(Map<String, dynamic> json) =
       _$PinVerifyRequestImpl.fromJson;
 
-  @override
-  String get userId;
   @override
   String get pin;
 

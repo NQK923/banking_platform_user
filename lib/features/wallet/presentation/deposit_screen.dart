@@ -53,6 +53,9 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
       builder: (ctx) => PopScope(
         canPop: false,
         child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+          ),
           icon: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.75, end: 1),
             duration: const Duration(milliseconds: 220),
@@ -98,6 +101,7 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
     final balanceState = ref.watch(balanceProvider);
     final depositState = ref.watch(depositNotifierProvider);
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
 
     Decimal currentBalance = Decimal.zero;
@@ -145,55 +149,101 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
           },
         ),
       ),
-      body: LoadingOverlay(
-        isLoading: depositState.status == DepositStatus.submitting,
-        message: l10n.submittingDeposit,
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.l),
-            children: [
-              _StepHeader(
-                icon: Icons.add_card_rounded,
-                title: l10n.addFunds,
-                subtitle: l10n.addFundsSubtitle,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              _BalanceCard(balance: currentBalance, currency: currency),
-              const SizedBox(height: AppSpacing.l),
-              AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      l10n.depositAmount,
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: AppSpacing.m),
-                    MoneyField(
-                      controller: _amountController,
-                      currency: currency,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return l10n.enterAnAmount;
-                        }
-                        final amount = Decimal.tryParse(value.trim());
-                        if (amount == null || amount <= Decimal.zero) {
-                          return l10n.depositAmountGreaterThanZero;
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDark
+                ? [theme.colorScheme.surfaceContainerLowest, theme.colorScheme.surfaceContainerLow]
+                : [const Color(0xFFFFF9F7), const Color(0xFFF7F6FF)],
+          ),
+        ),
+        child: LoadingOverlay(
+          isLoading: depositState.status == DepositStatus.submitting,
+          message: l10n.submittingDeposit,
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.l),
+              children: [
+                _StepHeader(
+                  icon: Icons.add_card_rounded,
+                  title: l10n.addFunds,
+                  subtitle: l10n.addFundsSubtitle,
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              PrimaryButton(
-                text: l10n.confirmDeposit,
-                icon: Icons.check_rounded,
-                onPressed: () => _onDepositSubmit(currentBalance, currency),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.xl),
+                _BalanceCard(balance: currentBalance, currency: currency),
+                const SizedBox(height: AppSpacing.l),
+                AppCard(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        l10n.depositAmount,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.m),
+                      Theme(
+                        data: theme.copyWith(
+                          inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppRadius.xl),
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppRadius.xl),
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        child: MoneyField(
+                          controller: _amountController,
+                          currency: currency,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return l10n.enterAnAmount;
+                            }
+                            final amount = Decimal.tryParse(value.trim());
+                            if (amount == null || amount <= Decimal.zero) {
+                              return l10n.depositAmountGreaterThanZero;
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Theme(
+                  data: theme.copyWith(
+                    filledButtonTheme: FilledButtonThemeData(
+                      style: theme.filledButtonTheme.style?.copyWith(
+                        shape: WidgetStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.xl),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: PrimaryButton(
+                    text: l10n.confirmDeposit,
+                    icon: Icons.check_rounded,
+                    onPressed: () => _onDepositSubmit(currentBalance, currency),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -215,34 +265,60 @@ class _BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return AppCard(
-      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.42),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: theme.colorScheme.surface,
-            child: Icon(
-              Icons.account_balance_wallet,
-              color: theme.colorScheme.primary,
+    final isDark = theme.brightness == Brightness.dark;
+    final radius = BorderRadius.circular(AppRadius.xl);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15)
+            : theme.colorScheme.primaryContainer.withValues(alpha: 0.35),
+        borderRadius: radius,
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.15),
+        ),
+      ),
+      child: AppCard(
+        color: Colors.transparent,
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: theme.colorScheme.primary.withValues(alpha: 0.15),
+              ),
+              child: Icon(
+                Icons.account_balance_wallet_rounded,
+                color: theme.colorScheme.primary,
+              ),
             ),
-          ),
-          const SizedBox(width: AppSpacing.m),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.l10n.currentBalance,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+            const SizedBox(width: AppSpacing.m),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.currentBalance,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                AmountText.neutral(amount: balance, currency: currency),
-              ],
+                  const SizedBox(height: AppSpacing.xs),
+                  AmountText.neutral(
+                    amount: balance,
+                    currency: currency,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -264,22 +340,46 @@ class _StepHeader extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: theme.colorScheme.primaryContainer,
-          child: Icon(icon, color: theme.colorScheme.onPrimaryContainer),
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                theme.colorScheme.primary,
+                theme.colorScheme.secondary,
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Icon(icon, color: Colors.white, size: 26),
         ),
         const SizedBox(width: AppSpacing.m),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: theme.textTheme.headlineSmall),
+              Text(
+                title,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 subtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.3,
                 ),
               ),
             ],
@@ -317,7 +417,9 @@ class _ResultRow extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.end,
-              style: theme.textTheme.titleSmall,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],

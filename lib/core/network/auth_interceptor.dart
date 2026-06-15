@@ -129,16 +129,15 @@ class AuthInterceptor extends Interceptor {
 
   Future<String?> _performRefresh() async {
     try {
-      final userId = await _tokenStorage.getUserId();
       final refreshToken = await _tokenStorage.getRefreshToken();
 
-      if (userId == null || refreshToken == null) {
+      if (refreshToken == null) {
         return null;
       }
 
       final response = await _refreshDio.post(
         '/api/auth/refresh',
-        data: {'userId': userId, 'refreshToken': refreshToken},
+        data: {'refreshToken': refreshToken},
       );
 
       if (response.statusCode == 200 && response.data != null) {

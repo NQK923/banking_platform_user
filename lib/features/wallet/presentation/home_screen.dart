@@ -86,11 +86,6 @@ class HomeScreen extends ConsumerWidget {
                     onTap: () => context.push('/transfer'),
                   ),
                   _QuickActionData(
-                    icon: Icons.add_card_rounded,
-                    label: l10n.deposit,
-                    onTap: () => context.push('/deposit'),
-                  ),
-                  _QuickActionData(
                     icon: Icons.south_west_rounded,
                     label: l10n.withdraw,
                     onTap: () => context.push('/withdraw'),
@@ -123,8 +118,8 @@ class HomeScreen extends ConsumerWidget {
                   icon: Icons.receipt_long_outlined,
                   title: l10n.noTransactionsYet,
                   message: l10n.emptyTransactionsMessage,
-                  actionLabel: l10n.makeDeposit,
-                  onAction: () => context.push('/deposit'),
+                  actionLabel: l10n.send,
+                  onAction: () => context.push('/transfer'),
                 )
               else
                 AppCard(
@@ -359,34 +354,53 @@ class _QuickActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final radius = BorderRadius.circular(AppRadius.xl);
     return Semantics(
       button: true,
       label: label,
       child: Material(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppRadius.l),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadius.l),
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 92),
-            padding: const EdgeInsets.all(AppSpacing.m),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.l),
-              border: Border.all(color: theme.colorScheme.outlineVariant),
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.02)
+                : theme.colorScheme.primary.withValues(alpha: 0.05),
+            borderRadius: radius,
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : theme.colorScheme.primary.withValues(alpha: 0.1),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: theme.colorScheme.primary, size: 26),
-                const SizedBox(height: AppSpacing.s),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelLarge,
-                ),
-              ],
+          ),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: radius,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 92),
+              padding: const EdgeInsets.all(AppSpacing.m),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.s),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    ),
+                    child: Icon(icon, color: theme.colorScheme.primary, size: 24),
+                  ),
+                  const SizedBox(height: AppSpacing.s),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -97,11 +97,10 @@ class Transfer extends _$Transfer {
     state = const TransferState.submitting();
 
     try {
-      final isEmail = recipient.code.contains('@');
       final tx = await _transferRepository.initiateTransfer(
         TransferRequest(
-          recipientEmail: isEmail ? recipient.code : null,
-          recipientPhone: !isEmail ? recipient.code : null,
+          recipientEmail: _recipientEmail(recipient),
+          recipientPhone: _recipientPhone(recipient),
           amount: amount,
           idempotencyKey: idempotencyKey,
           pin: pin,
@@ -142,11 +141,10 @@ class Transfer extends _$Transfer {
     state = const TransferState.submitting();
 
     try {
-      final isEmail = recipient.code.contains('@');
       final tx = await _transferRepository.initiateTransfer(
         TransferRequest(
-          recipientEmail: isEmail ? recipient.code : null,
-          recipientPhone: !isEmail ? recipient.code : null,
+          recipientEmail: _recipientEmail(recipient),
+          recipientPhone: _recipientPhone(recipient),
           amount: amount,
           idempotencyKey: idempotencyKey,
           pin: pin,
@@ -219,11 +217,10 @@ class Transfer extends _$Transfer {
   }) async {
     state = const TransferState.submitting();
     try {
-      final isEmail = recipient.code.contains('@');
       final result = await _transferRepository.initiateTransfer(
         TransferRequest(
-          recipientEmail: isEmail ? recipient.code : null,
-          recipientPhone: !isEmail ? recipient.code : null,
+          recipientEmail: _recipientEmail(recipient),
+          recipientPhone: _recipientPhone(recipient),
           amount: amount,
           idempotencyKey: idempotencyKey,
           pin: pin,
@@ -262,7 +259,10 @@ class Transfer extends _$Transfer {
   ) {
     switch (result) {
       case TransferSubmitted(:final transaction):
-        state = TransferState.processing(transaction: transaction, pollCount: 0);
+        state = TransferState.processing(
+          transaction: transaction,
+          pollCount: 0,
+        );
         _pollStatus(transaction.id);
       case TransferRiskRequired(:final risk):
         switch (risk.result) {
@@ -361,5 +361,23 @@ class Transfer extends _$Transfer {
         _pollStatus(txId); // Recurse
       }
     }
+  }
+
+  String? _recipientEmail(AccountRecord recipient) {
+    final email = recipient.email?.trim();
+    if (email != null && email.isNotEmpty) {
+      return email;
+    }
+    final code = recipient.code.trim();
+    return code.contains('@') ? code : null;
+  }
+
+  String? _recipientPhone(AccountRecord recipient) {
+    final phone = recipient.phone?.trim();
+    if (phone != null && phone.isNotEmpty) {
+      return phone;
+    }
+    final code = recipient.code.trim();
+    return code.isNotEmpty && !code.contains('@') ? code : null;
   }
 }

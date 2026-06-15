@@ -47,10 +47,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => SimpleDialog(
-        title: Text(l10n.language),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+        ),
+        title: Text(l10n.language, style: const TextStyle(fontWeight: FontWeight.w900)),
         children: [
           ListTile(
-            title: Text(l10n.vietnamese),
+            title: Text(l10n.vietnamese, style: const TextStyle(fontWeight: FontWeight.w600)),
             trailing: currentLocale.languageCode == 'vi'
                 ? const Icon(Icons.check_rounded)
                 : null,
@@ -60,7 +63,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             },
           ),
           ListTile(
-            title: Text(l10n.english),
+            title: Text(l10n.english, style: const TextStyle(fontWeight: FontWeight.w600)),
             trailing: currentLocale.languageCode == 'en'
                 ? const Icon(Icons.check_rounded)
                 : null,
@@ -81,6 +84,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     String userId = '';
     if (authState is AuthStateAuthenticated) {
@@ -89,130 +94,166 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.profile)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.l),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            accountState.when(
-              data: (account) => _ProfileHeader(
-                account: account,
-                userId: userId,
-                maskPhone: _maskPhone,
-                notAddedLabel: l10n.notAdded,
-                defaultDisplayName: l10n.ewalletUser,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDark
+                ? [theme.colorScheme.surfaceContainerLowest, theme.colorScheme.surfaceContainerLow]
+                : [const Color(0xFFFFFBF9), const Color(0xFFF7F6FF)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.l),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              accountState.when(
+                data: (account) => _ProfileHeader(
+                  account: account,
+                  userId: userId,
+                  maskPhone: _maskPhone,
+                  notAddedLabel: l10n.notAdded,
+                  defaultDisplayName: l10n.ewalletUser,
+                ),
+                loading: () => const AppCard(
+                  child: Column(
+                    children: [
+                      SkeletonBox(
+                        height: 80,
+                        width: 80,
+                        borderRadius: BorderRadius.all(Radius.circular(40)),
+                      ),
+                      SizedBox(height: AppSpacing.l),
+                      SkeletonBox(height: 20, width: 160),
+                      SizedBox(height: AppSpacing.s),
+                      SkeletonBox(height: 14, width: 220),
+                    ],
+                  ),
+                ),
+                error: (e, s) => ErrorView(
+                  error: e,
+                  inline: true,
+                  onRetry: () => ref.refresh(accountDetailsProvider),
+                ),
               ),
-              loading: () => const AppCard(
+              const SizedBox(height: AppSpacing.xl),
+              SectionHeader(title: l10n.settings),
+              const SizedBox(height: AppSpacing.s),
+              AppCard(
+                padding: EdgeInsets.zero,
                 child: Column(
                   children: [
-                    SkeletonBox(
-                      height: 80,
-                      width: 80,
-                      borderRadius: BorderRadius.all(Radius.circular(40)),
+                    _SettingsTile(
+                      icon: Icons.password_rounded,
+                      color: const Color(0xFF6C5DD3),
+                      title: l10n.changeTransactionPin,
+                      subtitle: l10n.changePinSubtitle,
+                      onTap: () => _showChangePinDialog(context),
                     ),
-                    SizedBox(height: AppSpacing.l),
-                    SkeletonBox(height: 20, width: 160),
-                    SizedBox(height: AppSpacing.s),
-                    SkeletonBox(height: 14, width: 220),
+                    const Divider(height: 1, indent: 70, endIndent: 16),
+                    Padding(
+                      padding: const EdgeInsets.all(AppSpacing.m),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                margin: const EdgeInsets.only(left: 4, right: 12),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.amber.withValues(alpha: 0.12),
+                                ),
+                                child: const Icon(Icons.contrast_rounded, color: Colors.amber),
+                              ),
+                              Text(
+                                l10n.appearance,
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.m),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 56),
+                            child: Theme(
+                              data: theme.copyWith(
+                                segmentedButtonTheme: SegmentedButtonThemeData(
+                                  style: SegmentedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              child: SegmentedButton<ThemeMode>(
+                                segments: [
+                                  ButtonSegment(
+                                    value: ThemeMode.system,
+                                    icon: const Icon(Icons.settings_suggest_rounded, size: 18),
+                                    label: Text(l10n.system),
+                                  ),
+                                  ButtonSegment(
+                                    value: ThemeMode.light,
+                                    icon: const Icon(Icons.light_mode_rounded, size: 18),
+                                    label: Text(l10n.light),
+                                  ),
+                                  ButtonSegment(
+                                    value: ThemeMode.dark,
+                                    icon: const Icon(Icons.dark_mode_rounded, size: 18),
+                                    label: Text(l10n.dark),
+                                  ),
+                                ],
+                                selected: {themeMode},
+                                onSelectionChanged: (selection) {
+                                  ref.read(themeModeProvider.notifier).state =
+                                      selection.first;
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1, indent: 70, endIndent: 16),
+                    _SettingsTile(
+                      icon: Icons.language_rounded,
+                      color: Colors.blue,
+                      title: l10n.language,
+                      subtitle: locale.languageCode == 'vi'
+                          ? l10n.vietnamese
+                          : l10n.english,
+                      onTap: () => _showLanguageDialog(context),
+                    ),
+                    const Divider(height: 1, indent: 70, endIndent: 16),
+                    _SettingsTile(
+                      icon: Icons.support_agent_rounded,
+                      color: Colors.teal,
+                      title: l10n.contactSupport,
+                      subtitle: l10n.contactSupportSubtitle,
+                      onTap: () => context.go('/support'),
+                    ),
+                    const Divider(height: 1, indent: 70, endIndent: 16),
+                    _SettingsTile(
+                      icon: Icons.logout_rounded,
+                      color: theme.colorScheme.error,
+                      title: l10n.signOut,
+                      subtitle: l10n.signOutSubtitle,
+                      danger: true,
+                      onTap: () {
+                        ref.read(authNotifierProvider.notifier).logout();
+                      },
+                    ),
                   ],
                 ),
               ),
-              error: (e, s) => ErrorView(
-                error: e,
-                inline: true,
-                onRetry: () => ref.refresh(accountDetailsProvider),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            SectionHeader(title: l10n.settings),
-            const SizedBox(height: AppSpacing.s),
-            AppCard(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  _SettingsTile(
-                    icon: Icons.password_rounded,
-                    title: l10n.changeTransactionPin,
-                    subtitle: l10n.changePinSubtitle,
-                    onTap: () => _showChangePinDialog(context),
-                  ),
-                  const Divider(height: 1),
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.m),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.contrast_rounded),
-                            const SizedBox(width: AppSpacing.m),
-                            Text(
-                              l10n.appearance,
-                              style: Theme.of(context).textTheme.titleSmall,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.m),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: SegmentedButton<ThemeMode>(
-                            segments: [
-                              ButtonSegment(
-                                value: ThemeMode.system,
-                                icon: const Icon(Icons.settings_suggest_rounded),
-                                label: Text(l10n.system),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.light,
-                                icon: const Icon(Icons.light_mode_rounded),
-                                label: Text(l10n.light),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.dark,
-                                icon: const Icon(Icons.dark_mode_rounded),
-                                label: Text(l10n.dark),
-                              ),
-                            ],
-                            selected: {themeMode},
-                            onSelectionChanged: (selection) {
-                              ref.read(themeModeProvider.notifier).state =
-                                  selection.first;
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  _SettingsTile(
-                    icon: Icons.language_rounded,
-                    title: l10n.language,
-                    subtitle: locale.languageCode == 'vi'
-                        ? l10n.vietnamese
-                        : l10n.english,
-                    onTap: () => _showLanguageDialog(context),
-                  ),
-                  const Divider(height: 1),
-                  _SettingsTile(
-                    icon: Icons.support_agent_rounded,
-                    title: l10n.contactSupport,
-                    subtitle: l10n.contactSupportSubtitle,
-                    onTap: () => context.go('/support'),
-                  ),
-                  const Divider(height: 1),
-                  _SettingsTile(
-                    icon: Icons.logout_rounded,
-                    title: l10n.signOut,
-                    subtitle: l10n.signOutSubtitle,
-                    danger: true,
-                    onTap: () {
-                      ref.read(authNotifierProvider.notifier).logout();
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -244,16 +285,27 @@ class _ProfileHeader extends StatelessWidget {
     final displayName = email.isNotEmpty ? email.split('@')[0] : defaultDisplayName;
 
     return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xxl),
       child: Column(
         children: [
-          CircleAvatar(
-            radius: 42,
-            backgroundColor: theme.colorScheme.primaryContainer,
-            child: Text(
-              displayName.isEmpty ? 'U' : displayName[0].toUpperCase(),
-              style: theme.textTheme.headlineSmall?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer,
-                fontWeight: FontWeight.w900,
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: theme.colorScheme.primary.withValues(alpha: 0.25),
+                width: 3,
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 42,
+              backgroundColor: theme.colorScheme.primaryContainer,
+              child: Text(
+                displayName.isEmpty ? 'U' : displayName[0].toUpperCase(),
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: theme.colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ),
@@ -263,19 +315,40 @@ class _ProfileHeader extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: theme.textTheme.titleLarge,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'ID: $userId',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontFamily: 'monospace',
-              color: theme.colorScheme.onSurfaceVariant,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: AppSpacing.l),
+          const SizedBox(height: AppSpacing.xs),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'ID: ',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  userId,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
           Wrap(
             alignment: WrapAlignment.center,
             spacing: AppSpacing.m,
@@ -300,6 +373,7 @@ class _ContactChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       constraints: const BoxConstraints(minHeight: 36),
       padding: const EdgeInsets.symmetric(
@@ -307,9 +381,11 @@ class _ContactChip extends StatelessWidget {
         vertical: AppSpacing.s,
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
+        color: isDark
+            ? theme.colorScheme.surfaceContainerLow
+            : theme.colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -318,7 +394,12 @@ class _ContactChip extends StatelessWidget {
           const SizedBox(width: AppSpacing.s),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 220),
-            child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -328,6 +409,7 @@ class _ContactChip extends StatelessWidget {
 
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
+  final Color color;
   final String title;
   final String subtitle;
   final bool danger;
@@ -335,6 +417,7 @@ class _SettingsTile extends StatelessWidget {
 
   const _SettingsTile({
     required this.icon,
+    required this.color,
     required this.title,
     required this.subtitle,
     this.danger = false,
@@ -344,12 +427,16 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = danger ? theme.colorScheme.error : theme.colorScheme.primary;
     return ListTile(
       minVerticalPadding: AppSpacing.m,
-      leading: CircleAvatar(
-        backgroundColor: color.withValues(alpha: 0.12),
-        child: Icon(icon, color: color),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color.withValues(alpha: 0.12),
+        ),
+        child: Icon(icon, color: color, size: 20),
       ),
       title: Text(
         title,
@@ -358,10 +445,10 @@ class _SettingsTile extends StatelessWidget {
           fontWeight: FontWeight.w800,
         ),
       ),
-      subtitle: Text(subtitle),
+      subtitle: Text(subtitle, style: const TextStyle(height: 1.25)),
       trailing: Icon(
         Icons.chevron_right_rounded,
-        color: danger ? theme.colorScheme.error : null,
+        color: danger ? theme.colorScheme.error : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
       ),
       onTap: onTap,
     );
@@ -435,8 +522,11 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
     final l10n = context.l10n;
 
     return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
       icon: const Icon(Icons.password_rounded),
-      title: Text(l10n.changeTransactionPin),
+      title: Text(l10n.changeTransactionPin, style: const TextStyle(fontWeight: FontWeight.w900)),
       content: _isLoading
           ? SizedBox(
               height: 112,
@@ -461,11 +551,11 @@ class _ChangePinDialogState extends ConsumerState<_ChangePinDialog> {
                     if (_errorMessage != null) ...[
                       AppCard(
                         color: theme.colorScheme.errorContainer.withValues(
-                          alpha: 0.32,
+                          alpha: 0.12,
                         ),
                         child: Text(
                           _errorMessage!,
-                          style: TextStyle(color: theme.colorScheme.error),
+                          style: TextStyle(color: theme.colorScheme.error, fontWeight: FontWeight.w600),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.m),

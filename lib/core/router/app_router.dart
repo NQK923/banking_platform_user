@@ -12,7 +12,6 @@ import '../../features/history/presentation/transaction_detail_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/support/presentation/support_chat_screen.dart';
 import '../../features/transfer/presentation/transfer_wizard_screen.dart';
-import '../../features/wallet/presentation/deposit_screen.dart';
 import '../../features/wallet/presentation/home_screen.dart';
 import '../../features/wallet/presentation/withdraw_screen.dart';
 import '../localization/locale_provider.dart';
@@ -88,10 +87,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/transfer',
         builder: (context, state) => const TransferWizardScreen(),
-      ),
-      GoRoute(
-        path: '/deposit',
-        builder: (context, state) => const DepositScreen(),
       ),
       GoRoute(
         path: '/withdraw',

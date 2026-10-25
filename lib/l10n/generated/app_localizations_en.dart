@@ -33,9 +33,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get send => 'Send';
 
   @override
-  String get deposit => 'Deposit';
-
-  @override
   String get withdraw => 'Withdraw';
 
   @override
@@ -50,9 +47,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get emptyTransactionsMessage =>
       'Your deposits, withdrawals, and transfers will appear here.';
-
-  @override
-  String get makeDeposit => 'Make a deposit';
 
   @override
   String get availableBalance => 'Available balance';
@@ -462,7 +456,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transferProcessingMessage =>
-      'The saga is applying debit and credit entries. Keep this screen open if you want live status.';
+      'Your transfer is being processed. You can follow its progress here or check your history later.';
 
   @override
   String get transaction => 'Transaction';
@@ -471,7 +465,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusCheck => 'Status check';
 
   @override
-  String get pollingContinues => 'Polling continues on the existing cadence.';
+  String get pollingContinues => 'The status updates automatically.';
 
   @override
   String get transferCompleted => 'Transfer completed';
@@ -504,7 +498,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stillProcessingMessage =>
-      'No final saga result was returned yet. The transaction can still complete in the background.';
+      'Your transfer is taking longer than usual. Check its status before starting another transfer.';
 
   @override
   String get checkAgain => 'Check again';
@@ -517,40 +511,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retryWithPinMessage =>
-      'Enter your transaction PIN to retry with the same idempotency key.';
+      'Enter your transaction PIN to retry this request safely without making a duplicate payment.';
 
   @override
   String get riskSignals => 'Risk signals';
 
   @override
-  String get depositCompleted => 'Deposit completed';
-
-  @override
-  String get depositCompletedMessage =>
-      'Funds were added to your wallet from the mock CASH_CLEARING account.';
-
-  @override
   String get journal => 'Journal';
 
   @override
-  String get submittingDeposit => 'Submitting deposit...';
-
-  @override
   String get addFunds => 'Add funds';
-
-  @override
-  String get addFundsSubtitle =>
-      'Mock deposit against the system clearing account.';
-
-  @override
-  String get depositAmount => 'Deposit amount';
-
-  @override
-  String get depositAmountGreaterThanZero =>
-      'Deposit amount must be greater than 0.';
-
-  @override
-  String get confirmDeposit => 'Confirm deposit';
 
   @override
   String get currentBalance => 'Current balance';

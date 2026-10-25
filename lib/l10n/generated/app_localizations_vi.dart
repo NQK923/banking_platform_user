@@ -33,9 +33,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get send => 'Chuyển';
 
   @override
-  String get deposit => 'Nạp tiền';
-
-  @override
   String get withdraw => 'Rút tiền';
 
   @override
@@ -50,9 +47,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get emptyTransactionsMessage =>
       'Các giao dịch nạp, rút và chuyển tiền sẽ hiển thị tại đây.';
-
-  @override
-  String get makeDeposit => 'Nạp tiền';
 
   @override
   String get availableBalance => 'Số dư khả dụng';
@@ -461,7 +455,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get transferProcessingMessage =>
-      'Saga đang ghi nợ và ghi có. Giữ màn hình này mở nếu bạn muốn theo dõi trạng thái.';
+      'Giao dịch đang được xử lý. Bạn có thể theo dõi tại đây hoặc xem lại trong lịch sử.';
 
   @override
   String get transaction => 'Giao dịch';
@@ -470,8 +464,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get statusCheck => 'Lần kiểm tra';
 
   @override
-  String get pollingContinues =>
-      'Ứng dụng tiếp tục kiểm tra theo chu kỳ hiện tại.';
+  String get pollingContinues => 'Trạng thái được cập nhật tự động.';
 
   @override
   String get transferCompleted => 'Chuyển tiền hoàn tất';
@@ -503,7 +496,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get stillProcessingMessage =>
-      'Chưa có kết quả cuối cùng từ saga. Giao dịch vẫn có thể hoàn tất trong nền.';
+      'Giao dịch đang mất nhiều thời gian hơn bình thường. Hãy kiểm tra trạng thái trước khi tạo giao dịch khác.';
 
   @override
   String get checkAgain => 'Kiểm tra lại';
@@ -516,39 +509,16 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get retryWithPinMessage =>
-      'Nhập PIN giao dịch để thử lại với cùng idempotency key.';
+      'Nhập PIN giao dịch để thử lại yêu cầu này an toàn mà không thanh toán trùng.';
 
   @override
   String get riskSignals => 'Tín hiệu rủi ro';
 
   @override
-  String get depositCompleted => 'Nạp tiền hoàn tất';
-
-  @override
-  String get depositCompletedMessage =>
-      'Tiền đã được thêm vào ví từ tài khoản mô phỏng CASH_CLEARING.';
-
-  @override
   String get journal => 'Journal';
 
   @override
-  String get submittingDeposit => 'Đang gửi yêu cầu nạp tiền...';
-
-  @override
   String get addFunds => 'Thêm tiền';
-
-  @override
-  String get addFundsSubtitle =>
-      'Nạp tiền mô phỏng qua tài khoản clearing hệ thống.';
-
-  @override
-  String get depositAmount => 'Số tiền nạp';
-
-  @override
-  String get depositAmountGreaterThanZero => 'Số tiền nạp phải lớn hơn 0.';
-
-  @override
-  String get confirmDeposit => 'Xác nhận nạp tiền';
 
   @override
   String get currentBalance => 'Số dư hiện tại';

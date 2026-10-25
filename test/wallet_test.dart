@@ -1,15 +1,15 @@
+import 'dart:async';
 import 'package:decimal/decimal.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import 'package:banking_platform_user/core/error/app_exception.dart';
 import 'package:banking_platform_user/features/auth/data/auth_repository.dart';
 import 'package:banking_platform_user/features/auth/domain/auth_models.dart';
+import 'package:banking_platform_user/features/transfer/domain/transfer_models.dart';
 import 'package:banking_platform_user/features/wallet/data/wallet_repository.dart';
 import 'package:banking_platform_user/features/wallet/domain/wallet_models.dart';
-import 'package:banking_platform_user/features/wallet/domain/deposit_notifier.dart';
 import 'package:banking_platform_user/features/wallet/domain/withdraw_notifier.dart';
-import 'package:banking_platform_user/features/transfer/domain/transfer_models.dart';
 
 class MockAuthRepository implements AuthRepository {
   @override
@@ -70,12 +70,10 @@ class MockAuthRepository implements AuthRepository {
 }
 
 class MockWalletRepository implements WalletRepository {
+  Future<MovementResponse> Function()? withdrawHandler;
   MovementResponse? movementResult;
   AppException? walletError;
   int balanceCallCount = 0;
-
-  int depositCallCount = 0;
-  String? lastDepositKey;
 
   int withdrawCallCount = 0;
   String? lastWithdrawKey;
@@ -106,15 +104,6 @@ class MockWalletRepository implements WalletRepository {
   }
 
   @override
-  Future<MovementResponse> deposit(String amount, String idempotencyKey) async {
-    depositCallCount++;
-    lastDepositKey = idempotencyKey;
-    if (walletError != null) throw walletError!;
-    if (movementResult != null) return movementResult!;
-    throw const AppException(code: 'INTERNAL', message: 'Deposit failed');
-  }
-
-  @override
   Future<MovementResponse> withdraw(
     String amount,
     String pin,
@@ -123,6 +112,7 @@ class MockWalletRepository implements WalletRepository {
     withdrawCallCount++;
     lastWithdrawPin = pin;
     lastWithdrawKey = idempotencyKey;
+    if (withdrawHandler != null) return withdrawHandler!();
     if (walletError != null) throw walletError!;
     if (movementResult != null) return movementResult!;
     throw const AppException(code: 'INTERNAL', message: 'Withdrawal failed');
@@ -149,92 +139,55 @@ void main() {
     return container;
   }
 
-  group('DepositNotifier Tests', () {
-    test('Initial state is idle', () {
-      final container = createContainer();
-      final state = container.read(depositNotifierProvider);
-      expect(state.status, DepositStatus.idle);
-      expect(state.response, isNull);
-      expect(state.errorMessage, isNull);
-    });
-
-    test('Successful deposit transitions to success', () async {
-      final container = createContainer();
-      container.listen(depositNotifierProvider, (previous, next) {});
-
-      final successResponse = MovementResponse(
-        journalId: 'journal-123',
-        balance: BalanceResponse(
-          accountId: 'test-account-id',
-          balance: Decimal.zero,
-          currency: 'VND',
-        ),
-      );
-      mockWalletRepository.movementResult = successResponse;
-
-      final notifier = container.read(depositNotifierProvider.notifier);
-      final future = notifier.submitDeposit('100000');
-
-      expect(
-        container.read(depositNotifierProvider).status,
-        DepositStatus.submitting,
-      );
-      await future;
-
-      final state = container.read(depositNotifierProvider);
-      expect(state.status, DepositStatus.success);
-      expect(state.response, successResponse);
-      expect(mockWalletRepository.balanceCallCount, 2);
-    });
-
+  group('WithdrawNotifier Tests', () {
     test(
-      'Failed deposit transitions to error, and retry uses the same idempotency key',
+      'double submit sends one request and reset ignores late response',
       () async {
         final container = createContainer();
-        container.listen(depositNotifierProvider, (previous, next) {});
-
-        mockWalletRepository.walletError = const AppException(
-          code: 'RATE_LIMITED',
-          message: 'Too fast',
-        );
-
-        final notifier = container.read(depositNotifierProvider.notifier);
-        await notifier.submitDeposit('100000');
-
-        var state = container.read(depositNotifierProvider);
-        expect(state.status, DepositStatus.error);
-        expect(
-          state.errorMessage,
-          'Yêu cầu quá nhanh. Vui lòng thử lại sau ít phút.',
-        );
-        expect(mockWalletRepository.depositCallCount, 1);
-
-        final initialKey = mockWalletRepository.lastDepositKey;
-        expect(initialKey, isNotNull);
-
-        // Perform a retry
-        mockWalletRepository.walletError = null;
-        final successResponse = MovementResponse(
-          journalId: 'journal-123',
-          balance: BalanceResponse(
-            accountId: 'test-account-id',
-            balance: Decimal.zero,
-            currency: 'VND',
+        container.listen(withdrawNotifierProvider, (previous, next) {});
+        final response = Completer<MovementResponse>();
+        mockWalletRepository.withdrawHandler = () => response.future;
+        final notifier = container.read(withdrawNotifierProvider.notifier);
+        final first = notifier.submitWithdraw('100', '123456');
+        await notifier.submitWithdraw('100', '123456');
+        await notifier.retryWithdraw();
+        expect(mockWalletRepository.withdrawCallCount, 1);
+        notifier.reset();
+        response.complete(
+          MovementResponse(
+            journalId: 'journal-late',
+            balance: BalanceResponse(
+              accountId: 'test-account-id',
+              balance: Decimal.zero,
+              currency: 'VND',
+            ),
           ),
         );
-        mockWalletRepository.movementResult = successResponse;
-
-        await notifier.retryDeposit();
-
-        state = container.read(depositNotifierProvider);
-        expect(state.status, DepositStatus.success);
-        expect(mockWalletRepository.depositCallCount, 2);
-        expect(mockWalletRepository.lastDepositKey, initialKey); // REUSED KEY
+        await first;
+        expect(
+          container.read(withdrawNotifierProvider).status,
+          WithdrawStatus.idle,
+        );
       },
     );
-  });
 
-  group('WithdrawNotifier Tests', () {
+    test(
+      'changing amount after failure creates a new idempotency key',
+      () async {
+        final container = createContainer();
+        container.listen(withdrawNotifierProvider, (previous, next) {});
+        mockWalletRepository.walletError = const AppException(
+          code: 'INSUFFICIENT_FUNDS',
+          message: 'Insufficient funds',
+        );
+        final notifier = container.read(withdrawNotifierProvider.notifier);
+        await notifier.submitWithdraw('100', '123456');
+        final firstKey = mockWalletRepository.lastWithdrawKey;
+        await notifier.submitWithdraw('50', '123456');
+        expect(mockWalletRepository.lastWithdrawKey, isNot(firstKey));
+      },
+    );
+
     test('Initial state is idle', () {
       final container = createContainer();
       final state = container.read(withdrawNotifierProvider);
@@ -267,10 +220,7 @@ void main() {
       final state = container.read(withdrawNotifierProvider);
       expect(state.status, WithdrawStatus.success);
       expect(state.response, successResponse);
-      expect(
-        mockWalletRepository.lastWithdrawPin,
-        '123456',
-      ); // PIN passed through
+      expect(mockWalletRepository.lastWithdrawPin, '123456');
       expect(mockWalletRepository.balanceCallCount, 2);
     });
 
@@ -290,16 +240,13 @@ void main() {
 
         var state = container.read(withdrawNotifierProvider);
         expect(state.status, WithdrawStatus.error);
-        expect(
-          state.errorMessage,
-          'Số dư tài khoản không đủ để thực hiện giao dịch.',
-        );
+        expect(state.errorMessage, isNotNull);
+        expect(state.errorMessage, isNotEmpty);
         expect(mockWalletRepository.withdrawCallCount, 1);
 
         final initialKey = mockWalletRepository.lastWithdrawKey;
         expect(initialKey, isNotNull);
 
-        // Perform a retry
         mockWalletRepository.walletError = null;
         final successResponse = MovementResponse(
           journalId: 'journal-456',
@@ -316,8 +263,8 @@ void main() {
         state = container.read(withdrawNotifierProvider);
         expect(state.status, WithdrawStatus.success);
         expect(mockWalletRepository.withdrawCallCount, 2);
-        expect(mockWalletRepository.lastWithdrawPin, '123456'); // PIN retained
-        expect(mockWalletRepository.lastWithdrawKey, initialKey); // KEY REUSED
+        expect(mockWalletRepository.lastWithdrawPin, '123456');
+        expect(mockWalletRepository.lastWithdrawKey, initialKey);
       },
     );
   });

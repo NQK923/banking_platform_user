@@ -146,12 +146,6 @@ abstract class AppLocalizations {
   /// **'Send'**
   String get send;
 
-  /// No description provided for @deposit.
-  ///
-  /// In en, this message translates to:
-  /// **'Deposit'**
-  String get deposit;
-
   /// No description provided for @withdraw.
   ///
   /// In en, this message translates to:
@@ -181,12 +175,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your deposits, withdrawals, and transfers will appear here.'**
   String get emptyTransactionsMessage;
-
-  /// No description provided for @makeDeposit.
-  ///
-  /// In en, this message translates to:
-  /// **'Make a deposit'**
-  String get makeDeposit;
 
   /// No description provided for @availableBalance.
   ///
@@ -965,7 +953,7 @@ abstract class AppLocalizations {
   /// No description provided for @transferProcessingMessage.
   ///
   /// In en, this message translates to:
-  /// **'The saga is applying debit and credit entries. Keep this screen open if you want live status.'**
+  /// **'Your transfer is being processed. You can follow its progress here or check your history later.'**
   String get transferProcessingMessage;
 
   /// No description provided for @transaction.
@@ -983,7 +971,7 @@ abstract class AppLocalizations {
   /// No description provided for @pollingContinues.
   ///
   /// In en, this message translates to:
-  /// **'Polling continues on the existing cadence.'**
+  /// **'The status updates automatically.'**
   String get pollingContinues;
 
   /// No description provided for @transferCompleted.
@@ -1043,7 +1031,7 @@ abstract class AppLocalizations {
   /// No description provided for @stillProcessingMessage.
   ///
   /// In en, this message translates to:
-  /// **'No final saga result was returned yet. The transaction can still complete in the background.'**
+  /// **'Your transfer is taking longer than usual. Check its status before starting another transfer.'**
   String get stillProcessingMessage;
 
   /// No description provided for @checkAgain.
@@ -1067,7 +1055,7 @@ abstract class AppLocalizations {
   /// No description provided for @retryWithPinMessage.
   ///
   /// In en, this message translates to:
-  /// **'Enter your transaction PIN to retry with the same idempotency key.'**
+  /// **'Enter your transaction PIN to retry this request safely without making a duplicate payment.'**
   String get retryWithPinMessage;
 
   /// No description provided for @riskSignals.
@@ -1076,59 +1064,17 @@ abstract class AppLocalizations {
   /// **'Risk signals'**
   String get riskSignals;
 
-  /// No description provided for @depositCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Deposit completed'**
-  String get depositCompleted;
-
-  /// No description provided for @depositCompletedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Funds were added to your wallet from the mock CASH_CLEARING account.'**
-  String get depositCompletedMessage;
-
   /// No description provided for @journal.
   ///
   /// In en, this message translates to:
   /// **'Journal'**
   String get journal;
 
-  /// No description provided for @submittingDeposit.
-  ///
-  /// In en, this message translates to:
-  /// **'Submitting deposit...'**
-  String get submittingDeposit;
-
   /// No description provided for @addFunds.
   ///
   /// In en, this message translates to:
   /// **'Add funds'**
   String get addFunds;
-
-  /// No description provided for @addFundsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Mock deposit against the system clearing account.'**
-  String get addFundsSubtitle;
-
-  /// No description provided for @depositAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'Deposit amount'**
-  String get depositAmount;
-
-  /// No description provided for @depositAmountGreaterThanZero.
-  ///
-  /// In en, this message translates to:
-  /// **'Deposit amount must be greater than 0.'**
-  String get depositAmountGreaterThanZero;
-
-  /// No description provided for @confirmDeposit.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm deposit'**
-  String get confirmDeposit;
 
   /// No description provided for @currentBalance.
   ///

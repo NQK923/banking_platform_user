@@ -21,9 +21,7 @@ class WalletRepository {
   Future<BalanceResponse> getBalance() async {
     final accountId = await _authRepository.getAccountId();
     if (accountId == null || accountId.isEmpty) {
-      throw Exception(
-        'Không tìm thấy tài khoản ví hoạt động. Vui lòng đăng ký ví.',
-      );
+      throw Exception('No active wallet account found. Please register a wallet.');
     }
 
     final response = await _apiClient.get('/api/accounts/$accountId/balance');
@@ -33,24 +31,10 @@ class WalletRepository {
   Future<AccountRecord> getAccountDetails() async {
     final accountId = await _authRepository.getAccountId();
     if (accountId == null || accountId.isEmpty) {
-      throw Exception('Không tìm thấy tài khoản ví hoạt động.');
+      throw Exception('No active wallet account found.');
     }
     final response = await _apiClient.get('/api/accounts/$accountId');
     return AccountRecord.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  Future<MovementResponse> deposit(String amount, String idempotencyKey) async {
-    final accountId = await _authRepository.getAccountId();
-    if (accountId == null || accountId.isEmpty) {
-      throw Exception('Không tìm thấy tài khoản ví hoạt động.');
-    }
-
-    final response = await _apiClient.post(
-      '/api/accounts/$accountId/deposit',
-      data: {'amount': amount},
-      options: Options(headers: {'Idempotency-Key': idempotencyKey}),
-    );
-    return MovementResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<MovementResponse> withdraw(
@@ -60,7 +44,7 @@ class WalletRepository {
   ) async {
     final accountId = await _authRepository.getAccountId();
     if (accountId == null || accountId.isEmpty) {
-      throw Exception('Không tìm thấy tài khoản ví hoạt động.');
+      throw Exception('No active wallet account found.');
     }
 
     final response = await _apiClient.post(

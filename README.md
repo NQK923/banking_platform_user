@@ -41,7 +41,7 @@ Mobile client for end users on iOS and Android. The app uses Flutter, Riverpod, 
 9. Profile (`/profile`): account details, PIN change, and logout.
 10. Support (`/support`): user support chat.
 
-The `/deposit` screen may exist for demo builds, but production release navigation should not expose it to standard users.
+The release client has no `/deposit` route, screen, notifier, or deposit repository method. Funding is an admin/backend operation.
 
 ## Demo Script
 
@@ -127,8 +127,15 @@ flutter test
 - `money_test.dart`: exact decimal math and currency formatting.
 - `auth_notifier_test.dart`: auth state transitions.
 - `auth_interceptor_test.dart`: single-flight refresh and retry behavior.
-- `wallet_test.dart`: deposit/withdraw state machines and idempotency keys.
+- `wallet_test.dart`: withdraw state, duplicate-submit prevention, and retry idempotency keys.
 - `transfer_test.dart`: recipient lookup, transfer submit, risk continuations, and polling.
 - `profile_test.dart`: profile and PIN behavior.
 - `support_chat_screen_test.dart`: support chat UI.
 - `widget_test.dart`: app startup smoke test.
+- `money_flow_screen_test.dart`: transfer by email/phone, risk continuations, manual review/block, refund display, and withdraw UI through real repositories with a fake HTTP boundary; includes narrow/wide layouts.
+- `history_provider_test.dart`: refresh/pagination races and provider rebuilds.
+- `money_json_test.dart`: exact string money decoding and rejection of numeric/malformed money JSON.
+
+Run `..\scripts\verify.ps1` from PowerShell for Docker-free backend/admin/Flutter verification. This does not run live gateway E2E. Android release builds require a signing configuration; the main manifest includes network permission. Production certificates, mobile device hardening, and store release signing require separate deployment validation.
+
+Build an Android release artifact with `flutter build apk --release`, or include it in the Docker-free gate using `..\scripts\verify.ps1 -IncludeAndroid`. Run Flutter tooling sequentially in this checkout. Do not use `--no-pub` for the Android release build on SDKs affected by Flutter issue #169336: stale generated plugin registration can otherwise include the development-only integration-test plugin. Do not edit `GeneratedPluginRegistrant.java` manually. Without a release keystore this project's release artifact is unsigned and must be signed before installation/distribution.

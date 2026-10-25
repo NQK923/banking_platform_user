@@ -13,8 +13,10 @@ class DecimalConverter implements JsonConverter<Decimal, dynamic> {
 
   @override
   Decimal fromJson(dynamic json) {
-    if (json == null) return Decimal.zero;
-    return Decimal.parse(json.toString());
+    if (json is! String || !RegExp(r'^-?\d+(\.\d+)?$').hasMatch(json)) {
+      throw const FormatException('Money must be a decimal string');
+    }
+    return Decimal.parse(json);
   }
 
   @override

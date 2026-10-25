@@ -5,6 +5,7 @@ import '../../../core/error/app_exception.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../wallet/domain/balance_provider.dart';
 import '../../history/data/history_repository.dart';
+import '../../history/domain/history_provider.dart';
 import '../../history/domain/wallet_transaction.dart';
 import '../data/transfer_repository.dart';
 import 'transfer_models.dart';
@@ -14,21 +15,34 @@ part 'transfer_notifier.g.dart';
 
 @riverpod
 class Transfer extends _$Transfer {
-  late final TransferRepository _transferRepository;
-  late final AuthRepository _authRepository;
+  late TransferRepository _transferRepository;
+  late AuthRepository _authRepository;
+  int _revision = 0;
+  Timer? _pollTimer;
+  bool _disposed = false;
 
   @override
   TransferState build() {
     _transferRepository = ref.watch(transferRepositoryProvider);
     _authRepository = ref.watch(authRepositoryProvider);
+    _disposed = false;
+    ref.onDispose(() {
+      _disposed = true;
+      _revision++;
+      _pollTimer?.cancel();
+    });
     return const TransferState.idle();
   }
 
   void reset() {
+    _revision++;
+    _pollTimer?.cancel();
     state = const TransferState.idle();
   }
 
   Future<void> lookupRecipient(String identifier) async {
+    final revision = ++_revision;
+    _pollTimer?.cancel();
     if (identifier.trim().isEmpty) {
       state = const TransferState.idle(
         errorMessage: 'Vui lòng nhập Email hoặc Số điện thoại.',
@@ -45,7 +59,10 @@ class Transfer extends _$Transfer {
         phone: !isEmail ? identifier.trim() : null,
       );
 
+      if (!_isCurrent(revision)) return;
+
       final currentUserAccountId = await _authRepository.getAccountId();
+      if (!_isCurrent(revision)) return;
       if (recipient.id == currentUserAccountId) {
         state = const TransferState.idle(
           errorMessage:
@@ -64,8 +81,10 @@ class Transfer extends _$Transfer {
 
       state = TransferState.recipientChecked(recipient: recipient);
     } on AppException catch (e) {
+      if (!_isCurrent(revision)) return;
       state = TransferState.idle(errorMessage: e.userFriendlyMessage);
     } catch (e) {
+      if (!_isCurrent(revision)) return;
       state = const TransferState.idle(
         errorMessage: 'Không tìm thấy người nhận.',
       );
@@ -88,6 +107,7 @@ class Transfer extends _$Transfer {
   Future<void> submitTransfer(String pin) async {
     final currentState = state;
     if (currentState is! TransferStateReview) return;
+    final revision = ++_revision;
 
     final recipient = currentState.recipient;
     final amount = currentState.amount;
@@ -108,8 +128,10 @@ class Transfer extends _$Transfer {
         ),
       );
 
+      if (!_isCurrent(revision)) return;
       _handleSubmissionResult(tx, recipient, amount, note, idempotencyKey);
     } on AppException catch (e) {
+      if (!_isCurrent(revision)) return;
       state = TransferState.failed(
         reason: e.userFriendlyMessage,
         recipient: recipient,
@@ -118,6 +140,7 @@ class Transfer extends _$Transfer {
         idempotencyKey: idempotencyKey,
       );
     } catch (e) {
+      if (!_isCurrent(revision)) return;
       state = TransferState.failed(
         reason: e.toString(),
         recipient: recipient,
@@ -137,6 +160,7 @@ class Transfer extends _$Transfer {
     final note = currentState.note;
     final idempotencyKey = currentState.idempotencyKey;
     if (recipient == null || amount == null || idempotencyKey == null) return;
+    final revision = ++_revision;
 
     state = const TransferState.submitting();
 
@@ -152,8 +176,10 @@ class Transfer extends _$Transfer {
         ),
       );
 
+      if (!_isCurrent(revision)) return;
       _handleSubmissionResult(tx, recipient, amount, note, idempotencyKey);
     } on AppException catch (e) {
+      if (!_isCurrent(revision)) return;
       state = TransferState.failed(
         reason: e.userFriendlyMessage,
         recipient: recipient,
@@ -162,6 +188,7 @@ class Transfer extends _$Transfer {
         idempotencyKey: idempotencyKey,
       );
     } catch (e) {
+      if (!_isCurrent(revision)) return;
       state = TransferState.failed(
         reason: e.toString(),
         recipient: recipient,
@@ -173,8 +200,9 @@ class Transfer extends _$Transfer {
   }
 
   void retryPolling(WalletTransaction transaction) {
+    _revision++;
     state = TransferState.processing(transaction: transaction, pollCount: 0);
-    _pollStatus(transaction.id);
+    _schedulePoll(transaction.id);
   }
 
   Future<void> acknowledgeRiskWarning(String pin) async {
@@ -215,6 +243,7 @@ class Transfer extends _$Transfer {
     bool? riskAcknowledged,
     String? stepUpPin,
   }) async {
+    final revision = ++_revision;
     state = const TransferState.submitting();
     try {
       final result = await _transferRepository.initiateTransfer(
@@ -230,8 +259,10 @@ class Transfer extends _$Transfer {
           stepUpPin: stepUpPin,
         ),
       );
+      if (!_isCurrent(revision)) return;
       _handleSubmissionResult(result, recipient, amount, note, idempotencyKey);
     } on AppException catch (e) {
+      if (!_isCurrent(revision)) return;
       state = TransferState.failed(
         reason: e.userFriendlyMessage,
         recipient: recipient,
@@ -240,6 +271,7 @@ class Transfer extends _$Transfer {
         idempotencyKey: idempotencyKey,
       );
     } catch (e) {
+      if (!_isCurrent(revision)) return;
       state = TransferState.failed(
         reason: e.toString(),
         recipient: recipient,
@@ -263,7 +295,7 @@ class Transfer extends _$Transfer {
           transaction: transaction,
           pollCount: 0,
         );
-        _pollStatus(transaction.id);
+        _schedulePoll(transaction.id);
       case TransferRiskRequired(:final risk):
         switch (risk.result) {
           case 'RISK_WARNING_REQUIRED':
@@ -298,9 +330,18 @@ class Transfer extends _$Transfer {
     }
   }
 
-  Future<void> _pollStatus(String txId) async {
-    await Future.delayed(const Duration(milliseconds: 1500));
+  bool _isCurrent(int revision) => !_disposed && revision == _revision;
 
+  void _schedulePoll(String txId) {
+    final revision = _revision;
+    _pollTimer?.cancel();
+    _pollTimer = Timer(const Duration(milliseconds: 1500), () {
+      _pollStatus(txId, revision);
+    });
+  }
+
+  Future<void> _pollStatus(String txId, int revision) async {
+    if (!_isCurrent(revision)) return;
     final currentState = state;
     if (currentState is! TransferStateProcessing ||
         currentState.transaction.id != txId) {
@@ -313,52 +354,50 @@ class Transfer extends _$Transfer {
       final tx = await ref
           .read(historyRepositoryProvider)
           .getTransactionDetail(txId);
+      if (!_isCurrent(revision)) return;
 
       if (tx.status == TransactionStatus.COMPLETED) {
         state = TransferState.completed(transaction: tx);
         // Refresh balance and history on completion
         ref.read(balanceProvider.notifier).refreshBalance();
+        if (ref.exists(historyProvider)) ref.invalidate(historyProvider);
       } else if (tx.status == TransactionStatus.FAILED) {
-        final failureReason =
-            tx.failureReason ??
-            'Chuyển tiền thất bại. Giao dịch đã được hủy bỏ và bồi hoàn.';
-        final wasRefunded =
-            tx.compensated == true ||
-            (tx.failureReason != null &&
-                tx.failureReason!.toLowerCase().contains('compensated'));
+        final failureReason = tx.failureReason ?? 'Chuyển tiền thất bại.';
+        final wasRefunded = tx.compensated == true;
         state = TransferState.failed(
           reason: failureReason,
           wasRefunded: wasRefunded,
           transaction: tx,
         );
         ref.read(balanceProvider.notifier).refreshBalance();
+        if (ref.exists(historyProvider)) ref.invalidate(historyProvider);
       } else if (tx.status == TransactionStatus.CANCELLED) {
         final failureReason =
             tx.failureReason ?? 'Giao dịch chuyển tiền đã bị hủy.';
-        final wasRefunded =
-            tx.compensated == true ||
-            (tx.failureReason != null &&
-                tx.failureReason!.toLowerCase().contains('compensated'));
+        final wasRefunded = tx.compensated == true;
         state = TransferState.failed(
           reason: failureReason,
           wasRefunded: wasRefunded,
           transaction: tx,
         );
+        ref.read(balanceProvider.notifier).refreshBalance();
+        if (ref.exists(historyProvider)) ref.invalidate(historyProvider);
       } else {
         // Still PENDING or COMPENSATING
         if (count >= 10) {
           state = TransferState.timeout(transaction: tx);
         } else {
           state = currentState.copyWith(transaction: tx, pollCount: count);
-          _pollStatus(txId); // Recurse
+          _schedulePoll(txId);
         }
       }
     } catch (e) {
+      if (!_isCurrent(revision)) return;
       if (count >= 10) {
         state = TransferState.timeout(transaction: currentState.transaction);
       } else {
         state = currentState.copyWith(pollCount: count);
-        _pollStatus(txId); // Recurse
+        _schedulePoll(txId);
       }
     }
   }

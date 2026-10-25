@@ -20,12 +20,19 @@ class HistoryState with _$HistoryState {
 
 @riverpod
 class History extends _$History {
-  late final HistoryRepository _historyRepository;
+  late HistoryRepository _historyRepository;
   static const int _pageSize = 10;
+  int _generation = 0;
+  bool _disposed = false;
 
   @override
   HistoryState build() {
     _historyRepository = ref.watch(historyRepositoryProvider);
+    _disposed = false;
+    ref.onDispose(() {
+      _disposed = true;
+      _generation++;
+    });
     _init();
     return const HistoryState(
       transactions: [],
@@ -37,11 +44,13 @@ class History extends _$History {
   }
 
   Future<void> _init() async {
+    final generation = ++_generation;
     try {
       final response = await _historyRepository.getHistory(
         page: 0,
         size: _pageSize,
       );
+      if (_disposed || generation != _generation) return;
       state = HistoryState(
         transactions: response.items,
         isLoading: false,
@@ -50,6 +59,7 @@ class History extends _$History {
         currentPage: 0,
       );
     } catch (e) {
+      if (_disposed || generation != _generation) return;
       state = HistoryState(
         transactions: [],
         isLoading: false,
@@ -62,7 +72,11 @@ class History extends _$History {
   }
 
   Future<void> refresh() async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      isLoadingMore: false,
+      errorMessage: null,
+    );
     await _init();
   }
 
@@ -70,10 +84,7 @@ class History extends _$History {
     if (state.isLoadingMore || !state.hasMore || state.isLoading) return;
 
     state = state.copyWith(isLoadingMore: true);
-
-    // Artificial delay to show the loading shimmer/indicator in a premium way
-    await Future.delayed(const Duration(milliseconds: 600));
-
+    final generation = _generation;
     final nextPage = state.currentPage + 1;
 
     try {
@@ -81,6 +92,7 @@ class History extends _$History {
         page: nextPage,
         size: _pageSize,
       );
+      if (_disposed || generation != _generation) return;
       final newTransactions = [...state.transactions, ...response.items];
       final hasMore = response.page < response.totalPages - 1;
 
@@ -91,6 +103,7 @@ class History extends _$History {
         isLoadingMore: false,
       );
     } catch (e) {
+      if (_disposed || generation != _generation) return;
       state = state.copyWith(isLoadingMore: false, errorMessage: e.toString());
     }
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,6 +78,8 @@ class MockAuthRepository implements AuthRepository {
 }
 
 class MockTransferRepository implements TransferRepository {
+  Future<AccountRecord> Function()? lookupHandler;
+  Future<TransferSubmissionResult> Function()? submitHandler;
   AccountRecord? lookupResult;
   AppException? lookupError;
   WalletTransaction? transferResult;
@@ -87,6 +90,7 @@ class MockTransferRepository implements TransferRepository {
 
   @override
   Future<AccountRecord> lookupRecipient({String? email, String? phone}) async {
+    if (lookupHandler != null) return lookupHandler!();
     if (lookupError != null) {
       throw lookupError!;
     }
@@ -97,8 +101,11 @@ class MockTransferRepository implements TransferRepository {
   }
 
   @override
-  Future<TransferSubmissionResult> initiateTransfer(TransferRequest request) async {
+  Future<TransferSubmissionResult> initiateTransfer(
+    TransferRequest request,
+  ) async {
     initiatedRequests.add(request);
+    if (submitHandler != null) return submitHandler!();
     if (transferError != null) {
       throw transferError!;
     }
@@ -116,6 +123,7 @@ class MockTransferRepository implements TransferRepository {
 }
 
 class MockHistoryRepository implements HistoryRepository {
+  Future<WalletTransaction> Function()? detailHandler;
   final Map<String, WalletTransaction> transactions = {};
   int getDetailCallCount = 0;
 
@@ -136,6 +144,7 @@ class MockHistoryRepository implements HistoryRepository {
   @override
   Future<WalletTransaction> getTransactionDetail(String transactionId) async {
     getDetailCallCount++;
+    if (detailHandler != null) return detailHandler!();
     final tx = transactions[transactionId];
     if (tx != null) {
       return tx;
@@ -172,18 +181,6 @@ class MockWalletRepository implements WalletRepository {
       status: AccountStatus.ACTIVE,
       version: 1,
       createdAt: '2026-06-07T00:00:00Z',
-    );
-  }
-
-  @override
-  Future<MovementResponse> deposit(String amount, String idempotencyKey) async {
-    return MovementResponse(
-      journalId: 'journal-dep',
-      balance: BalanceResponse(
-        accountId: 'sender-account-id',
-        balance: balanceValue,
-        currency: 'VND',
-      ),
     );
   }
 
@@ -232,6 +229,134 @@ void main() {
   }
 
   group('TransferNotifier State & Polling Tests', () {
+    const recipient = AccountRecord(
+      id: 'recipient-account-id',
+      userId: 'recipient-user-id',
+      code: 'recipient@email.com',
+      currency: 'VND',
+      kind: AccountKind.USER,
+      status: AccountStatus.ACTIVE,
+      version: 1,
+      createdAt: '2026-06-07T00:00:00Z',
+    );
+    WalletTransaction transaction({
+      TransactionStatus status = TransactionStatus.PENDING,
+      bool? compensated,
+      String? reason,
+    }) => WalletTransaction(
+      id: 'tx-race',
+      senderId: 'sender-account-id',
+      receiverId: recipient.id,
+      amount: Decimal.parse('100'),
+      currency: 'VND',
+      status: status,
+      idempotencyKey: 'key',
+      createdAt: '2026-06-07T00:00:00Z',
+      updatedAt: '2026-06-07T00:00:00Z',
+      debitApplied: true,
+      compensated: compensated,
+      failureReason: reason,
+    );
+
+    test('late lookup cannot replace a newer recipient', () async {
+      final container = createContainer();
+      final slow = Completer<AccountRecord>();
+      mockTransferRepository.lookupHandler = () => slow.future;
+      final notifier = container.read(transferProvider.notifier);
+      final first = notifier.lookupRecipient('slow@email.com');
+      mockTransferRepository.lookupHandler = null;
+      mockTransferRepository.lookupResult = recipient;
+      await notifier.lookupRecipient(recipient.code);
+      slow.complete(recipient.copyWith(id: 'old-recipient'));
+      await first;
+      expect(
+        container.read(transferProvider),
+        const TransferState.recipientChecked(recipient: recipient),
+      );
+    });
+
+    test('late submission cannot reopen a reset transfer', () async {
+      final container = createContainer();
+      mockTransferRepository.lookupResult = recipient;
+      final response = Completer<TransferSubmissionResult>();
+      mockTransferRepository.submitHandler = () => response.future;
+      final notifier = container.read(transferProvider.notifier);
+      await notifier.lookupRecipient(recipient.code);
+      notifier.setAmountAndNote('100', null);
+      final submission = notifier.submitTransfer('123456');
+      notifier.reset();
+      response.complete(TransferSubmitted(transaction()));
+      await submission;
+      expect(container.read(transferProvider), const TransferState.idle());
+      expect(mockHistoryRepository.getDetailCallCount, 0);
+    });
+
+    test('in-flight poll cannot replace a reset transfer', () {
+      fakeAsync((async) {
+        final container = createContainer();
+        final response = Completer<WalletTransaction>();
+        mockHistoryRepository.detailHandler = () => response.future;
+        final notifier = container.read(transferProvider.notifier);
+        notifier.retryPolling(transaction());
+        async.elapse(const Duration(milliseconds: 1500));
+        expect(mockHistoryRepository.getDetailCallCount, 1);
+        notifier.reset();
+        response.complete(transaction(status: TransactionStatus.COMPLETED));
+        async.flushMicrotasks();
+        expect(container.read(transferProvider), const TransferState.idle());
+        expect(mockWalletRepository.getBalanceCallCount, 0);
+      });
+    });
+
+    test('polling timer is cancelled on disposal', () {
+      fakeAsync((async) {
+        final container = ProviderContainer(
+          overrides: [
+            historyRepositoryProvider.overrideWithValue(mockHistoryRepository),
+            authRepositoryProvider.overrideWithValue(mockAuthRepository),
+            transferRepositoryProvider.overrideWithValue(
+              mockTransferRepository,
+            ),
+          ],
+        );
+        container.listen(transferProvider, (previous, next) {});
+        container.read(transferProvider.notifier).retryPolling(transaction());
+        container.dispose();
+        async.elapse(const Duration(seconds: 30));
+        expect(mockHistoryRepository.getDetailCallCount, 0);
+        expect(async.nonPeriodicTimerCount, 0);
+      });
+    });
+
+    test('refund text is never treated as proof of compensation', () {
+      fakeAsync((async) {
+        final container = createContainer();
+        mockHistoryRepository.transactions['tx-race'] = transaction(
+          status: TransactionStatus.FAILED,
+          reason: 'not compensated',
+        );
+        container.read(transferProvider.notifier).retryPolling(transaction());
+        async.elapse(const Duration(milliseconds: 1500));
+        final state = container.read(transferProvider) as TransferStateFailed;
+        expect(state.wasRefunded, isFalse);
+      });
+    });
+
+    test('cancelled transfer refreshes balance', () {
+      fakeAsync((async) {
+        final container = createContainer();
+        mockHistoryRepository.transactions['tx-race'] = transaction(
+          status: TransactionStatus.CANCELLED,
+          compensated: true,
+        );
+        container.read(transferProvider.notifier).retryPolling(transaction());
+        async.elapse(const Duration(milliseconds: 1500));
+        final state = container.read(transferProvider) as TransferStateFailed;
+        expect(state.wasRefunded, isTrue);
+        expect(mockWalletRepository.getBalanceCallCount, 2);
+      });
+    });
+
     test('Initial state is idle', () {
       final container = createContainer();
       expect(container.read(transferProvider), const TransferState.idle());
@@ -387,74 +512,96 @@ void main() {
       });
     });
 
-    test('risk warning acknowledgement reuses idempotency key and risk id', () async {
-      final container = createContainer();
-      const recipient = AccountRecord(
-        id: 'recipient-account-id',
-        userId: 'recipient-user-id',
-        code: 'recipient@email.com',
-        currency: 'VND',
-        kind: AccountKind.USER,
-        status: AccountStatus.ACTIVE,
-        version: 1,
-        createdAt: '2026-06-07T00:00:00Z',
-      );
-      const risk = TransferRiskResponse(
-        result: 'RISK_WARNING_REQUIRED',
-        riskEvaluationId: 'risk-123',
-        riskScore: 40,
-        riskLevel: 'MEDIUM',
-        recommendedAction: 'WARN_USER',
-        reasons: [
-          RiskReasonView(
-            code: 'NEW_RECIPIENT',
-            weight: 15,
-            message: 'Sender has never transferred to this recipient before',
-          ),
-        ],
-        modelVersion: 'rules-v1.0.0',
-        policyVersion: 'risk-policy-v1.0.0',
-        evaluatedAt: '2026-06-13T00:00:00Z',
-        traceId: 'trace-123',
-        message: 'Review this transfer carefully.',
-      );
+    test(
+      'risk warning acknowledgement reuses idempotency key and risk id',
+      () async {
+        final container = createContainer();
+        const recipient = AccountRecord(
+          id: 'recipient-account-id',
+          userId: 'recipient-user-id',
+          code: 'recipient@email.com',
+          currency: 'VND',
+          kind: AccountKind.USER,
+          status: AccountStatus.ACTIVE,
+          version: 1,
+          createdAt: '2026-06-07T00:00:00Z',
+        );
+        const risk = TransferRiskResponse(
+          result: 'RISK_WARNING_REQUIRED',
+          riskEvaluationId: 'risk-123',
+          riskScore: 40,
+          riskLevel: 'MEDIUM',
+          recommendedAction: 'WARN_USER',
+          reasons: [
+            RiskReasonView(
+              code: 'NEW_RECIPIENT',
+              weight: 15,
+              message: 'Sender has never transferred to this recipient before',
+            ),
+          ],
+          modelVersion: 'rules-v1.0.0',
+          policyVersion: 'risk-policy-v1.0.0',
+          evaluatedAt: '2026-06-13T00:00:00Z',
+          traceId: 'trace-123',
+          message: 'Review this transfer carefully.',
+        );
 
-      mockTransferRepository.lookupResult = recipient;
-      mockTransferRepository.riskResult = risk;
+        mockTransferRepository.lookupResult = recipient;
+        mockTransferRepository.riskResult = risk;
 
-      final notifier = container.read(transferProvider.notifier);
-      await notifier.lookupRecipient('recipient@email.com');
-      notifier.setAmountAndNote('50000', 'Risk');
-      final reviewState = container.read(transferProvider) as TransferStateReview;
+        final notifier = container.read(transferProvider.notifier);
+        await notifier.lookupRecipient('recipient@email.com');
+        notifier.setAmountAndNote('50000', 'Risk');
+        final reviewState =
+            container.read(transferProvider) as TransferStateReview;
 
-      await notifier.submitTransfer('123456');
-      expect(container.read(transferProvider), isA<TransferStateRiskWarningRequired>());
-      expect(mockTransferRepository.initiatedRequests.single.idempotencyKey, reviewState.idempotencyKey);
+        await notifier.submitTransfer('123456');
+        expect(
+          container.read(transferProvider),
+          isA<TransferStateRiskWarningRequired>(),
+        );
+        expect(
+          mockTransferRepository.initiatedRequests.single.idempotencyKey,
+          reviewState.idempotencyKey,
+        );
 
-      mockTransferRepository.riskResult = null;
-      final tx = WalletTransaction(
-        id: 'tx-risk',
-        senderId: 'sender-account-id',
-        receiverId: 'recipient-account-id',
-        amount: Decimal.parse('50000'),
-        currency: 'VND',
-        status: TransactionStatus.PENDING,
-        idempotencyKey: reviewState.idempotencyKey,
-        createdAt: '2026-06-07T00:00:00Z',
-        updatedAt: '2026-06-07T00:00:00Z',
-        debitApplied: false,
-      );
-      mockTransferRepository.transferResult = tx;
-      mockHistoryRepository.transactions[tx.id] = tx;
+        mockTransferRepository.riskResult = null;
+        final tx = WalletTransaction(
+          id: 'tx-risk',
+          senderId: 'sender-account-id',
+          receiverId: 'recipient-account-id',
+          amount: Decimal.parse('50000'),
+          currency: 'VND',
+          status: TransactionStatus.PENDING,
+          idempotencyKey: reviewState.idempotencyKey,
+          createdAt: '2026-06-07T00:00:00Z',
+          updatedAt: '2026-06-07T00:00:00Z',
+          debitApplied: false,
+        );
+        mockTransferRepository.transferResult = tx;
+        mockHistoryRepository.transactions[tx.id] = tx;
 
-      await notifier.acknowledgeRiskWarning('123456');
+        await notifier.acknowledgeRiskWarning('123456');
 
-      expect(container.read(transferProvider), isA<TransferStateProcessing>());
-      expect(mockTransferRepository.initiatedRequests.length, 2);
-      expect(mockTransferRepository.initiatedRequests.last.idempotencyKey, reviewState.idempotencyKey);
-      expect(mockTransferRepository.initiatedRequests.last.riskEvaluationId, 'risk-123');
-      expect(mockTransferRepository.initiatedRequests.last.riskAcknowledged, isTrue);
-    });
+        expect(
+          container.read(transferProvider),
+          isA<TransferStateProcessing>(),
+        );
+        expect(mockTransferRepository.initiatedRequests.length, 2);
+        expect(
+          mockTransferRepository.initiatedRequests.last.idempotencyKey,
+          reviewState.idempotencyKey,
+        );
+        expect(
+          mockTransferRepository.initiatedRequests.last.riskEvaluationId,
+          'risk-123',
+        );
+        expect(
+          mockTransferRepository.initiatedRequests.last.riskAcknowledged,
+          isTrue,
+        );
+      },
+    );
 
     test('submitTransfer and compensation failed path status polling', () {
       fakeAsync((async) {

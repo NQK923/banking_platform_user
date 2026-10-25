@@ -1,5 +1,5 @@
 name: banking_platform_user
-description: "A new Flutter project."
+description: "E-Wallet user app for wallet balances, transfers, withdrawals, and support."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -46,6 +46,8 @@ dependencies:
   uuid: ^4.3.3
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0

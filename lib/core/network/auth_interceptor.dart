@@ -21,6 +21,14 @@ class AuthInterceptor extends Interceptor {
 
   Future<String?>? _refreshFuture;
 
+  bool _isPublicAuthRequest(String path) => const {
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/refresh',
+    '/api/auth/password/otp',
+    '/api/auth/password/reset',
+  }.contains(Uri.parse(path).path);
+
   @override
   void onRequest(
     RequestOptions options,
@@ -28,9 +36,7 @@ class AuthInterceptor extends Interceptor {
   ) async {
     final path = options.path;
     // Skip attaching tokens for auth endpoints
-    if (path.contains('/api/auth/login') ||
-        path.contains('/api/auth/register') ||
-        path.contains('/api/auth/refresh')) {
+    if (_isPublicAuthRequest(path)) {
       return handler.next(options);
     }
 
@@ -45,7 +51,9 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     final response = err.response;
     // Handle 401 Unauthorized errors
-    if (response != null && response.statusCode == 401) {
+    if (response != null &&
+        response.statusCode == 401 &&
+        !_isPublicAuthRequest(err.requestOptions.path)) {
       final requestOptions = err.requestOptions;
 
       // If we already retried this request once, pass the error along

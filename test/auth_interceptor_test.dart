@@ -124,6 +124,48 @@ void main() {
   });
 
   group('AuthInterceptor Token Refresh Concurrency Tests', () {
+    for (final path in [
+      '/api/auth/login',
+      '/api/auth/register',
+      '/api/auth/refresh',
+      '/api/auth/password/otp',
+      '/api/auth/password/reset',
+    ]) {
+      test(
+        '$path failure does not refresh or clear an existing session',
+        () async {
+          dio.interceptors.add(
+            InterceptorsWrapper(
+              onRequest: (options, handler) {
+                expect(options.headers['Authorization'], isNull);
+                handler.reject(
+                  DioException(
+                    requestOptions: options,
+                    response: Response(
+                      requestOptions: options,
+                      statusCode: 401,
+                    ),
+                    type: DioExceptionType.badResponse,
+                  ),
+                  true,
+                );
+              },
+            ),
+          );
+          // The refresh endpoint is handled by the earlier fake interceptor.
+          // Prepend this endpoint failure before that fake network boundary.
+          final failure = dio.interceptors.removeLast();
+          dio.interceptors.insert(1, failure);
+
+          await expectLater(dio.post(path), throwsA(isA<DioException>()));
+
+          expect(refreshCalls, isEmpty);
+          expect(mockTokenStorage.accessToken, 'old_token');
+          expect(mockTokenStorage.refreshToken, 'refresh_token');
+        },
+      );
+    }
+
     test(
       'Single 401 request triggers refresh and retries successfully',
       () async {

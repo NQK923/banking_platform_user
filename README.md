@@ -1,81 +1,142 @@
-# E-Wallet - Flutter User App
+# E-Wallet User App
 
-Mobile client for end users on iOS and Android. The app uses Flutter, Riverpod, GoRouter, Dio, Freezed, and `decimal` for exact money handling.
+Flutter client for the E-Wallet digital wallet platform. Users can create a VND wallet, check balances, transfer by email or phone, withdraw with a transaction PIN, review activity, and contact support.
 
-## Key Features
+Related repositories: [Backend](https://github.com/NQK923/banking_platform) · [Admin console](https://github.com/NQK923/banking_platform_admin).
 
-### Authentication
-- Register and login with server-side validation.
-- Short-lived access JWT plus rotating refresh token.
-- Refresh requests send only the refresh token; user identity is resolved server-side.
-- Six-digit transaction PIN with backend verification and lockout handling.
-- v1 registration is VND-only. USD remains a future-ready backend currency seed, but the user app does not expose USD registration.
+## Features
 
-### Wallet
-- Home dashboard with balance, wallet id, recent activity, pull-to-refresh, and quick actions.
-- Withdraw flow with PIN verification and idempotency key.
-- Mock deposit is intentionally not exposed as a normal user quick action for release. It is an admin/demo operation until a PSP or controlled funding adapter is implemented.
+- Registration, login, email OTP password reset, and rotating token sessions.
+- Separate six-digit transaction PIN with backend verification and lockout handling.
+- Wallet dashboard with balance, recent activity, and pull-to-refresh.
+- Transfers with recipient lookup, amount/note entry, PIN confirmation, risk continuations, and asynchronous status polling.
+- Idempotent transfer and withdrawal retries, duplicate-submit prevention, and protection against stale responses.
+- Paginated history, transaction details, support chat, profile, PIN change, and logout.
+- English/Vietnamese localization and responsive layouts.
 
-### Transfers
-- Recipient lookup by email or phone.
-- Lookup responses include account id, status, currency, email, and phone so submit can reuse the matched identifier safely.
-- Step-by-step amount, note, confirmation, and PIN flow.
-- Client-generated UUID v4 idempotency key for transfer retries.
-- Async Saga polling for pending, completed, failed, compensating, cancelled, timeout, and manual retry states.
+Registration is VND-only. USD exists in the backend currency seed but is not offered during user registration. Mock funding is an admin/backend operation; this client has no self-service deposit route or implementation. Real payment gateways and FX conversion are outside v1.
 
-### History And Support
-- Paginated transaction history with direction, counterparty, status, timestamp, and details.
-- Support chat and profile screens.
-- PIN change and logout from profile.
+## Technology stack
+
+Flutter, Dart, Riverpod, GoRouter, Dio, flutter_secure_storage, Freezed, json_serializable, and `decimal`. Money is decoded from decimal strings and handled without floating-point arithmetic.
+
+## Prerequisites
+
+- Flutter stable with Dart compatible with `^3.12.1`, as declared in `pubspec.yaml`.
+- Android SDK and a supported JDK for Android builds.
+- macOS and Xcode for iOS builds.
+- Chrome for web development.
+- A running [E-Wallet API Gateway](https://github.com/NQK923/banking_platform#readme) for live app flows.
+
+Check the local toolchain with `flutter doctor`. Android, iOS, and web project directories are included; iOS release builds have not been validated on the Windows development host.
+
+## Installation
+
+Run commands from this repository's root:
+
+```powershell
+flutter pub get
+```
+
+Generated DTOs and providers are checked in. Regenerate them after changing their source declarations:
+
+```powershell
+dart run build_runner build --delete-conflicting-outputs
+flutter gen-l10n
+```
+
+## Configuration
+
+The gateway origin is supplied at build/run time with `--dart-define`:
+
+| Variable | Default |
+| --- | --- |
+| `API_BASE_URL` | Android: `http://10.0.2.2:8080`; other targets: `http://localhost:8080` |
+
+The Android default is intended for the standard Android emulator. For a physical device, use a reachable host address or an HTTPS gateway. `localhost` on a device refers to that device. Use HTTPS for deployed environments.
+
+## Run locally
+
+Android emulator:
+
+```powershell
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
+```
+
+Chrome:
+
+```powershell
+flutter run -d chrome --web-port=4200 --dart-define=API_BASE_URL=http://localhost:8080
+```
+
+Choose a backend CORS-allowed web origin; the gateway includes localhost port `4200` in its development configuration. If multiple devices are connected, select the intended device using `-d <device-id>`.
 
 ## Screens
 
-1. Splash (`/splash`): loads app/session state.
-2. Login (`/login`): email/phone and password login.
-3. Register (`/register`): email, optional phone, password, transaction PIN, VND currency.
-4. Home (`/home`): balance, recent transactions, send, withdraw, and support actions.
-5. History (`/history`): paginated transaction history.
-6. Transaction detail (`/transactions/:id`): receipt-style transaction details.
-7. Transfer (`/transfer`): recipient lookup, amount/note, PIN confirmation, and polling.
-8. Withdraw (`/withdraw`): withdraw funds with PIN verification.
-9. Profile (`/profile`): account details, PIN change, and logout.
-10. Support (`/support`): user support chat.
+| Route | Purpose |
+| --- | --- |
+| `/splash` | Initialize session state |
+| `/login`, `/register`, `/forgot-password` | Authentication and password reset |
+| `/pin` | PIN screen |
+| `/home` | Balance, recent activity, and quick actions |
+| `/transfer` | Recipient lookup, amount/note, risk continuation, PIN, and polling |
+| `/withdraw` | PIN-protected withdrawal |
+| `/history`, `/transactions/:id` | Transaction history and details |
+| `/profile` | Account details, PIN change, and logout |
+| `/support` | Support chat |
+| `/support/session/:id` | Existing support session |
+| `/history/:id/support` | Support for a transaction |
 
-The release client has no `/deposit` route, screen, notifier, or deposit repository method. Funding is an admin/backend operation.
+## Demo workflow
 
-## Demo Script
+1. Register two VND users with a password and six-digit PIN.
+2. Fund the sender using the backend's admin/mock funding operation.
+3. Refresh the sender's dashboard and confirm the balance.
+4. Look up the recipient by email or phone, enter an amount/note, and confirm with the PIN.
+5. Wait for the terminal status, then inspect history and transaction details.
+6. Try a withdrawal, verify the updated balance/history, and change the PIN from the profile screen.
 
-1. Register two VND users with email, optional phone, password, and six-digit transaction PIN.
-2. Use the admin backend/admin UI to create a mock deposit for the sender.
-3. Open the user app and verify the sender balance.
-4. Start a transfer, lookup the recipient by email or phone, enter amount and note, then confirm with PIN.
-5. Wait for polling to show the final transfer status.
-6. Review the transaction history and detail screens.
-7. Try a withdraw with the correct PIN and verify balance/history updates.
-8. Change PIN from profile, then log out.
+## Tests
 
-## Tech Stack
+```powershell
+flutter analyze --fatal-infos
+flutter test
+```
 
-- Flutter 3.x stable and Dart 3.
-- Riverpod with code generation.
-- GoRouter for routing.
-- Dio for HTTP and auth retry handling.
-- flutter_secure_storage for tokens.
-- Freezed and json_serializable for DTOs.
-- decimal for money values. Do not use `double` for money.
+These checks do not require Docker or a live gateway. Coverage includes exact decimal parsing/formatting, auth refresh, transfer/risk state, withdrawal idempotency, history races, profile/PIN, routing, support, and app startup.
 
-## Project Structure
+`test/money_flow_screen_test.dart` exercises transfer and withdrawal screens through real repositories with a fake HTTP boundary, including narrow/wide layouts. It does not prove live ledger accounting or backend risk enforcement.
+
+### Live integration smoke
+
+The current integration smoke registers a user and checks the wallet home screen against a real gateway. It creates test data and is not a full money-movement E2E suite.
+
+On a connected Android or iOS test target:
+
+```powershell
+flutter test integration_test/release_smoke_test.dart -d <device-id> --dart-define=API_BASE_URL=<reachable-gateway-origin>
+```
+
+Web integration uses `test_driver/integration_test.dart` with ChromeDriver. The complete workspace's `scripts/release-e2e.ps1` orchestrates this with the admin suite; it starts backend infrastructure unless `-SkipBackendStart` is supplied. The workspace script is maintained separately from this repository.
+
+## Release builds
+
+```powershell
+flutter build web --release --dart-define=API_BASE_URL=https://api.example.com
+flutter build apk --release --dart-define=API_BASE_URL=https://api.example.com
+```
+
+Replace the example gateway with your deployment origin. Web output is written to `build/web/`; the Android APK is written to `build/app/outputs/flutter-apk/app-release.apk`.
+
+The current Android release configuration has no signing key, so the APK is unsigned. Configure release signing before installation or distribution. The main manifest includes Internet permission; store credentials, device hardening, and deployment certificates require separate setup. The web JavaScript build is supported; the secure-storage dependency currently prevents treating a Wasm build as validated.
+
+Run Flutter commands sequentially in this checkout. For Android release builds, allow the normal dependency/plugin metadata refresh: do not use `--no-pub` on SDKs affected by stale integration-test plugin registration. Do not edit `GeneratedPluginRegistrant.java` manually.
+
+## Project structure
 
 ```text
 lib/
-├── core/
-│   ├── config/
-│   ├── error/
-│   ├── localization/
-│   ├── money/
-│   ├── network/
-│   ├── router/
-│   └── theme/
+├── core/          # Configuration, network, money, routing, localization, and theme
 ├── features/
 │   ├── auth/
 │   ├── wallet/
@@ -83,59 +144,15 @@ lib/
 │   ├── history/
 │   ├── profile/
 │   └── support/
-├── shared/
-│   └── widgets/
+├── l10n/          # ARB resources and generated localization
+├── shared/        # Reusable widgets
 └── main.dart
+
+test/              # Unit and widget tests
+integration_test/  # Live gateway smoke test
+test_driver/       # Web integration driver
 ```
 
-## Configuration
+## Workspace verification
 
-The backend URL is injected with `--dart-define`.
-
-| Variable | Default | Description |
-|---|---|---|
-| `API_BASE_URL` | Android emulator: `http://10.0.2.2:8080`; other dev targets: `http://localhost:8080` | API Gateway base URL. |
-
-## Commands
-
-Install dependencies:
-
-```bash
-flutter pub get
-```
-
-Generate Freezed/Riverpod files:
-
-```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
-Run locally:
-
-```bash
-flutter run --dart-define=API_BASE_URL=http://localhost:8080
-```
-
-Run tests:
-
-```bash
-flutter test
-```
-
-## Tests
-
-- `money_test.dart`: exact decimal math and currency formatting.
-- `auth_notifier_test.dart`: auth state transitions.
-- `auth_interceptor_test.dart`: single-flight refresh and retry behavior.
-- `wallet_test.dart`: withdraw state, duplicate-submit prevention, and retry idempotency keys.
-- `transfer_test.dart`: recipient lookup, transfer submit, risk continuations, and polling.
-- `profile_test.dart`: profile and PIN behavior.
-- `support_chat_screen_test.dart`: support chat UI.
-- `widget_test.dart`: app startup smoke test.
-- `money_flow_screen_test.dart`: transfer by email/phone, risk continuations, manual review/block, refund display, and withdraw UI through real repositories with a fake HTTP boundary; includes narrow/wide layouts.
-- `history_provider_test.dart`: refresh/pagination races and provider rebuilds.
-- `money_json_test.dart`: exact string money decoding and rejection of numeric/malformed money JSON.
-
-Run `..\scripts\verify.ps1` from PowerShell for Docker-free backend/admin/Flutter verification. This does not run live gateway E2E. Android release builds require a signing configuration; the main manifest includes network permission. Production certificates, mobile device hardening, and store release signing require separate deployment validation.
-
-Build an Android release artifact with `flutter build apk --release`, or include it in the Docker-free gate using `..\scripts\verify.ps1 -IncludeAndroid`. Run Flutter tooling sequentially in this checkout. Do not use `--no-pub` for the Android release build on SDKs affected by Flutter issue #169336: stale generated plugin registration can otherwise include the development-only integration-test plugin. Do not edit `GeneratedPluginRegistrant.java` manually. Without a release keystore this project's release artifact is unsigned and must be signed before installation/distribution.
+When all three repositories and the separate workspace scripts are present, run `..\scripts\verify.ps1` from PowerShell for Docker-free backend/admin/Flutter verification. Add `-IncludeAndroid` for an Android release build. These checks exclude container tests and live gateway E2E; consult the workspace release audit for the remaining release gates.
